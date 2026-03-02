@@ -18,3 +18,4 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 ### `string.h`
 - `str_starts_with(str, prefix)`
 - `str_remove_newline(str)`
+- `str_eq(a, b)`
