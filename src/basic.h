@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 /** Mark a variable as unused */
 #define UNUSED(X) (void)(X)
@@ -26,5 +27,3 @@
         fprintf(stderr, __VA_ARGS__); \
         fprintf(stderr, "\n"); \
     } while (0)
-
-

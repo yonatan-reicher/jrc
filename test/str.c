@@ -1,5 +1,5 @@
-#include "string.h"
-#include <basic.h>
+#include "../src/str.h"
+#include "../src/basic.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,7 +19,8 @@ int main()
 #define MY_STR "hello world with a two newlines!\n\n"
     char str[] = MY_STR;
     str_remove_newline(str);
-    if (str_eq(str, MY_STR)) {
+    if (str_eq(str, MY_STR))
+    {
     }
     return 0;
 }

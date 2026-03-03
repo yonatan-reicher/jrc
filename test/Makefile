@@ -4,15 +4,14 @@
 # Assume the library has been built in the expected directory
 LIB       := ../lib/libjrc.a
 TESTS     := $(patsubst %.c,build/%,$(wildcard *))
-INC_DIR   := ../src
-CFLAGS    := -g -Wall -Wextra -Wpedantic -I$(INC_DIR)
+CFLAGS    := -g -Wall -Wextra -Wpedantic
 
 .PHONY: all clean
 all: $(TESTS)
 
 # This is the rule for building an individual test.
 build/%: %.c $(LIB)
-	$(CC) -o $@ $< $(LIB)
+	$(CC) $(CFLAGS) -o $@ $< $(LIB)
 	./$@
 
 clean:
