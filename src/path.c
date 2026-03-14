@@ -91,12 +91,17 @@ Path path_parse_n(const char *path_str, size_t len) {
         const char c = path_str[i];
         if (IS_SEP(c)) {
             part[part_len] = 0; // Finish the string
-            if (part_len > 0) path_add(&ret, part); // Add it
+            path_add(&ret, part); // Add it
             part_len = 0; // Reset it
         } else {
             part[part_len++] = c;
             if (part_len == ARRAY_LEN(part)) PANIC(PART_TOO_BIG);
         }
+    }
+    // Finish the final part, if there is one!
+    if (part_len > 0) {
+        part[part_len] = 0; // Finish the string
+        path_add(&ret, part); // Add it
     }
     return ret;
 }
@@ -122,7 +127,7 @@ char* path_to_str(const Path *p) {
         size_t len = strlen(part);
         memcpy(&buf[i], part, len);
         i += len;
-        buf[i++] = '/';
+        buf[i++] = i_part == p->n_parts - 1 ? 0 : '/';
     }
     return buf;
 }
