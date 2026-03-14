@@ -7,3 +7,5 @@ bool str_starts_with(const char *str, const char *prefix);
 void str_remove_newline(char *str);
 /// Shorthand for `strcmp(..) == 0`
 #define str_eq(A, B) (strcmp(A, B) == 0)
+/// Duplicate the string. Must be freed!
+char* str_clone(const char *str);

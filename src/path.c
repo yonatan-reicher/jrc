@@ -33,7 +33,7 @@ Path path_move(Path *p) {
 void path_add(Path *dest, const char *part) {
     const size_t new_size = (dest->n_parts + 1) * sizeof(char*);
     dest->parts = realloc(dest->parts, new_size);
-    dest->parts[dest->n_parts] = strdup(part);
+    dest->parts[dest->n_parts] = str_clone(part);
     dest->n_parts++;
 }
 
@@ -63,7 +63,7 @@ Path path_clone(const Path *src) {
     Path ret;
     ret.parts = malloc(src->n_parts * sizeof(char*));
     for (uint16_t i = 0; i < src->n_parts; i++)
-        ret.parts[i] = strdup(src->parts[i]);
+        ret.parts[i] = str_clone(src->parts[i]);
     ret.n_parts = src->n_parts;
     return ret;
 }

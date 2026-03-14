@@ -24,3 +24,12 @@ void str_remove_newline(char *str)
         }
     }
 }
+
+void* malloc(size_t s);
+char* str_clone(const char *s) {
+    size_t len = strlen(s);
+    char* ret = malloc(len + 1);
+    if (ret == NULL) return NULL;
+    memcpy(ret, s, len + 1);
+    return ret;
+}
