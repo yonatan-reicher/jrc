@@ -37,21 +37,20 @@ void path_add(Path *dest, const char *part) {
     dest->n_parts++;
 }
 
-void path_append(Path *dest, Path *src) {
-    const uint16_t new_n_parts = dest->n_parts + src->n_parts;
+void path_append(Path *dest, Path src) {
+    const uint16_t new_n_parts = dest->n_parts + src.n_parts;
     if (new_n_parts < dest->n_parts) PANIC("integer overflow");
     // Update
     dest->parts = realloc(dest->parts, new_n_parts * sizeof(char*));
-    memcpy(&dest->parts[dest->n_parts], src->parts, new_n_parts);
+    memcpy(&dest->parts[dest->n_parts], src.parts, new_n_parts);
     dest->n_parts = new_n_parts;
     // Free
-    free(src->parts);
-    *src = path_empty();
+    free(src.parts);
 }
 
-Path path_concat(Path *lhs, Path *rhs) {
-    path_append(lhs, rhs);
-    return path_move(lhs);
+Path path_concat(Path lhs, Path rhs) {
+    path_append(&lhs, rhs);
+    return path_move(&lhs);
 }
 
 Path path_of_slice(const PtrSlice(char) parts) {

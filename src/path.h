@@ -23,9 +23,9 @@ Path path_move(Path *path);
 /// Adds a single part to the right of the string
 void path_add(Path *dest, const char *part);
 /// Adds a path to another path by reference. Destroys the path given.
-void path_append(Path *dest, Path *src);
+void path_append(Path *dest, Path src);
 /// Adds a path to another, destroying both.
-Path path_concat(Path *lhs, Path *rhs);
+Path path_concat(Path lhs, Path rhs);
 /// Builds a path from a slice of parts, as c-strings.
 Path path_of_slice(const PtrSlice(char) parts);
 /// Clone a path.
