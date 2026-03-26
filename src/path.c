@@ -38,7 +38,8 @@ void path_add(Path *dest, const char *part) {
 }
 
 void path_append(Path *dest, Path *src) {
-    const size_t new_n_parts = dest->n_parts + src->n_parts;
+    const uint16_t new_n_parts = dest->n_parts + src->n_parts;
+    if (new_n_parts < dest->n_parts) PANIC("integer overflow");
     // Update
     dest->parts = realloc(dest->parts, new_n_parts * sizeof(char*));
     memcpy(&dest->parts[dest->n_parts], src->parts, new_n_parts);
@@ -107,7 +108,8 @@ Path path_parse_n(const char *path_str, size_t len) {
 }
 
 Path path_cwd(void) {
-    char *cwd_str = getcwd(NULL, 0); // Calling with NULL means allocating.
+    char *cwd_str;
+    EXPECT_ERRNO(cwd_str = getcwd(NULL, 0)); // Calling with NULL means allocating.
     // TODO: What if this crashes?
     Path ret = path_parse(cwd_str);
     free(cwd_str);
