@@ -20,8 +20,10 @@ bool path_is_empty(const Path *path);
 void path_free(Path *path);
 /// Replaces a path with an empty one.
 Path path_move(Path *path);
-/// Adds a single part to the right of the string
-void path_add(Path *dest, const char *part);
+/// Replace a path with a new path.
+void path_assign(Path *dest, Path src);
+/// Adds a single part to the right of the string. Takes that part by reference.
+void path_add(Path *dest, char *part);
 /// Adds a path to another path by reference. Destroys the path given.
 void path_append(Path *dest, Path src);
 /// Adds a path to another, destroying both.
@@ -41,8 +43,12 @@ Path path_parse(const char *path_str);
 Path path_parse_n(const char *path_str, size_t len);
 /// Returns a new path to the current working directory.
 Path path_cwd(void);
+/// Returns a new path to the user's home directory.
+Path path_home(void);
 /// Turn a string into a system representation.
 char* path_to_str(const Path *p);
+/// Takes a path, expands '~', expands '.', and returns it.
+Path path_expand(Path src);
 
 
 #define path(...) \

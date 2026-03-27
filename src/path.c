@@ -1,5 +1,6 @@
 #include "path.h"
 #include "str.h"
+#include <pwd.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -30,10 +31,15 @@ Path path_move(Path *p) {
     return ret;
 }
 
-void path_add(Path *dest, const char *part) {
+void path_assign(Path *dest, Path src) {
+    path_free(dest);
+    *dest = src;
+}
+
+void path_add(Path *dest, char *part) {
     const size_t new_size = (dest->n_parts + 1) * sizeof(char*);
     dest->parts = realloc(dest->parts, new_size);
-    dest->parts[dest->n_parts] = str_clone(part);
+    dest->parts[dest->n_parts] = part;
     dest->n_parts++;
 }
 
@@ -42,7 +48,7 @@ void path_append(Path *dest, Path src) {
     if (new_n_parts < dest->n_parts) PANIC("integer overflow");
     // Update
     dest->parts = realloc(dest->parts, new_n_parts * sizeof(char*));
-    memcpy(&dest->parts[dest->n_parts], src.parts, new_n_parts);
+    memcpy(&dest->parts[dest->n_parts], src.parts, src.n_parts * sizeof(char*));
     dest->n_parts = new_n_parts;
     // Free
     free(src.parts);
@@ -55,7 +61,7 @@ Path path_concat(Path lhs, Path rhs) {
 
 Path path_of_slice(const PtrSlice(char) parts) {
     Path ret = path_empty();
-    for (uint16_t i = 0; i < parts.len; i++) path_add(&ret, parts.ptr[i]);
+    for (uint16_t i = 0; i < parts.len; i++) path_add(&ret, str_clone(parts.ptr[i]));
     return ret;
 }
 
@@ -91,7 +97,7 @@ Path path_parse_n(const char *path_str, size_t len) {
         const char c = path_str[i];
         if (IS_SEP(c)) {
             part[part_len] = 0; // Finish the string
-            path_add(&ret, part); // Add it
+            path_add(&ret, str_clone(part)); // Add it
             part_len = 0; // Reset it
         } else {
             part[part_len++] = c;
@@ -101,7 +107,7 @@ Path path_parse_n(const char *path_str, size_t len) {
     // Finish the final part, if there is one!
     if (part_len > 0) {
         part[part_len] = 0; // Finish the string
-        path_add(&ret, part); // Add it
+        path_add(&ret, str_clone(part)); // Add it
     }
     return ret;
 }
@@ -113,6 +119,14 @@ Path path_cwd(void) {
     Path ret = path_parse(cwd_str);
     free(cwd_str);
     return ret;
+}
+
+Path path_home() {
+    const char *str = getenv("HOME");
+    if (str == NULL) {
+        str = getpwuid(getuid())->pw_dir;
+    }
+    return path_parse(str);
 }
 
 char* path_to_str(const Path *p) {
@@ -131,4 +145,23 @@ char* path_to_str(const Path *p) {
         buf[i++] = i_part == p->n_parts - 1 ? 0 : '/';
     }
     return buf;
+}
+
+Path path_expand(Path p) {
+    Path ret = path_empty();
+    for (uint16_t i = 0; i < p.n_parts; i++) {
+        char **part = &p.parts[i];
+        if (str_eq(*part, "~")) {
+            path_append(&ret, path_home());
+        } else if (str_eq(*part, ".")) {
+            if (i == 0) {
+                path_append(&ret, path_cwd());
+            } else {
+                // Do nothing...
+            }
+        } else {
+            path_add(&ret, *part);
+        }
+    }
+    return ret;
 }
