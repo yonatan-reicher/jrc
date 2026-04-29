@@ -19,3 +19,11 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 - `str_starts_with(str, prefix)`
 - `str_remove_newline(str)`
 - `str_eq(a, b)`
+
+## Currently Working On
+
+Arrays, Slices and Paths. Paths are the biggest priority
+
+## TODO
+
+Integrate with "c-stream", maybe eat it.
