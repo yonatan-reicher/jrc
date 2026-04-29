@@ -121,7 +121,7 @@ Path path_cwd(void) {
     return ret;
 }
 
-Path path_home() {
+Path path_home(void) {
     const char *str = getenv("HOME");
     if (str == NULL) {
         str = getpwuid(getuid())->pw_dir;
