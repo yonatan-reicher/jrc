@@ -52,7 +52,7 @@ $(OBJ_DIR) $(LIB_DIR):
 # --- Test ---------------------------------------------------------------------
 # The tests have their own separate makefile, so we just give them the .a file
 # and delegate to them
-test: $(TARGET) test/*
+test: debug test/*
 	cd test && make
 
 # --- Install & Uninstall ------------------------------------------------------
