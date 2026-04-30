@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main()
+int main(void)
 {
     // --- str_starts_with -----------------------------------------------------
     if (!str_starts_with("Hello World", "Hell"))
