@@ -5,7 +5,7 @@ VERSION      := 0.0.1
 # Directories
 SRC_DIR      := src
 # We put the header along with the source files
-INC_DIR      := src
+INC_DIR      := include
 OBJ_DIR      := obj
 LIB_DIR      := lib
 PREFIX       ?= /usr/local
@@ -19,7 +19,7 @@ TARGET       := $(LIB_DIR)/lib$(NAME).a
 CC           := gcc
 AR           := ar
 ARFLAGS      := rcs
-CFLAGS       := -Wall -Wextra -Wpedantic -std=c11 -O3 -I$(INC_DIR)
+CFLAGS       := $(shell cat compile_flags.txt)
 DBGFLAGS     := -g -O0 -DDEBUG
 
 # --- Sources & Objects --------------------------------------------------------

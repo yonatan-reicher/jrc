@@ -1,5 +1,5 @@
-#include "../src/array.h"
-#include "../src/basic.h"
+#include "array.h"
+#include "basic.h"
 
 DEFINE_ARRAY(char);
 

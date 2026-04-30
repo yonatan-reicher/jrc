@@ -5,7 +5,8 @@
 LIB       := ../lib/libjrc.a
 TESTS     := $(patsubst %.c,build/%,$(wildcard *.c))
 RUN_TESTS := $(patsubst %.c,run/%,$(wildcard *.c))
-CFLAGS    := -g -Wall -Wextra -Wpedantic
+INC_DIRS  := ../include
+CFLAGS    := -g -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIRS)
 
 .PHONY: all clean
 all: $(TESTS) $(RUN_TESTS)

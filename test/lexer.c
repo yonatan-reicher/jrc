@@ -1,5 +1,5 @@
-#include "../src/lexer.h"
-#include "../src/basic.h"
+#include "lexer.h"
+#include "basic.h"
 
 bool token_eq(const Token* a, const Token* b) {
     return a->index == b->index

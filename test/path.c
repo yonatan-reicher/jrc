@@ -1,5 +1,5 @@
-#include "../src/path.h"
-#include "../src/str.h"
+#include "path.h"
+#include "str.h"
 #include <unistd.h>
 #include <limits.h>
 

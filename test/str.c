@@ -1,5 +1,5 @@
-#include "../src/str.h"
-#include "../src/basic.h"
+#include "str.h"
+#include "basic.h"
 #include <stdio.h>
 #include <stdlib.h>
 
