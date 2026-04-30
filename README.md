@@ -23,6 +23,7 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 ## Currently Working On
 
 Arrays, Slices and Paths. Paths are the biggest priority
+Starting work on lexer.
 
 ## TODO
 
