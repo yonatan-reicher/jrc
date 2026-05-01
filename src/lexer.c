@@ -35,12 +35,12 @@ char peek(const Lexer* lexer) {
     return lexer->text[lexer->pos.index];
 }
 
-void advanceRight(Lexer* lexer) {
+void advance_right(Lexer* lexer) {
     lexer->pos.index++;
     lexer->pos.col++;
 }
 
-void advanceDown(Lexer* lexer) {
+void advance_down(Lexer* lexer) {
     lexer->pos.index++;
     lexer->pos.row++;
     lexer->pos.col = 1;
@@ -48,8 +48,8 @@ void advanceDown(Lexer* lexer) {
 
 char pop(Lexer* l) {
     char c = peek(l);
-    if (c == '\n') advanceDown(l);
-    else advanceRight(l);
+    if (c == '\n') advance_down(l);
+    else advance_right(l);
     return c;
 }
 
