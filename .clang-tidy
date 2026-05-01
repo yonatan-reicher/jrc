@@ -1,19 +1,29 @@
 ---
-# Enable ALL the things! Except not really
-# misc-non-private-member-variables-in-classes: the options don't do anything
-# modernize-use-nodiscard: too aggressive, attribute is situationally useful
-Checks: "*,\
-  -google-readability-todo,\
-  -altera-*,\
-  -fuchsia-*,\
-  fuchsia-multiple-inheritance,\
-  -llvm-header-guard,\
-  -llvm-include-order,\
-  -llvmlibc-*,\
-  -modernize-use-nodiscard,\
-  -misc-non-private-member-variables-in-classes"
-WarningsAsErrors: ''
+Checks: >
+    performance-*,
+    misc-*,
+    android-cloexec-*,
+    readability-duplicate-include,
+    readability-misleading-indentation,
+    bugprone-assert-side-effect,
+    bugprone-macro-repeated-side-effects,
+    bugprone-infinite-loop,
+    bugprone-macro-parentheses,
+    bugprone-posix-return,
+    bugprone-reserved-identifier,
+    bugprone-signal-handler,
+    bugprone-signed-char-misuse,
+    bugprone-sizeof-expression,
+    bugprone-branch-clone,
+    -clang-analyzer-security.insecureAPI.*,
+    -misc-no-recursion,
+
+# treat all warnings as errors
+WarningsAsErrors: '*'
+
 CheckOptions:
+  - key: 'bugprone-assert-side-effect.AssertMacros'
+    value: 'ASSERT, ASSERT_EQ, ASSERT_NE, ASSERT_LT, ASSERT_LE, ASSERT_GT, ASSERT_GE'
   - key: 'bugprone-argument-comment.StrictMode'
     value: 'true'
 # Prefer using enum classes with 2 values for parameters instead of bools
@@ -45,11 +55,10 @@ CheckOptions:
     value: 'true'
   - key: 'readability-redundant-access-specifiers.CheckFirstDeclaration'
     value: 'true'
-# These seem to be the most common identifier styles
   - key: 'readability-identifier-naming.AbstractClassCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.ClassCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.ClassConstantCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.ClassMemberCase'
@@ -71,7 +80,7 @@ CheckOptions:
   - key: 'readability-identifier-naming.ConstexprVariableCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.EnumCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.EnumConstantCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.FunctionCase'
@@ -133,19 +142,19 @@ CheckOptions:
   - key: 'readability-identifier-naming.StaticVariableCase'
     value: 'lower_case'
   - key: 'readability-identifier-naming.StructCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.TemplateParameterCase'
     value: 'CamelCase'
   - key: 'readability-identifier-naming.TemplateTemplateParameterCase'
     value: 'CamelCase'
   - key: 'readability-identifier-naming.TypeAliasCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.TypedefCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.TypeTemplateParameterCase'
     value: 'CamelCase'
   - key: 'readability-identifier-naming.UnionCase'
-    value: 'lower_case'
+    value: 'CamelCase'
   - key: 'readability-identifier-naming.ValueTemplateParameterCase'
     value: 'CamelCase'
   - key: 'readability-identifier-naming.VariableCase'
