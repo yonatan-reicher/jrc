@@ -2,11 +2,13 @@
 #include "basic.h"
 
 bool token_eq(const Token* a, const Token* b) {
-    return a->index == b->index
-        && a->row == b->row
-        && a->col == b->col
-        && a->len == b->len
-        && a->kind == b->kind;
+    return a->kind == b->kind
+        && a->span.start.index == b->span.start.index
+        && a->span.start.row == b->span.start.row
+        && a->span.start.col == b->span.start.col
+        && a->span.end.index == b->span.end.index
+        && a->span.end.row == b->span.end.row
+        && a->span.end.col == b->span.end.col;
 }
 
 #define EXPECT_TOKEN_EQ(A, B) \
@@ -20,16 +22,31 @@ bool token_eq(const Token* a, const Token* b) {
         } \
     } while (0)
 
+Token new_token(TokenKind kind, size_t start_index, TextRow start_row, TextCol start_col, int len) {
+    return (Token) {
+        .kind = kind,
+        .span = {
+            .start = {
+                .index = start_index,
+                .row = start_row,
+                .col = start_col,
+            },
+            .end = {
+                .index = start_index + len,
+                .row = start_row,
+                .col = start_col + len,
+            },
+        },
+    };
+}
+
+#define NEW_TOKEN(KIND, START_INDEX, START_ROW, START_COL, LEN) \
+    new_token(TOKEN_KIND_ ## KIND, START_INDEX, START_ROW, START_COL, LEN)
+
 void test_eof(void) {
     Lexer lexer = lexer_new("");
     const Token token = lexer_pop(&lexer);
-    const Token expected = {
-        .index = 0,
-        .row = 1,
-        .col = 1,
-        .len = 0,
-        .kind = TOKEN_KIND_EOF,
-    };
+    const Token expected = NEW_TOKEN(EOF, 0, 1, 1, 0);
     if (!token_eq(&token, &expected)) {
         PANIC(
             "Expected " TOKEN_PRINTF_FORMAT " but got " TOKEN_PRINTF_FORMAT " instead.",
@@ -42,13 +59,7 @@ void test_eof(void) {
 void test_single_int(void) {
     Lexer lexer = lexer_new("123");
     const Token token = lexer_pop(&lexer);
-    const Token expected = {
-        .index = 0,
-        .row = 1,
-        .col = 1,
-        .len = 3,
-        .kind = TOKEN_KIND_INT,
-    };
+    const Token expected = NEW_TOKEN(INT, 0, 1, 1, 3);
     if (!token_eq(&token, &expected)) {
         PANIC(
             "Expected " TOKEN_PRINTF_FORMAT " but got " TOKEN_PRINTF_FORMAT " instead.",
@@ -61,13 +72,7 @@ void test_single_int(void) {
 void test_ints_with_whitespace(void) {
     Lexer lexer = lexer_new("  \n  123  \n  456");
     const Token token1 = lexer_pop(&lexer);
-    const Token expected1 = {
-        .index = 5,
-        .row = 2,
-        .col = 3,
-        .len = 3,
-        .kind = TOKEN_KIND_INT,
-    };
+    const Token expected1 = NEW_TOKEN(INT, 5, 2, 3, 3);
     if (!token_eq(&token1, &expected1)) {
         PANIC(
             "Expected " TOKEN_PRINTF_FORMAT " but got " TOKEN_PRINTF_FORMAT " instead.",
@@ -76,13 +81,7 @@ void test_ints_with_whitespace(void) {
         );
     }
     const Token token2 = lexer_pop(&lexer);
-    const Token expected2 = {
-        .index = 13,
-        .row = 3,
-        .col = 3,
-        .len = 3,
-        .kind = TOKEN_KIND_INT,
-    };
+    const Token expected2 = NEW_TOKEN(INT, 13, 3, 3, 3);
     if (!token_eq(&token2, &expected2)) {
         PANIC(
             "Expected " TOKEN_PRINTF_FORMAT " but got " TOKEN_PRINTF_FORMAT " instead.",
@@ -96,27 +95,9 @@ void test_ints_with_words(void) {
     const char* text = " \n123abc123";
     Lexer lexer = lexer_new(text);
     Token expected[] = {
-        (Token) {
-            .index = 2,
-            .row = 2,
-            .col = 1,
-            .len = 3,
-            .kind = TOKEN_KIND_INT,
-        },
-        (Token) {
-            .index = 5,
-            .row = 2,
-            .col = 4,
-            .len = 6,
-            .kind = TOKEN_KIND_WORD,
-        },
-        (Token) {
-            .index = 11,
-            .row = 2,
-            .col = 10,
-            .len = 0,
-            .kind = TOKEN_KIND_EOF,
-        },
+        NEW_TOKEN(INT, 2, 2, 1, 3),
+        NEW_TOKEN(WORD, 5, 2, 4, 6),
+        NEW_TOKEN(EOF, 11, 2, 10, 0),
     };
     for (size_t i = 0; i < ARRAY_LEN(expected); i++) {
         const Token token = lexer_pop(&lexer);

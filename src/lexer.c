@@ -1,17 +1,10 @@
 #include "lexer.h"
 #include <ctype.h>
 
-typedef LexerIndex Index;
-typedef LexerRow Row;
-typedef LexerCol Col;
-typedef TokenLen Len;
-
 Lexer lexer_new(const char* text) {
     return (Lexer) {
         .text = text,
-        .index = 0,
-        .row = 1,
-        .col = 1,
+        .pos = text_pos_start(),
     };
 }
 
@@ -20,7 +13,7 @@ void lexer_free(Lexer* lexer) {
 }
 
 bool lexer_is_done(const Lexer* lexer) {
-    return lexer->text[lexer->index] == '\0';
+    return lexer->text[lexer->pos.index] == '\0';
 }
 
 // =============================================================================
@@ -39,18 +32,18 @@ const char* token_kind_name(TokenKind kind) {
 }
 
 char peek(const Lexer* lexer) {
-    return lexer->text[lexer->index];
+    return lexer->text[lexer->pos.index];
 }
 
 void advanceRight(Lexer* lexer) {
-    lexer->index++;
-    lexer->col++;
+    lexer->pos.index++;
+    lexer->pos.col++;
 }
 
 void advanceDown(Lexer* lexer) {
-    lexer->index++;
-    lexer->row++;
-    lexer->col = 1;
+    lexer->pos.index++;
+    lexer->pos.row++;
+    lexer->pos.col = 1;
 }
 
 char pop(Lexer* l) {
@@ -67,10 +60,10 @@ typedef struct TokenStart {
 TokenStart start_token(const Lexer* l) {
     return (TokenStart) {
         .t = (Token) {
-            .index = l->index,
-            .row = l->row,
-            .col = l->col,
-            .len = -1, // To be filled!
+            .span = {
+                .start = l->pos,
+                .end = {}, // To be filled!
+            },
             .kind = -1, // To be filled!
         },
     };
@@ -78,7 +71,7 @@ TokenStart start_token(const Lexer* l) {
 
 Token end_token(const Lexer* l, TokenStart token_start, TokenKind kind) {
     Token token = token_start.t;
-    token.len = l->index - token.index;
+    token.span.end = l->pos;
     token.kind = kind;
     return token;
 }
