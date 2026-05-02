@@ -43,11 +43,11 @@ OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 build: $(TARGET)
 
 release:
-	# Set the profile to release and recursively call make
+	@# Set the profile to release and recursively call make
 	@$(MAKE) PROFILE=release
 
 debug:
-	# Set the profile to debug and recursively call make
+	@# Set the profile to debug and recursively call make
 	@$(MAKE) PROFILE=debug
 
 ## Build the static library
