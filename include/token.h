@@ -7,6 +7,13 @@ typedef enum TokenKind {
     TOKEN_KIND_EOF,
     TOKEN_KIND_INT,
     TOKEN_KIND_WORD,
+    TOKEN_KIND_STR,
+    TOKEN_KIND_PLUS,
+    TOKEN_KIND_MINUS,
+    TOKEN_KIND_STAR,
+    TOKEN_KIND_SLASH,
+    TOKEN_KIND_LPAREN,
+    TOKEN_KIND_RPAREN,
 } TokenKind;
 
 typedef struct Token {

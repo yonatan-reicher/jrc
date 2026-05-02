@@ -105,9 +105,29 @@ void test_ints_with_words(void) {
     }
 }
 
+void test_symbols(void) {
+    const char* text = "+-*/()";
+    Lexer lexer = lexer_new(text);
+    Token expected[] = {
+        NEW_TOKEN(PLUS, 0, 1, 1, 1),
+        NEW_TOKEN(MINUS, 1, 1, 2, 1),
+        NEW_TOKEN(STAR, 2, 1, 3, 1),
+        NEW_TOKEN(SLASH, 3, 1, 4, 1),
+        NEW_TOKEN(LPAREN, 4, 1, 5, 1),
+        NEW_TOKEN(RPAREN, 5, 1, 6, 1),
+        NEW_TOKEN(EOF, 6, 1, 7, 0),
+    };
+    for (size_t i = 0; i < ARRAY_LEN(expected); i++) {
+        const Token token = lexer_pop(&lexer);
+        EXPECT_TOKEN_EQ(token, expected[i]);
+    }
+}
+
 int main(void) {
     test_eof();
     test_single_int();
     test_ints_with_whitespace();
     test_ints_with_words();
+    test_symbols();
+    return 0;
 }

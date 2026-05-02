@@ -74,6 +74,8 @@ Token end_token(const Lexer* l, TokenStart token_start, TokenKind kind) {
 void lexer_skip_whitespace(Lexer*);
 Token lexer_get_int(Lexer*);
 Token lexer_get_word(Lexer*);
+Token lexer_get_str(Lexer*);
+TokenKind lex_single_char_symbol(char c);
 
 Token lexer_pop(Lexer* lexer) {
     lexer_skip_whitespace(lexer);
@@ -83,8 +85,15 @@ Token lexer_pop(Lexer* lexer) {
     }
 
     const char c = peek(lexer);
+    if (lex_single_char_symbol(c) != TOKEN_KIND_NULL) {
+        const TokenKind kind = lex_single_char_symbol(c);
+        const TokenStart start = start_token(lexer);
+        pop(lexer);
+        return end_token(lexer, start, kind);
+    }
     if (isdigit(c)) return lexer_get_int(lexer);
     if (isalpha(c)) return lexer_get_word(lexer);
+    if (c == '"') return lexer_get_str(lexer);
 
     return end_token(lexer, start_token(lexer), TOKEN_KIND_ERROR);
 }
@@ -112,4 +121,29 @@ Token lexer_get_word(Lexer* lexer) {
     TokenStart t = start_token(lexer);
     while (isalnum(peek(lexer))) pop(lexer);
     return end_token(lexer, t, TOKEN_KIND_WORD);
+}
+
+Token lexer_get_str(Lexer* lexer) {
+    TokenStart t = start_token(lexer);
+    pop(lexer); // Skip the opening quote.
+    while (peek(lexer) != '"') {
+        if (lexer_is_done(lexer)) { // Unterminated string.
+            return end_token(lexer, t, TOKEN_KIND_ERROR);
+        }
+        pop(lexer);
+    }
+    pop(lexer); // Skip the closing quote.
+    return end_token(lexer, t, TOKEN_KIND_STR);
+}
+
+TokenKind lex_single_char_symbol(char c) {
+    switch (c) {
+        case '+': return TOKEN_KIND_PLUS;
+        case '-': return TOKEN_KIND_MINUS;
+        case '*': return TOKEN_KIND_STAR;
+        case '/': return TOKEN_KIND_SLASH;
+        case '(': return TOKEN_KIND_LPAREN;
+        case ')': return TOKEN_KIND_RPAREN;
+        default: return TOKEN_KIND_NULL; // Not a recognized symbol.
+    }
 }
