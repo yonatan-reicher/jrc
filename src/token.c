@@ -12,6 +12,7 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_MINUS: return "MINUS";
         case TOKEN_KIND_STAR: return "STAR";
         case TOKEN_KIND_SLASH: return "SLASH";
+        case TOKEN_KIND_PERCENT: return "PERCENT";
         case TOKEN_KIND_LPAREN: return "LPAREN";
         case TOKEN_KIND_RPAREN: return "RPAREN";
     }

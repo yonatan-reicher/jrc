@@ -9,6 +9,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_ERROR: return "ERROR";
         case AST_INT: return "INT";
         case AST_VAR: return "VAR";
+        case AST_BIN_OP: return "BIN_OP";
     }
 }
 
@@ -16,6 +17,8 @@ Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx) {
     Parser parser = {
         .get_token = get_token,
         .get_token_ctx = get_token_ctx,
+        .has_peeked_token = false,
+        .peeked_token = { 0 },
         .arena = NULL,
         .arena_size = 0,
         .arena_capacity = 0,
@@ -55,10 +58,23 @@ void* alloc(Parser* p, size_t size) {
 #define ALLOC(p, type) (type*)alloc(p, sizeof(type))
 
 Token get_token(Parser* p) {
-    return p->get_token(p->get_token_ctx);
+    if (p->has_peeked_token) {
+        p->has_peeked_token = false;
+        return p->peeked_token;
+    } else {
+        return p->get_token(p->get_token_ctx);
+    }
 }
 
-AstError* err(Parser* p, TextSpan span, const char* message) {
+static Token peek(Parser* p) {
+    if (!p->has_peeked_token) {
+        p->peeked_token = p->get_token(p->get_token_ctx);
+        p->has_peeked_token = true;
+    }
+    return p->peeked_token;
+}
+
+static AstError* err(Parser* p, TextSpan span, const char* message) {
     size_t message_len = strlen(message);
     AstError* ast = alloc(p, sizeof(AstError) + message_len + 1);
     ast->art.kind = AST_ERROR;
@@ -67,7 +83,7 @@ AstError* err(Parser* p, TextSpan span, const char* message) {
     return ast;
 }
 
-Ast* parse_int(Parser* p, Token t) {
+static Ast* parse_int(Parser* p, Token t) {
 #define MSG_INVALID "Invalid integer literal"
 #define MSG_RANGE "Integer literal is too big or too small"
 #define MSG_UNKNOWN "Unknown error while parsing integer literal"
@@ -91,21 +107,149 @@ Ast* parse_int(Parser* p, Token t) {
     return (Ast*)ast;
 }
 
-Ast* parse_var(Parser* p, Token t) {
-    AstVar* ast = ALLOC(p, AstVar);
-    ast->ast.kind = AST_VAR;
-    ast->ast.span = t.span;
+static Ast* parse_var(Parser* p, Token t) {
     size_t name_len = token_len(&t);
+    AstVar* ast = alloc(p, sizeof(AstVar) + name_len + 1);
+    *ast = (AstVar) { { AST_VAR, t.span } };
     memcpy(ast->name, t.text, name_len);
     ast->name[name_len] = '\0';
     return (Ast*)ast;
 }
 
-Ast* parser_parse(Parser* p) {
+static Ast* parse_expr(Parser*);
+
+static Ast* parse_atom(Parser* p) {
     const Token t = get_token(p);
     switch (t.kind) {
         case TOKEN_KIND_INT: return parse_int(p, t);
         case TOKEN_KIND_WORD: return parse_var(p, t);
+        case TOKEN_KIND_LPAREN: {
+            Ast* ast = parse_expr(p);
+            const Token next = get_token(p);
+            if (next.kind != TOKEN_KIND_RPAREN) {
+                return (Ast*)err(p, next.span, "Expected ')'");
+            }
+            return ast;
+        }
         default: return (Ast*)err(p, t.span, "Unexpected token");
     }
+}
+
+BinOpPrecedence bin_op_precedence(BinOp op) {
+    switch (op) {
+        case BIN_OP_ADD:
+        case BIN_OP_SUB: return 50;
+        case BIN_OP_MUL:
+        case BIN_OP_DIV:
+        case BIN_OP_REM: return 100;
+    }
+}
+
+bool bin_op_is_right_associative(BinOp op) {
+    switch (op) {
+        case BIN_OP_ADD:
+        case BIN_OP_SUB:
+        case BIN_OP_MUL:
+        case BIN_OP_DIV:
+        case BIN_OP_REM: return false;
+    }
+}
+
+bool try_parse_bin_op(const Token* t, BinOp* out_op) {
+#define RETURN(SUCCESS, OP)                                                    \
+    do {                                                                       \
+        *out_op = (OP);                                                        \
+        return (SUCCESS);                                                      \
+    } while (0)
+    switch (t->kind) {
+        case TOKEN_KIND_PLUS: RETURN(true, BIN_OP_ADD);
+        case TOKEN_KIND_MINUS: RETURN(true, BIN_OP_SUB);
+        case TOKEN_KIND_STAR: RETURN(true, BIN_OP_MUL);
+        case TOKEN_KIND_SLASH: RETURN(true, BIN_OP_DIV);
+        case TOKEN_KIND_PERCENT: RETURN(true, BIN_OP_REM);
+        case TOKEN_KIND_NULL:
+        case TOKEN_KIND_ERROR:
+        case TOKEN_KIND_EOF:
+        case TOKEN_KIND_INT:
+        case TOKEN_KIND_WORD:
+        case TOKEN_KIND_STR:
+        case TOKEN_KIND_LPAREN:
+        case TOKEN_KIND_RPAREN: RETURN(false, 0);
+    }
+#undef RETURN
+}
+
+bool try_parse_bin_op_min_precedence(
+    const Token* t, BinOp* out_op, BinOpPrecedence min_prec
+) {
+    bool success = try_parse_bin_op(t, out_op);
+    return success && bin_op_precedence(*out_op) >= min_prec;
+}
+
+static Ast* parse_bin_op_expr_with_min_precedence(
+    Parser* p, Ast* lhs, BinOpPrecedence min_prec
+) {
+    Token t = peek(p);
+    BinOp next_op;
+    while (try_parse_bin_op_min_precedence(&t, &next_op, min_prec)) {
+        BinOp op = next_op;
+        get_token(p);
+        Ast* rhs = parse_atom(p);
+        t = peek(p);
+        while (try_parse_bin_op_min_precedence(&t, &next_op, min_prec + 1) ||
+               (try_parse_bin_op_min_precedence(&t, &next_op, min_prec) &&
+                bin_op_is_right_associative(next_op))) {
+            rhs = parse_bin_op_expr_with_min_precedence(
+                p,
+                rhs,
+                bin_op_precedence(op) +
+                    (bin_op_precedence(next_op) > bin_op_precedence(op) ? 1 : 0)
+            );
+            t = peek(p);
+        }
+        AstBinOp* new_left = ALLOC(p, AstBinOp);
+        *new_left = (AstBinOp) {
+            { AST_BIN_OP, { lhs->span.start, rhs->span.end } },
+            op,
+            lhs,
+            rhs,
+        };
+        lhs = (Ast*)new_left;
+    }
+    return lhs;
+
+    // Taken from Wikipedia
+    //
+    // parse_expression()
+    //     return parse_expression_1(parse_primary(), 0)
+    //
+    // parse_expression_1(lhs, min_precedence)
+    //     lookahead := peek next token
+    //     while lookahead is a binary operator whose precedence is >=
+    //     min_precedence
+    //         op := lookahead
+    //         advance to next token
+    //         rhs := parse_primary ()
+    //         lookahead := peek next token
+    //         while lookahead is a binary operator whose precedence is greater
+    //                  than op's, or a right-associative operator
+    //                  whose precedence is equal to op's
+    //             rhs := parse_expression_1 (rhs, precedence of op + (1 if
+    //             lookahead precedence is greater, else 0)) lookahead := peek
+    //             next token
+    //         lhs := the result of applying op with operands lhs and rhs
+    //     return lhs
+    //
+}
+
+static Ast* parse_bin_op_expr(Parser* p) {
+    return parse_bin_op_expr_with_min_precedence(p, parse_atom(p), 0);
+}
+
+static Ast* parse_expr(Parser* p) {
+    return parse_bin_op_expr(p);
+}
+
+Ast* parser_parse(Parser* p) {
+    return parse_expr(p);
 }
