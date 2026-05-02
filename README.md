@@ -28,3 +28,5 @@ Starting work on lexer.
 ## TODO
 
 Integrate with "c-stream", maybe eat it.
+Make an allocator interface, with a malloc allocator, a dynamic arena allocator,
+and a stack arena allocator.
