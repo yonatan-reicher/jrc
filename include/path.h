@@ -11,8 +11,6 @@ typedef struct Path {
     uint16_t n_parts;
 } Path;
 
-DEFINE_PTR_SLICE(char);
-
 /// Returns a new empty path.
 Path path_empty(void);
 bool path_is_empty(const Path *path);
@@ -29,7 +27,7 @@ void path_append(Path *dest, Path src);
 /// Adds a path to another, destroying both.
 Path path_concat(Path lhs, Path rhs);
 /// Builds a path from a slice of parts, as c-strings.
-Path path_of_slice(const PtrSlice(char) parts);
+Path path_of_slice(ConstCharPtrSlice parts);
 /// Clone a path.
 Path path_clone(const Path *p);
 bool path_eq(const Path *a, const Path *b);

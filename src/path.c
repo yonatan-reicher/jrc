@@ -59,7 +59,7 @@ Path path_concat(Path lhs, Path rhs) {
     return path_move(&lhs);
 }
 
-Path path_of_slice(const PtrSlice(char) parts) {
+Path path_of_slice(ConstCharPtrSlice parts) {
     Path ret = path_empty();
     for (uint16_t i = 0; i < parts.len; i++) path_add(&ret, str_clone(parts.ptr[i]));
     return ret;

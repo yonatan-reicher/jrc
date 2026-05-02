@@ -1,9 +1,13 @@
 #include "slice.h"
 #include "basic.h"
 
+void test_slice_empty(void) {
+    CharSlice s = slice_empty();
+    EXPECT(s.ptr == NULL, "Expected empty slice to have NULL pointer");
+    EXPECT(s.len == 0, "Expected empty slice to have length 0");
+}
+
 int main(void) {
-#define MY_STR "Hello world"
-    Slice(char) s = slice_of_str(MY_STR);
-    printf("s: %.*s\n", (int)s.len, s.ptr);
+    test_slice_empty();
     return 0;
 }
