@@ -2,11 +2,16 @@
 # `./build/` directory, built from a C file placed here.
 
 # Assume the library has been built in the expected directory
-LIB       := ../lib/libjrc.a
+LIB       := ../lib/debug/libjrc.a
 TESTS     := $(patsubst %.c,build/%,$(wildcard *.c))
 RUN_TESTS := $(patsubst %.c,run/%,$(wildcard *.c))
 INC_DIRS  := ../include
 CFLAGS    := -g -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIRS)
+
+# Make sure that the library has been built.
+ifeq ($(wildcard $(LIB)),)
+$(error "Library not found at $(LIB). Please build the library before running tests.")
+endif
 
 .PHONY: all clean
 all: $(TESTS) $(RUN_TESTS)
@@ -26,4 +31,4 @@ run/% : | build/%
 	@./build/$*
 
 clean:
-	$(RM) build/*
+	$(RM) -r build

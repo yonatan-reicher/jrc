@@ -2,16 +2,25 @@
 NAME         := jrc
 VERSION      := 0.0.1
 
+# ------ Configuration ---------------------------------------------------------
+# Path for installation.
+PREFIX       ?= /usr/local
+# Compilation profile (release / debug).
+PROFILE      ?= release
+
+# ------ Paths -----------------------------------------------------------------
 # Directories
 SRC_DIR      := src
 # We put the header along with the source files
 INC_DIR      := include
-OBJ_DIR      := obj
-LIB_DIR      := lib
-PREFIX       ?= /usr/local
+OBJ_BASE_DIR      := obj
+LIB_BASE_DIR      := lib
+OBJ_DIR      := $(OBJ_BASE_DIR)/$(PROFILE)
+LIB_DIR      := $(LIB_BASE_DIR)/$(PROFILE)
 INSTALL_LIB  := $(PREFIX)/lib
 INSTALL_INC  := $(PREFIX)/include/$(NAME)
 
+# ------ Files -----------------------------------------------------------------
 # Output
 TARGET       := $(LIB_DIR)/lib$(NAME).a
 
@@ -20,16 +29,26 @@ CC           := gcc
 AR           := ar
 ARFLAGS      := rcs
 CFLAGS       := $(shell cat compile_flags.txt)
-DBGFLAGS     := -g -O0 -DDEBUG
+ifeq ($(PROFILE), debug)
+	CFLAGS += -g -O0 -DDEBUG
+endif
 
 # --- Sources & Objects --------------------------------------------------------
 SRCS         := $(wildcard $(SRC_DIR)/*.c)
 OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # --- Targets ------------------------------------------------------------------
-.PHONY: build debug test clean install uninstall help
+.PHONY: build release debug test clean install uninstall help
 
 build: $(TARGET)
+
+release:
+	# Set the profile to release and recursively call make
+	@$(MAKE) PROFILE=release
+
+debug:
+	# Set the profile to debug and recursively call make
+	@$(MAKE) PROFILE=debug
 
 ## Build the static library
 $(TARGET): $(OBJS) | $(LIB_DIR)
@@ -40,14 +59,9 @@ $(TARGET): $(OBJS) | $(LIB_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-## Debug build (no optimisation, with symbols)
-debug: CFLAGS += $(DBGFLAGS)
-debug: clean $(TARGET)
-
 ## Create output directories if they don't exist
 $(OBJ_DIR) $(LIB_DIR):
 	mkdir -p $@
-
 
 # --- Test ---------------------------------------------------------------------
 # The tests have their own separate makefile, so we just give them the .a file
@@ -71,7 +85,7 @@ uninstall:
 
 # --- Utility ------------------------------------------------------------------
 clean:
-	$(RM) -r $(OBJ_DIR) $(LIB_DIR)
+	$(RM) -r $(OBJ_BASE_DIR) $(LIB_BASE_DIR)
 	@echo "Cleaned build artifacts"
 
 help:
