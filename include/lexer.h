@@ -14,6 +14,7 @@ typedef enum TokenKind {
 
 typedef struct Token {
     TokenKind kind;
+    const char* text;
     TextSpan span;
 } Token;
 
@@ -35,3 +36,5 @@ bool lexer_is_done(const Lexer*);
 Token lexer_pop(Lexer*);
 
 const char* token_kind_name(TokenKind kind);
+
+size_t token_len(const Token* t);

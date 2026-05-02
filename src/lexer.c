@@ -31,6 +31,10 @@ const char* token_kind_name(TokenKind kind) {
     }
 }
 
+size_t token_len(const Token* t) {
+    return t->span.end.index - t->span.start.index;
+}
+
 char peek(const Lexer* lexer) {
     return lexer->text[lexer->pos.index];
 }
@@ -59,12 +63,13 @@ typedef struct TokenStart {
 
 TokenStart start_token(const Lexer* l) {
     return (TokenStart) {
-        .t = (Token) {
+        .t = {
+            .kind = -1, // To be filled!
+            .text = l->text + l->pos.index,
             .span = {
                 .start = l->pos,
                 .end = {}, // To be filled!
             },
-            .kind = -1, // To be filled!
         },
     };
 }
