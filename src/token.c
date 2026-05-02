@@ -7,7 +7,6 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_EOF: return "EOF";
         case TOKEN_KIND_INT: return "INT";
         case TOKEN_KIND_WORD: return "WORD";
-        default: return "UNKNOWN";
     }
 }
 
