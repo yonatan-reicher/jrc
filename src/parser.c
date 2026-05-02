@@ -68,18 +68,21 @@ AstError* err(Parser* p, TextSpan span, const char* message) {
 }
 
 Ast* parse_int(Parser* p, Token t) {
+#define MSG_INVALID "Invalid integer literal"
+#define MSG_RANGE "Integer literal is too big or too small"
+#define MSG_UNKNOWN "Unknown error while parsing integer literal"
     char* end;
     intmax_t i = strtoimax(t.text, &end, 0);
     if (errno) {
         switch (errno) {
-            case EINVAL: return (Ast*)err(p, t.span, "Invalid integer literal");
-            case ERANGE: return (Ast*)err(p, t.span, "Integer literal is too big or too small");
-            default: return (Ast*)err(p, t.span, "Unknown error while parsing integer literal");
+            case EINVAL: return (Ast*)err(p, t.span, MSG_INVALID);
+            case ERANGE: return (Ast*)err(p, t.span, MSG_RANGE);
+            default: return (Ast*)err(p, t.span, MSG_UNKNOWN);
         }
     } else if (end != t.text + token_len(&t)) {
-        return (Ast*)err(p, t.span, "Invalid integer literal");
+        return (Ast*)err(p, t.span, MSG_INVALID);
     } else if (i < INT64_MIN || i > INT64_MAX) {
-        return (Ast*)err(p, t.span, "Integer literal is too big or too small");
+        return (Ast*)err(p, t.span, MSG_RANGE);
     }
     AstInt* ast = ALLOC(p, AstInt);
     ast->ast.kind = AST_INT;
