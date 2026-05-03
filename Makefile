@@ -35,6 +35,7 @@ endif
 
 # --- Sources & Objects --------------------------------------------------------
 SRCS         := $(wildcard $(SRC_DIR)/*.c)
+HEADERS      := $(wildcard $(INC_DIR)/*.h)
 OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # --- Targets ------------------------------------------------------------------
@@ -56,7 +57,7 @@ $(TARGET): $(OBJS) | $(LIB_DIR)
 	@echo "Built static library: $@"
 
 ## Compile each source file into an object file
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 ## Create output directories if they don't exist
