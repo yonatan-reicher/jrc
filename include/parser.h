@@ -22,6 +22,13 @@ BinOpPrecedence bin_op_precedence(BinOp op);
 
 const char* bin_op_to_str(BinOp op);
 
+typedef enum UnaryOp {
+    UNARY_OP_NEG,
+    UNARY_OP_POS,
+} UnaryOp;
+
+const char* unary_op_to_str(UnaryOp op);
+
 // =============================================================================
 //                                   Ast Types
 // =============================================================================
@@ -32,6 +39,8 @@ typedef enum AstKind {
     AST_INT,
     AST_VAR,
     AST_BIN_OP,
+    AST_UNARY_OP,
+    AST_ASSIGN,
 } AstKind;
 
 typedef struct Ast {
@@ -40,6 +49,7 @@ typedef struct Ast {
 } Ast;
 
 typedef struct AstError {
+    /// TODO: rename
     Ast art;
     char message[];
 } AstError;
@@ -60,6 +70,18 @@ typedef struct AstBinOp {
     Ast* left;
     Ast* right;
 } AstBinOp;
+
+typedef struct AstUnaryOp {
+    Ast ast;
+    UnaryOp op;
+    Ast* arg;
+} AstUnaryOp;
+
+typedef struct AstAssign {
+    Ast ast;
+    Ast* rhs;
+    char var[];
+} AstAssign;
 
 typedef struct Parser {
     // Getting tokens
@@ -85,6 +107,9 @@ Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx);
 
 void parser_free(Parser* parser);
 
+/// TODO: Rename to `parser_parse_expr`
 Ast* parser_parse(Parser* parser);
+
+Ast* parser_parse_statement(Parser*);
 
 char* ast_to_str(const Ast* ast);

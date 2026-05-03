@@ -10,7 +10,7 @@
 #include <string.h>
 
 #define DECLARE_SLICE(T, NAME)                                                 \
-    typedef struct {                                                           \
+    typedef struct NAME {                                                      \
         T* ptr;                                                                \
         size_t len;                                                            \
     } NAME

@@ -71,26 +71,28 @@ Token end_token(const Lexer* l, TokenStart token_start, TokenKind kind) {
 // =============================================================================
 
 // Declare some helpers.
-void lexer_skip_whitespace(Lexer*);
-Token lexer_get_int(Lexer*);
-Token lexer_get_word(Lexer*);
-Token lexer_get_str(Lexer*);
-TokenKind lex_single_char_symbol(char c);
+static void lexer_skip_whitespace(Lexer*);
+static Token lexer_get_int(Lexer*);
+static Token lexer_get_word(Lexer*);
+static Token lexer_get_str(Lexer*);
+static Token lexer_get_sym(Lexer*);
 
 Token lexer_pop(Lexer* lexer) {
     lexer_skip_whitespace(lexer);
 
+    // Check EOF
     if (lexer_is_done(lexer)) {
         return end_token(lexer, start_token(lexer), TOKEN_KIND_EOF);
     }
 
-    const char c = peek(lexer);
-    if (lex_single_char_symbol(c) != TOKEN_KIND_NULL) {
-        const TokenKind kind = lex_single_char_symbol(c);
-        const TokenStart start = start_token(lexer);
-        pop(lexer);
-        return end_token(lexer, start, kind);
+    // Check symbols first
+    const Token sym_token = lexer_get_sym(lexer);
+    if (sym_token.kind != TOKEN_KIND_NULL) {
+        return sym_token;
     }
+
+    // Rest of the tokens
+    const char c = peek(lexer);
     if (isdigit(c)) return lexer_get_int(lexer);
     if (isalpha(c)) return lexer_get_word(lexer);
     if (c == '"') return lexer_get_str(lexer);
@@ -136,14 +138,25 @@ Token lexer_get_str(Lexer* lexer) {
     return end_token(lexer, t, TOKEN_KIND_STR);
 }
 
-TokenKind lex_single_char_symbol(char c) {
-    switch (c) {
-        case '+': return TOKEN_KIND_PLUS;
-        case '-': return TOKEN_KIND_MINUS;
-        case '*': return TOKEN_KIND_STAR;
-        case '/': return TOKEN_KIND_SLASH;
-        case '(': return TOKEN_KIND_LPAREN;
-        case ')': return TOKEN_KIND_RPAREN;
+static TokenKind lexer_get_sym_kind(Lexer* l) {
+    switch (peek(l)) {
+        case '+': pop(l); return TOKEN_KIND_PLUS;
+        case '-': pop(l); return TOKEN_KIND_MINUS;
+        case '*': pop(l); return TOKEN_KIND_STAR;
+        case '/': pop(l); return TOKEN_KIND_SLASH;
+        case '(': pop(l); return TOKEN_KIND_LPAREN;
+        case ')': pop(l); return TOKEN_KIND_RPAREN;
+        case ';': pop(l); return TOKEN_KIND_SEMICOLON;
+        case ':':
+            pop(l);
+            return peek(l) == '=' ? (pop(l), TOKEN_KIND_COLON_EQ)
+                                  : TOKEN_KIND_COLON;
         default: return TOKEN_KIND_NULL; // Not a recognized symbol.
     }
+}
+
+static Token lexer_get_sym(Lexer* l) {
+    TokenStart t = start_token(l);
+    const TokenKind kind = lexer_get_sym_kind(l);
+    return end_token(l, t, kind);
 }

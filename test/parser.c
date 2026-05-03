@@ -72,6 +72,7 @@ static void test_order_of_operations(void) {
         text,
         ast_str
     );
+    parser_free(&p);
 }
 
 void test_error_on_unexpected_token(void) {
@@ -84,6 +85,22 @@ void test_error_on_unexpected_token(void) {
         text,
         ast_kind_name(ast->kind)
     );
+    parser_free(&p);
+}
+
+void test_assignment(void) {
+    const char* text = "x := 42;";
+    Parser p = new_parser(text);
+    Ast* ast = parser_parse_statement(&p);
+    char* ast_str = ast_to_str(ast);
+    EXPECT(
+        str_eq(ast_str, text),
+        "expected statement '%s', but got '%s' instead",
+        text,
+        ast_str
+    );
+    free(ast_str);
+    parser_free(&p);
 }
 
 int main(void) {
@@ -92,4 +109,5 @@ int main(void) {
     test_var();
     test_order_of_operations();
     test_error_on_unexpected_token();
+    test_assignment();
 }

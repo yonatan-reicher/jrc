@@ -25,6 +25,12 @@ typedef enum TokenKind {
     TOKEN_KIND_LPAREN,
     /// ')'
     TOKEN_KIND_RPAREN,
+    /// ':='
+    TOKEN_KIND_COLON_EQ,
+    /// ':'
+    TOKEN_KIND_COLON,
+    /// ';'
+    TOKEN_KIND_SEMICOLON,
 } TokenKind;
 
 typedef struct Token {
@@ -40,3 +46,5 @@ typedef struct Token {
 const char* token_kind_name(TokenKind kind);
 
 size_t token_len(const Token* t);
+
+struct ConstCharSlice token_slice(const Token* t);

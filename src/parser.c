@@ -1,8 +1,17 @@
 #include "parser.h"
+#include "basic.h"
+#include "slice.h"
 #include "str.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+const char* unary_op_to_str(UnaryOp op) {
+    switch (op) {
+        case UNARY_OP_NEG: return "-";
+        case UNARY_OP_POS: return "+";
+    }
+}
 
 const char* ast_kind_name(AstKind kind) {
     switch (kind) {
@@ -11,6 +20,8 @@ const char* ast_kind_name(AstKind kind) {
         case AST_INT: return "INT";
         case AST_VAR: return "VAR";
         case AST_BIN_OP: return "BIN_OP";
+        case AST_UNARY_OP: return "UNARY_OP";
+        case AST_ASSIGN: return "ASSIGN";
     }
 }
 
@@ -136,6 +147,37 @@ static Ast* parse_atom(Parser* p) {
     }
 }
 
+static bool try_parse_unary_op(Parser* p, UnaryOp* out_op) {
+    const Token t = peek(p);
+    switch (t.kind) {
+        case TOKEN_KIND_PLUS: *out_op = UNARY_OP_POS; goto single_token_success;
+        case TOKEN_KIND_MINUS:
+            *out_op = UNARY_OP_NEG;
+            goto single_token_success;
+        default: return false;
+    }
+single_token_success:
+    get_token(p);
+    return true;
+}
+
+static Ast* parse_term(Parser* p) {
+    const Token t = peek(p);
+    UnaryOp op;
+    if (try_parse_unary_op(p, &op)) {
+        Ast* arg = parse_term(p);
+        AstUnaryOp* ast = ALLOC(p, AstUnaryOp);
+        *ast = (AstUnaryOp) {
+            { AST_UNARY_OP, { t.span.start, arg->span.end } },
+            op,
+            arg,
+        };
+        return (Ast*)ast;
+    } else {
+        return parse_atom(p);
+    }
+}
+
 BinOpPrecedence bin_op_precedence(BinOp op) {
     switch (op) {
         case BIN_OP_ADD:
@@ -185,7 +227,10 @@ bool try_parse_bin_op(const Token* t, BinOp* out_op) {
         case TOKEN_KIND_WORD:
         case TOKEN_KIND_STR:
         case TOKEN_KIND_LPAREN:
-        case TOKEN_KIND_RPAREN: RETURN(false, 0);
+        case TOKEN_KIND_RPAREN:
+        case TOKEN_KIND_COLON_EQ:
+        case TOKEN_KIND_COLON:
+        case TOKEN_KIND_SEMICOLON: RETURN(false, 0);
     }
 #undef RETURN
 }
@@ -206,7 +251,7 @@ static Ast* parse_bin_op_expr_with_min_precedence(
         BinOp op = next_op;
         BinOpPrecedence op_prec = bin_op_precedence(op);
         get_token(p);
-        Ast* rhs = parse_atom(p);
+        Ast* rhs = parse_term(p);
         t = peek(p);
         while (try_parse_bin_op_min_precedence(&t, &next_op, op_prec + 1) ||
                (try_parse_bin_op_min_precedence(&t, &next_op, op_prec) &&
@@ -253,11 +298,44 @@ static Ast* parse_bin_op_expr_with_min_precedence(
 }
 
 static Ast* parse_bin_op_expr(Parser* p) {
-    return parse_bin_op_expr_with_min_precedence(p, parse_atom(p), 0);
+    return parse_bin_op_expr_with_min_precedence(p, parse_term(p), 0);
 }
 
 static Ast* parse_expr(Parser* p) {
     return parse_bin_op_expr(p);
+}
+
+static Ast* parser_assign(Parser* p) {
+    const Token var = get_token(p);
+    if (var.kind != TOKEN_KIND_WORD) {
+        PANIC("this should never happen!");
+    }
+    const Token op = get_token(p);
+    if (op.kind != TOKEN_KIND_COLON_EQ) {
+        return (Ast*)err(p, op.span, "expected a ':=' here");
+    }
+    Ast* rhs = parse_expr(p);
+    const Token end = get_token(p);
+    if (end.kind != TOKEN_KIND_SEMICOLON) {
+        free(rhs);
+        return (Ast*)err(p, end.span, "expected ';' here");
+    }
+    AstAssign* ret = alloc(p, sizeof(AstAssign) + token_len(&var) + 1);
+    *ret = (AstAssign) {
+        { AST_ASSIGN, { var.span.start, rhs->span.end } },
+        rhs,
+    };
+    ConstCharSlice var_slice = token_slice(&var);
+    memcpy(ret->var, var_slice.ptr, var_slice.len);
+    return (Ast*)ret;
+}
+
+Ast* parser_parse_statement(Parser* p) {
+    const Token t = peek(p);
+    switch (t.kind) {
+        case TOKEN_KIND_WORD: return parser_assign(p);
+        default: return (Ast*)err(p, t.span, "not start of a statement");
+    }
 }
 
 Ast* parser_parse(Parser* p) {
@@ -268,10 +346,6 @@ Ast* parser_parse(Parser* p) {
 
 char* ast_int_to_str(const AstInt* ast) {
     return str_format("%" PRId64, ast->value);
-}
-
-char* ast_error_to_str(const AstError* err) {
-    return str_clone(err->message);
 }
 
 char* ast_var_to_str(const AstVar* ast) {
@@ -288,12 +362,37 @@ char* ast_bin_op_to_str(const AstBinOp* ast) {
     return result;
 }
 
+static char* ast_unary_op_to_str(const AstUnaryOp* ast) {
+    char* arg = ast_to_str(ast->arg);
+    const char* op_str = unary_op_to_str(ast->op);
+    char* result = str_format("%s%s", op_str, arg);
+    free(arg);
+    return result;
+}
+
+static char* ast_assign_to_str(const AstAssign* ast) {
+    char* arg = ast_to_str(ast->rhs);
+    char* ret = str_format("%s := %s;", ast->var, arg);
+    free(arg);
+    return ret;
+}
+
+static char* ast_error_to_str(const AstError* ast) {
+    return str_format(
+        "<ERROR on " TEXT_SPAN_PRINTF_FORMAT ": %s>",
+        TEXT_SPAN_PRINTF(ast->art.span),
+        ast->message
+    );
+}
+
 char* ast_to_str(const Ast* ast) {
     switch (ast->kind) {
         case AST_NULL: return str_clone("<NULL>");
-        case AST_ERROR: return str_clone("<ERROR>");
+        case AST_ERROR: return ast_error_to_str((AstError*)ast);
         case AST_INT: return ast_int_to_str((AstInt*)ast);
         case AST_VAR: return ast_var_to_str((AstVar*)ast);
         case AST_BIN_OP: return ast_bin_op_to_str((AstBinOp*)ast);
+        case AST_UNARY_OP: return ast_unary_op_to_str((AstUnaryOp*)ast);
+        case AST_ASSIGN: return ast_assign_to_str((AstAssign*)ast);
     }
 }

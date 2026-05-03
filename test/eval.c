@@ -4,7 +4,7 @@
 #include "basic.h"
 
 void test_operators(void) {
-    const char* text = "1 + 2 * 3 - 4 / 5 % 6";
+    const char* text = "1 + 2 * ---3 - 4 / 5 % 6";
     Lexer l = lexer_new(text);
     Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
     Ast* ast = parser_parse(&p);
@@ -16,7 +16,7 @@ void test_operators(void) {
         v.kind
     );
     EXPECT(
-        v.data.i == 1 + 2 * 3 - 4 / 5 % 6,
+        v.data.i == 1 + 2 * -(-(-3)) - 4 / 5 % 6,
         "expected value %d on input '%s', got %" PRId64,
         1 + 2 * 3 - 4 / 5 % 6,
         text,
@@ -26,7 +26,17 @@ void test_operators(void) {
     lexer_free(&l);
 }
 
+void test_var_eval_not_defined(void) {
+    const char* text = "foo";
+    Lexer l = lexer_new(text);
+    Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
+    Ast* ast = parser_parse(&p);
+    Value v = eval(ast);
+    (void)v;
+}
+
 int main(void) {
     test_operators();
+    test_var_eval_not_defined();
     return 0;
 }

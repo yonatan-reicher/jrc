@@ -1,4 +1,5 @@
 #include "token.h"
+#include "slice.h"
 
 const char* token_kind_name(TokenKind kind) {
     switch (kind) {
@@ -15,9 +16,16 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_PERCENT: return "PERCENT";
         case TOKEN_KIND_LPAREN: return "LPAREN";
         case TOKEN_KIND_RPAREN: return "RPAREN";
+        case TOKEN_KIND_COLON: return "COLON";
+        case TOKEN_KIND_SEMICOLON: return "SEMICOLON";
+        case TOKEN_KIND_COLON_EQ: return "COLON-EQ";
     }
 }
 
 size_t token_len(const Token* t) {
     return t->span.end.index - t->span.start.index;
+}
+
+ConstCharSlice token_slice(const Token* t) {
+    return (ConstCharSlice)slice(t->text + t->span.start.index, token_len(t));
 }
