@@ -9,3 +9,9 @@ void str_remove_newline(char *str);
 #define str_eq(A, B) (strcmp(A, B) == 0)
 /// Duplicate the string. Must be freed!
 char* str_clone(const char *str);
+/// Takes a c-string, owned, and returns it as a character array. The string
+/// becomes owned by the array.
+struct CharArray str_to_array(char* str);
+/// Format a string using `printf`-style formatting. The returned string must be
+/// freed.
+char* str_format(const char* fmt, ...);

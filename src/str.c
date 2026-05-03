@@ -1,5 +1,8 @@
 #include "string.h"
+#include "array.h"
 #include <stdbool.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 bool str_starts_with(const char *str, const char *prefix)
 {
@@ -32,4 +35,27 @@ char* str_clone(const char *s) {
     if (ret == NULL) return NULL;
     memcpy(ret, s, len + 1);
     return ret;
+}
+
+CharArray str_to_array(char* str) {
+    size_t len = strlen(str);
+    CharArray arr = { .ptr = str, .len = len, .cap = len };
+    return arr;
+}
+
+char* str_format(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    // Get the length of the formatted string.
+    int len = vsnprintf(NULL, 0, fmt, args);
+    va_end(args);
+    if (len < 0) return NULL;
+    // Allocate a buffer for the formatted string.
+    char* buf = malloc(len + 1);
+    if (buf == NULL) return NULL;
+    // Write the formatted string to the buffer.
+    va_start(args, fmt);
+    vsnprintf(buf, len + 1, fmt, args);
+    va_end(args);
+    return buf;
 }
