@@ -64,3 +64,11 @@
          ? (PANIC("cannot get first element of empty array"), (ARR)->ptr[0])   \
          : (ARR)->ptr[0])
 #define array_last(ARR) ((ARR)->ptr[(ARR)->len - 1])
+
+// =============================================================================
+//                            Some Array Declarations
+// =============================================================================
+
+DECLARE_ARRAY(char, CharArray);
+DECLARE_ARRAY(char*, CharPtrArray);
+DECLARE_ARRAY(const char*, ConstCharPtrArray);

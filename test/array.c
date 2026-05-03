@@ -1,8 +1,6 @@
 #include "array.h"
 #include "basic.h"
 
-DECLARE_ARRAY(char, CharArray);
-
 void test_empty_array(void) {
     CharArray arr = array_empty();
     EXPECT(arr.ptr == NULL, "Expected empty array to have NULL pointer");
