@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "str.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -145,6 +146,16 @@ BinOpPrecedence bin_op_precedence(BinOp op) {
     }
 }
 
+const char* bin_op_to_str(BinOp op) {
+    switch (op) {
+        case BIN_OP_ADD: return "+";
+        case BIN_OP_SUB: return "-";
+        case BIN_OP_MUL: return "*";
+        case BIN_OP_DIV: return "/";
+        case BIN_OP_REM: return "%";
+    }
+}
+
 bool bin_op_is_right_associative(BinOp op) {
     switch (op) {
         case BIN_OP_ADD:
@@ -193,17 +204,16 @@ static Ast* parse_bin_op_expr_with_min_precedence(
     BinOp next_op;
     while (try_parse_bin_op_min_precedence(&t, &next_op, min_prec)) {
         BinOp op = next_op;
+        BinOpPrecedence op_prec = bin_op_precedence(op);
         get_token(p);
         Ast* rhs = parse_atom(p);
         t = peek(p);
-        while (try_parse_bin_op_min_precedence(&t, &next_op, min_prec + 1) ||
-               (try_parse_bin_op_min_precedence(&t, &next_op, min_prec) &&
+        while (try_parse_bin_op_min_precedence(&t, &next_op, op_prec + 1) ||
+               (try_parse_bin_op_min_precedence(&t, &next_op, op_prec) &&
                 bin_op_is_right_associative(next_op))) {
+            const BinOpPrecedence next_op_prec = bin_op_precedence(next_op);
             rhs = parse_bin_op_expr_with_min_precedence(
-                p,
-                rhs,
-                bin_op_precedence(op) +
-                    (bin_op_precedence(next_op) > bin_op_precedence(op) ? 1 : 0)
+                p, rhs, op_prec + (next_op_prec > op_prec ? 1 : 0)
             );
             t = peek(p);
         }
@@ -252,4 +262,38 @@ static Ast* parse_expr(Parser* p) {
 
 Ast* parser_parse(Parser* p) {
     return parse_expr(p);
+}
+
+// ------ Pretty Printing ------------------------------------------------------
+
+char* ast_int_to_str(const AstInt* ast) {
+    return str_format("%" PRId64, ast->value);
+}
+
+char* ast_error_to_str(const AstError* err) {
+    return str_clone(err->message);
+}
+
+char* ast_var_to_str(const AstVar* ast) {
+    return str_clone(ast->name);
+}
+
+char* ast_bin_op_to_str(const AstBinOp* ast) {
+    char* left = ast_to_str(ast->left);
+    char* right = ast_to_str(ast->right);
+    const char* op_str = bin_op_to_str(ast->op);
+    char* result = str_format("(%s %s %s)", left, op_str, right);
+    free(left);
+    free(right);
+    return result;
+}
+
+char* ast_to_str(const Ast* ast) {
+    switch (ast->kind) {
+        case AST_NULL: return str_clone("<NULL>");
+        case AST_ERROR: return str_clone("<ERROR>");
+        case AST_INT: return ast_int_to_str((AstInt*)ast);
+        case AST_VAR: return ast_var_to_str((AstVar*)ast);
+        case AST_BIN_OP: return ast_bin_op_to_str((AstBinOp*)ast);
+    }
 }

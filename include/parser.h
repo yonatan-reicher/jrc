@@ -20,6 +20,8 @@ typedef uint16_t BinOpPrecedence;
 
 BinOpPrecedence bin_op_precedence(BinOp op);
 
+const char* bin_op_to_str(BinOp op);
+
 // =============================================================================
 //                                   Ast Types
 // =============================================================================
@@ -84,3 +86,5 @@ Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx);
 void parser_free(Parser* parser);
 
 Ast* parser_parse(Parser* parser);
+
+char* ast_to_str(const Ast* ast);
