@@ -6,25 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char* unary_op_to_str(UnaryOp op) {
-    switch (op) {
-        case UNARY_OP_NEG: return "-";
-        case UNARY_OP_POS: return "+";
-    }
-}
-
-const char* ast_kind_name(AstKind kind) {
-    switch (kind) {
-        case AST_NULL: return "NULL";
-        case AST_ERROR: return "ERROR";
-        case AST_INT: return "INT";
-        case AST_VAR: return "VAR";
-        case AST_BIN_OP: return "BIN_OP";
-        case AST_UNARY_OP: return "UNARY_OP";
-        case AST_ASSIGN: return "ASSIGN";
-    }
-}
-
 Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx) {
     Parser parser = {
         .get_token = get_token,
@@ -178,36 +159,6 @@ static Ast* parse_term(Parser* p) {
     }
 }
 
-BinOpPrecedence bin_op_precedence(BinOp op) {
-    switch (op) {
-        case BIN_OP_ADD:
-        case BIN_OP_SUB: return 50;
-        case BIN_OP_MUL:
-        case BIN_OP_DIV:
-        case BIN_OP_REM: return 100;
-    }
-}
-
-const char* bin_op_to_str(BinOp op) {
-    switch (op) {
-        case BIN_OP_ADD: return "+";
-        case BIN_OP_SUB: return "-";
-        case BIN_OP_MUL: return "*";
-        case BIN_OP_DIV: return "/";
-        case BIN_OP_REM: return "%";
-    }
-}
-
-bool bin_op_is_right_associative(BinOp op) {
-    switch (op) {
-        case BIN_OP_ADD:
-        case BIN_OP_SUB:
-        case BIN_OP_MUL:
-        case BIN_OP_DIV:
-        case BIN_OP_REM: return false;
-    }
-}
-
 bool try_parse_bin_op(const Token* t, BinOp* out_op) {
 #define RETURN(SUCCESS, OP)                                                    \
     do {                                                                       \
@@ -340,59 +291,4 @@ Ast* parser_parse_statement(Parser* p) {
 
 Ast* parser_parse(Parser* p) {
     return parse_expr(p);
-}
-
-// ------ Pretty Printing ------------------------------------------------------
-
-char* ast_int_to_str(const AstInt* ast) {
-    return str_format("%" PRId64, ast->value);
-}
-
-char* ast_var_to_str(const AstVar* ast) {
-    return str_clone(ast->name);
-}
-
-char* ast_bin_op_to_str(const AstBinOp* ast) {
-    char* left = ast_to_str(ast->left);
-    char* right = ast_to_str(ast->right);
-    const char* op_str = bin_op_to_str(ast->op);
-    char* result = str_format("(%s %s %s)", left, op_str, right);
-    free(left);
-    free(right);
-    return result;
-}
-
-static char* ast_unary_op_to_str(const AstUnaryOp* ast) {
-    char* arg = ast_to_str(ast->arg);
-    const char* op_str = unary_op_to_str(ast->op);
-    char* result = str_format("%s%s", op_str, arg);
-    free(arg);
-    return result;
-}
-
-static char* ast_assign_to_str(const AstAssign* ast) {
-    char* arg = ast_to_str(ast->rhs);
-    char* ret = str_format("%s := %s;", ast->var, arg);
-    free(arg);
-    return ret;
-}
-
-static char* ast_error_to_str(const AstError* ast) {
-    return str_format(
-        "<ERROR on " TEXT_SPAN_PRINTF_FORMAT ": %s>",
-        TEXT_SPAN_PRINTF(ast->art.span),
-        ast->message
-    );
-}
-
-char* ast_to_str(const Ast* ast) {
-    switch (ast->kind) {
-        case AST_NULL: return str_clone("<NULL>");
-        case AST_ERROR: return ast_error_to_str((AstError*)ast);
-        case AST_INT: return ast_int_to_str((AstInt*)ast);
-        case AST_VAR: return ast_var_to_str((AstVar*)ast);
-        case AST_BIN_OP: return ast_bin_op_to_str((AstBinOp*)ast);
-        case AST_UNARY_OP: return ast_unary_op_to_str((AstUnaryOp*)ast);
-        case AST_ASSIGN: return ast_assign_to_str((AstAssign*)ast);
-    }
 }
