@@ -15,7 +15,7 @@
 #include <stddef.h>
 
 #define DECLARE_ARRAY(T, Name)                                                 \
-    typedef struct {                                                           \
+    typedef struct Name {                                                      \
         T* ptr;                                                                \
         size_t len;                                                            \
         size_t cap;                                                            \
