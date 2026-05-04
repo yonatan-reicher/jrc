@@ -13,7 +13,7 @@ all: check-lib $(TESTS) $(RUN_TESTS)
 	@echo 'All tests successful ✓'
 
 # This is the rule for building an individual test.
-build/%: %.c $(LIB) build
+build/%: %.c $(LIB) | build
 	$(CC) $(CFLAGS) -o $@ $< $(LIB)
 
 build:
