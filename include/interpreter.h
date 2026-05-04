@@ -1,6 +1,5 @@
 #pragma once
-// TODO: #include "ast.h"
-#include "parser.h"
+#include "ast.h"
 
 typedef enum ValueKind {
     VALUE_INT,
