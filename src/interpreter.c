@@ -1,11 +1,6 @@
 #include "interpreter.h"
 #include "basic.h"
 
-Value value_int(int64_t i) {
-    Value value = { VALUE_INT, { .i = i } };
-    return value;
-}
-
 bool try_apply_bin_op(BinOp op, Value lhs, Value rhs, Value* out) {
     if (lhs.kind != VALUE_INT || rhs.kind != VALUE_INT) {
         return false;
