@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdarg.h>
 
 /// Does the first c-string begin with the second?
 bool str_starts_with(const char *str, const char *prefix);
@@ -15,3 +16,4 @@ struct CharArray str_to_array(char* str);
 /// Format a string using `printf`-style formatting. The returned string must be
 /// freed.
 char* str_format(const char* fmt, ...);
+char* str_format_va_list(const char* fmt, va_list args);
