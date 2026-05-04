@@ -87,6 +87,7 @@ uninstall:
 # --- Utility ------------------------------------------------------------------
 clean:
 	$(RM) -r $(OBJ_BASE_DIR) $(LIB_BASE_DIR)
+	cd test && make clean
 	@echo "Cleaned build artifacts"
 
 help:
