@@ -8,7 +8,8 @@ void test_operators(void) {
     Lexer l = lexer_new(text);
     Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
     Ast* ast = parser_parse(&p);
-    Value v = eval(ast);
+    Interpreter i = interpreter_new();
+    Value v = interpreter_eval_expr(&i, ast);
     EXPECT(
         v.kind == VALUE_INT,
         "expected an integer value on input '%s', got %d",
@@ -22,6 +23,7 @@ void test_operators(void) {
         text,
         v.data.i
     );
+    interpreter_free(&i);
     parser_free(&p);
     lexer_free(&l);
 }
@@ -31,12 +33,31 @@ void test_var_eval_not_defined(void) {
     Lexer l = lexer_new(text);
     Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
     Ast* ast = parser_parse(&p);
-    Value v = eval(ast);
+    Interpreter i = interpreter_new();
+    Value v = interpreter_eval_expr(&i, ast);
     (void)v;
+}
+
+void test_assignment(void) {
+    const char* test = "foo := 42;";
+    Lexer l = lexer_new(test);
+    Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
+    Ast* ast = parser_parse_statement(&p);
+    Interpreter i = interpreter_new();
+    interpreter_execute_statement(&i, ast);
+    Value v;
+    const bool success = interpreter_get_var(&i, "foo", &v);
+    EXPECT(success, "expected variable 'foo' to be defined after assignment");
+    EXPECT(v.kind == VALUE_INT, "expected variable 'foo' to be an integer");
+    EXPECT(v.data.i == 42, "expected variable 'foo' to have value 42");
+    interpreter_free(&i);
+    parser_free(&p);
+    lexer_free(&l);
 }
 
 int main(void) {
     test_operators();
     test_var_eval_not_defined();
+    test_assignment();
     return 0;
 }
