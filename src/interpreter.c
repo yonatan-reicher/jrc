@@ -1,4 +1,4 @@
-#include "eval.h"
+#include "interpreter.h"
 #include "basic.h"
 
 Value value_int(int64_t i) {
@@ -25,7 +25,6 @@ bool try_apply_bin_op(BinOp op, Value lhs, Value rhs, Value* out) {
 static Value var_eval(const AstVar* ast) {
     PANIC("cannot evaluate variable '%s'", ast->name);
 }
-
 
 static Value bin_op_eval(const AstBinOp* ast) {
     const Value left = eval(ast->left);

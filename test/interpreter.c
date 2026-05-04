@@ -1,7 +1,7 @@
-#include "eval.h"
-#include "parser.h"
-#include "lexer.h"
+#include "interpreter.h"
 #include "basic.h"
+#include "lexer.h"
+#include "parser.h"
 
 void test_operators(void) {
     const char* text = "1 + 2 * ---3 - 4 / 5 % 6";
