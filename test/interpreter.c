@@ -35,7 +35,18 @@ void test_var_eval_not_defined(void) {
     Ast* ast = parser_parse(&p);
     Interpreter i = interpreter_new();
     Value v = interpreter_eval_expr(&i, ast);
-    (void)v;
+    EXPECT(
+        v.kind == VALUE_NULL,
+        "expected null value when evaluating undefined variable, got %d",
+        v.kind
+    );
+    EXPECT(
+        interpreter_has_error(&i),
+        "expected an error when evaluating undefined variable, but no error was set"
+    );
+    interpreter_free(&i);
+    parser_free(&p);
+    lexer_free(&l);
 }
 
 void test_assignment(void) {

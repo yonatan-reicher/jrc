@@ -1,9 +1,16 @@
 #include "interpreter.h"
 #include "basic.h"
 #include "str.h"
+#include <stdarg.h>
+
+// Let's define some shortcuts for this document
+#define eval(ast) interpreter_eval_expr(i, ast)
+#define execute(ast) interpreter_execute_statement(i, ast)
+#define set_error(span, fmt, ...)                                              \
+    interpreter_set_error(i, span, fmt, __VA_ARGS__)
 
 Interpreter interpreter_new(void) {
-    return (Interpreter) { { array_empty() } };
+    return (Interpreter) { { array_empty() }, NULL, {} };
 }
 
 static void var_table_entry_free(VarTableEntry* self) {
@@ -38,9 +45,29 @@ bool interpreter_get_var(
     return false;
 }
 
-#define eval(ast) interpreter_eval_expr(i, ast)
+bool interpreter_has_error(const Interpreter* self) {
+    return self->error != NULL;
+}
 
-bool try_apply_bin_op(BinOp op, Value lhs, Value rhs, Value* out) {
+void interpreter_set_error(
+    Interpreter* self, TextSpan span, const char* fmt, ...
+) {
+    va_list args;
+    va_start(args, fmt);
+    char* error = str_format_va_list(fmt, args);
+    va_end(args);
+    free(self->error);
+    self->error = error;
+    self->error_span = span;
+}
+
+void interpreter_clear_error(Interpreter* self) {
+    free(self->error);
+    self->error = NULL;
+    self->error_span = (TextSpan) { 0 };
+}
+
+static bool try_apply_bin_op(BinOp op, Value lhs, Value rhs, Value* out) {
     if (lhs.kind != VALUE_INT || rhs.kind != VALUE_INT) {
         return false;
     }
@@ -59,7 +86,8 @@ bool try_apply_bin_op(BinOp op, Value lhs, Value rhs, Value* out) {
 static Value var_eval(Interpreter* i, const AstVar* ast) {
     Value value;
     if (!interpreter_get_var(i, ast->name, &value)) {
-        PANIC("cannot evaluate variable '%s'", ast->name);
+        set_error(ast->ast.span, "undefined variable '%s'", ast->name);
+        return value_null();
     }
     return value;
 }
@@ -67,19 +95,38 @@ static Value var_eval(Interpreter* i, const AstVar* ast) {
 static Value bin_op_eval(Interpreter* i, const AstBinOp* ast) {
     const Value left = eval(ast->left);
     const Value right = eval(ast->right);
+    if (interpreter_has_error(i)) return value_null();
     Value result;
     if (!try_apply_bin_op(ast->op, left, right, &result)) {
-        char* ast_str = ast_to_str((Ast*)ast);
-        PANIC("cannot evaluate AST:\n%s", ast_str);
+        char* left_str = value_to_str(left);
+        char* right_str = value_to_str(right);
+        set_error(
+            ast->ast.span,
+            "cannot apply binary operator '%s' to values '%s' and '%s'",
+            bin_op_symbol(ast->op),
+            left_str,
+            right_str
+        );
+        free(left_str);
+        free(right_str);
+        return value_null();
     }
     return result;
 }
 
 static Value unary_op_eval(Interpreter* i, const AstUnaryOp* ast) {
     const Value arg = eval(ast->arg);
+    if (interpreter_has_error(i)) return value_null();
     if (arg.kind != VALUE_INT) {
-        char* ast_str = ast_to_str((Ast*)ast);
-        PANIC("cannot evaluate AST:\n%s", ast_str);
+        char* arg_str = value_to_str(arg);
+        set_error(
+            ast->ast.span,
+            "cannot apply unary operator '%s' to value '%s'",
+            unary_op_symbol(ast->op),
+            arg_str
+        );
+        free(arg_str);
+        return value_null();
     }
     switch (ast->op) {
         case UNARY_OP_NEG: return value_int(-arg.data.i);
@@ -88,6 +135,7 @@ static Value unary_op_eval(Interpreter* i, const AstUnaryOp* ast) {
 }
 
 Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
+    if (interpreter_has_error(i)) return value_null();
     switch (ast->kind) {
         case AST_INT: return value_int(((AstInt*)ast)->value);
         case AST_VAR: return var_eval(i, (AstVar*)ast);
@@ -102,6 +150,7 @@ Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
 }
 
 void interpreter_execute_statement(Interpreter* i, const Ast* ast) {
+    if (interpreter_has_error(i)) return;
     switch (ast->kind) {
         case AST_ASSIGN: {
             const AstAssign* assign = (AstAssign*)ast;
