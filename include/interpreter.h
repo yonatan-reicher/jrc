@@ -5,6 +5,7 @@ typedef enum ValueKind {
     VALUE_INT,
 } ValueKind;
 
+// TODO: Move to value.h
 typedef struct Value {
     ValueKind kind;
     union {
