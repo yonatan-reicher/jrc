@@ -8,17 +8,22 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 
 ## Provides
 
-### `basic.h`
-- `UNUSED(X)`
-- `STR(X)`
-- `ARRAY_LEN(A)`
-- `PANIC(PRINTF_FORMAT, ...ARGS)`
-- `WARNING(PRINTF_FORMAT, ...ARGS)`
+### General Purpose
+- **array.h** - Growing arrays, like in a modern language.
+- **basic.h** - Some basic utilities to make you want to always include this file.
+- **macro.h** - Advanced macro utilities, not yet ready for use.
+- **path.h** - A path type for working with files and file systems.
+- **slice.h** - A slice type, that is, a pointer and a length.
+- **str.h** - Working with strings.
 
-### `string.h`
-- `str_starts_with(str, prefix)`
-- `str_remove_newline(str)`
-- `str_eq(a, b)`
+### Programming Language Tools
+- **text_pos.h** - Definitions for tracking source code positions.
+- **token.h** - A token fit for a programming language.
+- **lexer.h** - Tokenizes a string.
+- **ast.h** - An Abstract Syntax Tree with some source info.
+- **parser.h** - Parses tokens into an AST.
+- **value.h** - A thing able to hold many kinds of general values.
+- **interpreter.h** - A simple interpreter.
 
 ## Currently Working On
 
