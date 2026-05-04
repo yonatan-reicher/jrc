@@ -8,13 +8,8 @@ RUN_TESTS := $(patsubst %.c,run/%,$(wildcard *.c))
 INC_DIRS  := ../include
 CFLAGS    := -g -Wall -Wextra -Wpedantic -std=c23 -I$(INC_DIRS)
 
-# Make sure that the library has been built.
-ifeq ($(wildcard $(LIB)),)
-$(error "Library not found at $(LIB). Please build the library before running tests.")
-endif
-
-.PHONY: all clean
-all: $(TESTS) $(RUN_TESTS)
+.PHONY: all clean check-lib
+all: check-lib $(TESTS) $(RUN_TESTS)
 	@echo 'All tests successful ✓'
 
 # This is the rule for building an individual test.
@@ -32,3 +27,10 @@ run/% : | build/%
 
 clean:
 	$(RM) -r build
+
+# Make sure that the library has been built.
+check-lib:
+	@if [ ! -f $(LIB) ]; then \
+		echo "Error: Library not found at $(LIB). Please build the library first."; \
+		exit 1; \
+	fi
