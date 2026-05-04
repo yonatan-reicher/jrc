@@ -10,6 +10,7 @@
 // -----------------------------------------------------------------------------
 
 typedef enum ValueKind {
+    VALUE_NULL,
     VALUE_INT,
 } ValueKind;
 
@@ -21,5 +22,7 @@ typedef struct Value {
 } Value;
 
 Value value_int(int64_t);
+
+Value value_null(void);
 
 char* value_to_str(Value);
