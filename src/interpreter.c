@@ -35,7 +35,6 @@ bool interpreter_get_var(
             return true;
         }
     }
-    *out = value_null();
     return false;
 }
 
