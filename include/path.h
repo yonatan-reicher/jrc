@@ -4,6 +4,34 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+// =============================================================================
+//                                    Path.h
+// =============================================================================
+// A path is a platform-agnostic file-system path. It stores it's part as a
+// list, and concatenates them when you ask for a string representation. The
+// string representation is useful, but currently it isn't cached inside the
+// structure. I am planning to make it do that.
+//
+// Ideally, this module would be enough to replace common `FILE*` use cases and
+// expand it to work with directories and everything you might want to do with
+// systems and paths. This is far from happening. Currently, we support:
+// 1) Creating, cloning, editing, and parsing paths.
+// 2) Creating special paths (for now we have `home` and `cwd`).
+// 3) Expanding paths ('~' and '.').
+// We would like to also support:
+// - Checking if a path exists.
+// - Is it a file or a directory?
+// - Read/write/append a file.
+// - Check if a file is readable/writeable/append-able.
+// - List a directory.
+// - Is a file a link?
+// - Read a link.
+// - Use a different allocator for easier memory management.
+//
+// It would also be nice to separate the functions to different categories
+// within this file.
+// -----------------------------------------------------------------------------
+
 /// A platform-agnostic file-system path.
 typedef struct Path {
     /// An array of path parts.
