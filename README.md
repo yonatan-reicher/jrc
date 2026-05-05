@@ -10,7 +10,8 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 
 ### General Purpose
 - **array.h** - Growing arrays, like in a modern language.
-- **basic.h** - Some basic utilities to make you want to always include this file.
+- **basic.h** - Some basic utilities to make you want to always include this
+  file.
 - **macro.h** - Advanced macro utilities, not yet ready for use.
 - **path.h** - A path type for working with files and file systems.
 - **slice.h** - A slice type, that is, a pointer and a length.
@@ -27,7 +28,7 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 
 ## More Documentation
 
-Checkout [[currently-working-on.md]] to see what I've started and haven't
-finished. [[todo.md]] has a list of things I want to do but haven't gotten to
-yet. The file [[documentation-style.md]] has notes on how to read and write
-documentation for this project.
+Checkout [currently working on](currently-working-on.md) to see what I've
+started and haven't finished. [Todo](todo.md) has a list of things I want to do
+but haven't gotten to yet. The file [document style](documentation-style.md) has
+notes on how to read and write documentation for this project.
