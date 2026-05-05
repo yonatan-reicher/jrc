@@ -181,7 +181,11 @@ bool try_parse_bin_op(const Token* t, BinOp* out_op) {
         case TOKEN_KIND_RPAREN:
         case TOKEN_KIND_COLON_EQ:
         case TOKEN_KIND_COLON:
-        case TOKEN_KIND_SEMICOLON: RETURN(false, 0);
+        case TOKEN_KIND_SEMICOLON:
+        case TOKEN_KIND_LSQUARE:
+        case TOKEN_KIND_RSQUARE:
+        case TOKEN_KIND_LCURLY:
+        case TOKEN_KIND_RCURLY: RETURN(false, 0);
     }
 #undef RETURN
 }

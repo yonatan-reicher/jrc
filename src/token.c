@@ -19,6 +19,10 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_COLON: return "COLON";
         case TOKEN_KIND_SEMICOLON: return "SEMICOLON";
         case TOKEN_KIND_COLON_EQ: return "COLON-EQ";
+        case TOKEN_KIND_LSQUARE: return "LSQUARE";
+        case TOKEN_KIND_RSQUARE: return "RSQUARE";
+        case TOKEN_KIND_LCURLY: return "LCURLY";
+        case TOKEN_KIND_RCURLY: return "RCURLY";
     }
 }
 

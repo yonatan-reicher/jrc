@@ -123,11 +123,28 @@ void test_symbols(void) {
     }
 }
 
+void test_brackets(void) {
+    const char* text = "[]{}";
+    Lexer l = lexer_new(text);
+    const Token expected[] = {
+        NEW_TOKEN(LSQUARE, 0, 1, 1, 1),
+        NEW_TOKEN(RSQUARE, 1, 1, 2, 1),
+        NEW_TOKEN(LCURLY, 2, 1, 3, 1),
+        NEW_TOKEN(RCURLY, 3, 1, 4, 1),
+    };
+    for (size_t i = 0; i < ARRAY_LEN(expected); i++) {
+        const Token token = lexer_pop(&l);
+        EXPECT_TOKEN_EQ(token, expected[i]);
+    }
+    lexer_free(&l);
+}
+
 int main(void) {
     test_eof();
     test_single_int();
     test_ints_with_whitespace();
     test_ints_with_words();
     test_symbols();
+    test_brackets();
     return 0;
 }

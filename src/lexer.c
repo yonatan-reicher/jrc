@@ -146,6 +146,10 @@ static TokenKind lexer_get_sym_kind(Lexer* l) {
         case '/': pop(l); return TOKEN_KIND_SLASH;
         case '(': pop(l); return TOKEN_KIND_LPAREN;
         case ')': pop(l); return TOKEN_KIND_RPAREN;
+        case '[': pop(l); return TOKEN_KIND_LSQUARE;
+        case ']': pop(l); return TOKEN_KIND_RSQUARE;
+        case '{': pop(l); return TOKEN_KIND_LCURLY;
+        case '}': pop(l); return TOKEN_KIND_RCURLY;
         case ';': pop(l); return TOKEN_KIND_SEMICOLON;
         case ':':
             pop(l);

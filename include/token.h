@@ -31,6 +31,14 @@ typedef enum TokenKind {
     TOKEN_KIND_COLON,
     /// ';'
     TOKEN_KIND_SEMICOLON,
+    /// '['
+    TOKEN_KIND_LSQUARE,
+    /// ']'
+    TOKEN_KIND_RSQUARE,
+    /// '{'
+    TOKEN_KIND_LCURLY,
+    /// '}'
+    TOKEN_KIND_RCURLY,
 } TokenKind;
 
 typedef struct Token {
