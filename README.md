@@ -25,14 +25,9 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 - **value.h** - A thing able to hold many kinds of general values.
 - **interpreter.h** - A simple interpreter.
 
-## Currently Working On
+## More Documentation
 
-Arrays, Slices and Paths. Paths are the biggest priority
-Starting work on lexer.
-
-## TODO
-
-Integrate with "c-stream", maybe eat it.
-Make an allocator interface, with a malloc allocator, a dynamic arena allocator,
-and a stack arena allocator.
-Make a Str type which holds it's length.
+Checkout [[currently-working-on.md]] to see what I've started and haven't
+finished. [[todo.md]] has a list of things I want to do but haven't gotten to
+yet. The file [[documentation-style.md]] has notes on how to read and write
+documentation for this project.
