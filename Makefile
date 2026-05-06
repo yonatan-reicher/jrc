@@ -31,6 +31,10 @@ ARFLAGS      := rcs
 CFLAGS       := $(shell cat compile_flags.txt)
 ifeq ($(PROFILE), debug)
 	CFLAGS += -g -O0 -DDEBUG
+else ifeq ($(PROFILE), release)
+	CFLAGS += -O3 -DNDEBUG
+else
+	$(error "Invalid PROFILE: $(PROFILE). Use 'debug' or 'release'.")
 endif
 
 # --- Sources & Objects --------------------------------------------------------

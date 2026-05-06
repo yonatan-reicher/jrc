@@ -2,5 +2,4 @@
 -Wextra
 -Wpedantic
 -std=c23
--O3
 -I./include
