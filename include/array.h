@@ -73,6 +73,7 @@
 //                            Some Array Declarations
 // =============================================================================
 
+DECLARE_ARRAY(void*, VoidPtrArray);
 DECLARE_ARRAY(char, CharArray);
 DECLARE_ARRAY(char*, CharPtrArray);
 DECLARE_ARRAY(const char*, ConstCharPtrArray);
