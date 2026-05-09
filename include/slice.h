@@ -31,3 +31,13 @@ DECLARE_SLICE(const char*, ConstCharPtrSlice);
 
 CharSlice slice_of_str(char* str);
 ConstCharSlice slice_of_const_str(const char* str);
+// Integers
+#define DECLARE_INT_SLICES(BITS)                                               \
+    DECLARE_SLICE(uint##BITS##_t, UInt##BITS##Slice);                          \
+    DECLARE_SLICE(const uint##BITS##_t, ConstUInt##BITS##Slice);               \
+    DECLARE_SLICE(int##BITS##_t, Int##BITS##Slice);                            \
+    DECLARE_SLICE(const int##BITS##_t, ConstInt##BITS##Slice)
+DECLARE_INT_SLICES(8);
+DECLARE_INT_SLICES(16);
+DECLARE_INT_SLICES(32);
+DECLARE_INT_SLICES(64);

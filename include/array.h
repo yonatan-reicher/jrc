@@ -13,6 +13,7 @@
 
 #pragma once
 #include <stddef.h>
+#include <stdint.h>
 
 #define DECLARE_ARRAY(T, Name)                                                 \
     typedef struct Name {                                                      \
@@ -77,3 +78,11 @@ DECLARE_ARRAY(void*, VoidPtrArray);
 DECLARE_ARRAY(char, CharArray);
 DECLARE_ARRAY(char*, CharPtrArray);
 DECLARE_ARRAY(const char*, ConstCharPtrArray);
+// Integers
+#define DECLARE_INT_ARRAYS(BITS)                                               \
+    DECLARE_ARRAY(uint##BITS##_t, UInt##BITS##Array);                          \
+    DECLARE_ARRAY(int##BITS##_t, Int##BITS##Array);
+DECLARE_INT_ARRAYS(8)
+DECLARE_INT_ARRAYS(16)
+DECLARE_INT_ARRAYS(32)
+DECLARE_INT_ARRAYS(64)
