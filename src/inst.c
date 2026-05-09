@@ -39,7 +39,6 @@ void inst_run(Inst inst, InstMachine* m) {
 #define reg(R) *inst_run_get_reg(inst, m, R)
 #define imm(I) inst_run_get_imm(inst, I)
     switch (inst.op_code) {
-        case INST_OP_CODE_NOP: break;
         case INST_OP_CODE_ADD_RI: reg(0) += reg(1) + imm(2); break;
         case INST_OP_CODE_ADD_RR: reg(0) += reg(1) + reg(2); break;
     }
