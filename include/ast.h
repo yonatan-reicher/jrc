@@ -1,5 +1,6 @@
 #pragma once
 #include "text_pos.h"
+#include <stdbool.h>
 
 // =============================================================================
 //                                Main Ast Types
