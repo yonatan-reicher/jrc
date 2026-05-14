@@ -12,6 +12,7 @@
 // -----------------------------------------------------------------------------
 
 #pragma once
+#include "basic.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -25,7 +26,7 @@
 /// Return a new empty array of the given type.
 #define array_empty() { .len = 0, .cap = 0, .ptr = NULL }
 
-#define array_push(ARR, ELEM)                                                  \
+#define array_push(ARR, ...)                                                   \
     do {                                                                       \
         /* Avoid calling `realloc` when capacity is 0. */                      \
         if ((ARR)->cap == 0) {                                                 \
@@ -36,7 +37,7 @@
             (ARR)->ptr =                                                       \
                 realloc((ARR)->ptr, (ARR)->cap * sizeof((ARR)->ptr[0]));       \
         }                                                                      \
-        (ARR)->ptr[(ARR)->len++] = (ELEM);                                     \
+        (ARR)->ptr[(ARR)->len++] = (__VA_ARGS__);                              \
     } while (0)
 
 #define array_free(ARR)                                                        \
@@ -52,7 +53,11 @@
         (ARR)->len = 0;                                                        \
     } while (0)
 
-#define array_get(ARR, IDX) ((ARR)->ptr[(IDX)])
+#define array_get(ARR, IDX)                                                    \
+    ((IDX) >= (ARR)->len                                                       \
+         ? (PANIC("index %zu/%zu out of bounds", (IDX), (ARR)->len),           \
+            (ARR)->ptr)                                                        \
+         : &(ARR)->ptr[IDX])
 
 #define array_pop(ARR)                                                         \
     do {                                                                       \
@@ -65,6 +70,12 @@
          ? (PANIC("cannot get first element of empty array"), (ARR)->ptr[0])   \
          : (ARR)->ptr[0])
 #define array_last(ARR) ((ARR)->ptr[(ARR)->len - 1])
+
+#define array_extend(ARR, PTR, LEN)                                            \
+    do {                                                                       \
+        /* TODO: reserve capacity first. */                                    \
+        for (size_t i = 0; i < (LEN); i++) array_push((ARR), (PTR)[i]);        \
+    } while (0)
 
 #define ARRAY_FOREACH(ARR, VAR)                                                \
     for (size_t i_##VAR = 0; i_##VAR < (ARR)->len; i_##VAR++)                  \
