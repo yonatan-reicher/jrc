@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /** Mark a variable as unused */
 #define UNUSED(X) (void)(X)
