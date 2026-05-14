@@ -95,10 +95,7 @@ again:
     InstArray new_prog = array_empty();
     array_extend(&new_prog, prefix.ptr, prefix.len);
     array_push(&new_prog, inst);
-    printf(
-        "Trying program of length %zu:\n",
-        new_prog.len
-    );
+    printf("Trying program of length %zu:\n", new_prog.len);
     ARRAY_FOREACH(&new_prog, i) {
         char* inst_str = inst_to_str(*i);
         printf("  %s\n", inst_str);
