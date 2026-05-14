@@ -5,6 +5,7 @@
 // This file contains advanced macros for building readable APIs.
 // -----------------------------------------------------------------------------
 
+// clang-format off
 /// Returns the 101th argument. This is useful for looking into `__VA_ARGS__` of
 /// a calling macro.
 #define ARG_101( _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14,  \
@@ -15,7 +16,9 @@
         _71, _72, _73, _74, _75, _76, _77, _78, _79, _80, _81, _82, _83, _84,  \
         _85, _86, _87, _88, _89, _90, _91, _92, _93, _94, _95, _96, _97, _98,  \
         _99, _100, _101, ...) _101
+// clang-format on
 
+// clang-format off
 /// Expands to 1 if given more than 1 arguments, else 0.
 #define ARGS_HAS_COMMA(...) \
     ARG_101( \
@@ -27,10 +30,12 @@
         1, 1, 1, 1, 1, 1, 1,                                                   \
         0                                                                      \
     )
+// clang-format on
 
 /// Expands to comma when given any arguments.
 #define _TRIGGER_PARENTHESIS(...) ,
 
+// clang-format off
 #define ARGS_IS_EMPTY(...)                                                     \
     _ARGS_IS_EMPTY_START(                                                      \
           /* Empty if the trigger is triggered by the following parenthesis */ \
@@ -48,3 +53,4 @@
 #define _ARGS_IS_EMPTY_RESULT_1000 ,
 #define _NAME5(A,B,C,D,E)          _NAME5_HELPER( A, B, C, D, E )
 #define _NAME5_HELPER(A,B,C,D,E)   A ## B ## C ## D ## E
+// clang-format on
