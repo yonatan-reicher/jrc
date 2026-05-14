@@ -14,36 +14,36 @@ Path path_empty(void) {
     return (Path) { .parts = NULL, .n_parts = 0 };
 }
 
-bool path_is_empty(const Path *p) {
+bool path_is_empty(const Path* p) {
     return p->parts == NULL;
 }
 
-void path_free(Path *p) {
+void path_free(Path* p) {
     if (path_is_empty(p)) return;
     for (uint16_t i = 0; i < p->n_parts; i++) free(p->parts[i]);
     free(p->parts);
     *p = path_empty();
 }
 
-Path path_move(Path *p) {
+Path path_move(Path* p) {
     Path ret = *p;
     *p = path_empty();
     return ret;
 }
 
-void path_assign(Path *dest, Path src) {
+void path_assign(Path* dest, Path src) {
     path_free(dest);
     *dest = src;
 }
 
-void path_add(Path *dest, char *part) {
+void path_add(Path* dest, char* part) {
     const size_t new_size = (dest->n_parts + 1) * sizeof(char*);
     dest->parts = realloc(dest->parts, new_size);
     dest->parts[dest->n_parts] = part;
     dest->n_parts++;
 }
 
-void path_append(Path *dest, Path src) {
+void path_append(Path* dest, Path src) {
     const uint16_t new_n_parts = dest->n_parts + src.n_parts;
     if (new_n_parts < dest->n_parts) PANIC("integer overflow");
     // Update
@@ -61,11 +61,12 @@ Path path_concat(Path lhs, Path rhs) {
 
 Path path_of_slice(ConstCharPtrSlice parts) {
     Path ret = path_empty();
-    for (uint16_t i = 0; i < parts.len; i++) path_add(&ret, str_clone(parts.ptr[i]));
+    for (uint16_t i = 0; i < parts.len; i++)
+        path_add(&ret, str_clone(parts.ptr[i]));
     return ret;
 }
 
-Path path_clone(const Path *src) {
+Path path_clone(const Path* src) {
     Path ret;
     ret.parts = malloc(src->n_parts * sizeof(char*));
     for (uint16_t i = 0; i < src->n_parts; i++)
@@ -74,18 +75,18 @@ Path path_clone(const Path *src) {
     return ret;
 }
 
-bool path_eq(const Path *a, const Path *b) {
+bool path_eq(const Path* a, const Path* b) {
     if (a->n_parts != b->n_parts) return false;
     for (uint16_t i = 0; i < a->n_parts; i++)
         if (!str_eq(a->parts[i], b->parts[i])) return false;
     return true;
 }
 
-Path path_parse(const char *path_str) {
+Path path_parse(const char* path_str) {
     return path_parse_n(path_str, strlen(path_str));
 }
 
-Path path_parse_n(const char *path_str, size_t len) {
+Path path_parse_n(const char* path_str, size_t len) {
     // Declare some variables.
     Path ret = path_empty();
     char part[2000] = "";
@@ -96,9 +97,9 @@ Path path_parse_n(const char *path_str, size_t len) {
     for (size_t i = 0; i < len; i++) {
         const char c = path_str[i];
         if (IS_SEP(c)) {
-            part[part_len] = 0; // Finish the string
+            part[part_len] = 0;              // Finish the string
             path_add(&ret, str_clone(part)); // Add it
-            part_len = 0; // Reset it
+            part_len = 0;                    // Reset it
         } else {
             part[part_len++] = c;
             if (part_len == ARRAY_LEN(part)) PANIC(PART_TOO_BIG);
@@ -106,15 +107,17 @@ Path path_parse_n(const char *path_str, size_t len) {
     }
     // Finish the final part, if there is one!
     if (part_len > 0) {
-        part[part_len] = 0; // Finish the string
+        part[part_len] = 0;              // Finish the string
         path_add(&ret, str_clone(part)); // Add it
     }
     return ret;
 }
 
 Path path_cwd(void) {
-    char *cwd_str;
-    EXPECT_ERRNO(cwd_str = getcwd(NULL, 0)); // Calling with NULL means allocating.
+    char* cwd_str;
+    EXPECT_ERRNO(
+        cwd_str = getcwd(NULL, 0)
+    ); // Calling with NULL means allocating.
     // TODO: What if this crashes?
     Path ret = path_parse(cwd_str);
     free(cwd_str);
@@ -122,23 +125,23 @@ Path path_cwd(void) {
 }
 
 Path path_home(void) {
-    const char *str = getenv("HOME");
+    const char* str = getenv("HOME");
     if (str == NULL) {
         str = getpwuid(getuid())->pw_dir;
     }
     return path_parse(str);
 }
 
-char* path_to_str(const Path *p) {
+char* path_to_str(const Path* p) {
     // Just in case, allocate 5 + Σ (n + 5) for every part of length n.
     size_t size = 5;
     for (uint16_t i = 0; i < p->n_parts; i++) {
         size += strlen(p->parts[i]);
     }
-    char *buf = malloc(size * sizeof(char));
+    char* buf = malloc(size * sizeof(char));
     size_t i = 0;
     for (uint16_t i_part = 0; i_part < p->n_parts; i_part++) {
-        const char *part = p->parts[i_part];
+        const char* part = p->parts[i_part];
         size_t len = strlen(part);
         memcpy(&buf[i], part, len);
         i += len;
@@ -150,7 +153,7 @@ char* path_to_str(const Path *p) {
 Path path_expand(Path p) {
     Path ret = path_empty();
     for (uint16_t i = 0; i < p.n_parts; i++) {
-        char **part = &p.parts[i];
+        char** part = &p.parts[i];
         if (str_eq(*part, "~")) {
             path_append(&ret, path_home());
         } else if (str_eq(*part, ".")) {
