@@ -1,7 +1,7 @@
 #include "str.h"
 #include "array.h"
-#include <stdbool.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 bool str_starts_with(const char *str, const char *prefix)
