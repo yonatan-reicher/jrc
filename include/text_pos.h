@@ -26,8 +26,10 @@ typedef struct TextSpan {
 #define TEXT_POS_PRINTF_FORMAT "[%" PRIu32 ":%" PRIu32 "]"
 #define TEXT_POS_PRINTF(P) (P).row, (P).col
 
-#define TEXT_SPAN_PRINTF_FORMAT "[%" PRIu32 ":%" PRIu32 "-%" PRIu32 ":%" PRIu32 "]"
-#define TEXT_SPAN_PRINTF(S) (S).start.row, (S).start.col, (S).end.row, (S).end.col
+#define TEXT_SPAN_PRINTF_FORMAT                                                \
+    "[%" PRIu32 ":%" PRIu32 "-%" PRIu32 ":%" PRIu32 "]"
+#define TEXT_SPAN_PRINTF(S)                                                    \
+    (S).start.row, (S).start.col, (S).end.row, (S).end.col
 
 // =============================================================================
 //                                   Functions
