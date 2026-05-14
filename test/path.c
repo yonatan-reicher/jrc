@@ -1,7 +1,7 @@
 #include "path.h"
 #include "str.h"
-#include <unistd.h>
 #include <limits.h>
+#include <unistd.h>
 
 int main(void) {
     // Check the result of `path-cwd`
