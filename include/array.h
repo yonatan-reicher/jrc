@@ -79,7 +79,8 @@
 
 #define ARRAY_FOREACH(ARR, VAR)                                                \
     for (size_t i_##VAR = 0; i_##VAR < (ARR)->len; i_##VAR++)                  \
-        for (typeof(&(ARR)->ptr[0]) VAR = (ARR)->ptr; VAR != NULL; VAR = NULL)
+        for (typeof(&(ARR)->ptr[0]) VAR = &(ARR)->ptr[i_##VAR]; VAR != NULL;   \
+             VAR = NULL)
 
 // =============================================================================
 //                            Some Array Declarations
