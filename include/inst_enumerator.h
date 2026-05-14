@@ -1,8 +1,8 @@
 #pragma once
 #include "inst.h"
 #include "slice.h"
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 // =============================================================================
 //                               InstEnumerator.h
