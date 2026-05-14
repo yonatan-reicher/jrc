@@ -1,5 +1,17 @@
 -Wall
 -Wextra
 -Wpedantic
+-Wcast-align
+-Wcast-qual
+-Wconversion
+-Wcovered-switch-default
+-Wfloat-equal
+-Wpointer-arith
+-Wshadow
+-Wstrict-overflow=5
+-Wstrict-prototypes
+-Wundef
+-Wunreachable-code
+-Wwrite-strings
 -std=c23
 -I./include
