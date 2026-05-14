@@ -22,7 +22,9 @@ void inst_machine_free(InstMachine* m) {
     (void)m;
 }
 
-static uint64_t* inst_run_get_reg(Inst inst, InstMachine* m, uint8_t arg_index) {
+static uint64_t* inst_run_get_reg(
+    Inst inst, InstMachine* m, uint8_t arg_index
+) {
     assert(arg_index < 3);
     const InstArg arg = inst.args[arg_index];
     // TODO: Make sure  i's argument type at the index is a register.
@@ -48,7 +50,8 @@ void inst_run(Inst inst, InstMachine* m) {
 }
 
 const char* inst_op_code_short_name(InstOpCode op_code) {
-#define X(CASE, SHORT_NAME, ...) case INST_OP_CODE_##CASE: return SHORT_NAME;
+#define X(CASE, SHORT_NAME, ...)                                               \
+    case INST_OP_CODE_##CASE: return SHORT_NAME;
     switch (op_code) {
         // NOLINTNEXTLINE(bugprone-branch-clone)
         OP_CODE_X_TABLE(X)
@@ -57,7 +60,8 @@ const char* inst_op_code_short_name(InstOpCode op_code) {
 }
 
 const char* inst_op_code_full_name(InstOpCode op_code) {
-#define X(CASE, SHORT_NAME, SUFFIX, ...) case INST_OP_CODE_##CASE: return SHORT_NAME SUFFIX;
+#define X(CASE, SHORT_NAME, SUFFIX, ...)                                       \
+    case INST_OP_CODE_##CASE: return SHORT_NAME SUFFIX;
     switch (op_code) {
         // NOLINTNEXTLINE(bugprone-branch-clone)
         OP_CODE_X_TABLE(X)
