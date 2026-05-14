@@ -62,12 +62,12 @@ static char* ast_assign_to_str(const AstAssign* ast) {
 char* ast_to_str(const Ast* ast) {
     switch (ast->kind) {
         case AST_NULL: return str_clone("<NULL>");
-        case AST_ERROR: return ast_error_to_str((AstError*)ast);
-        case AST_INT: return ast_int_to_str((AstInt*)ast);
-        case AST_VAR: return ast_var_to_str((AstVar*)ast);
-        case AST_BIN_OP: return ast_bin_op_to_str((AstBinOp*)ast);
-        case AST_UNARY_OP: return ast_unary_op_to_str((AstUnaryOp*)ast);
-        case AST_ASSIGN: return ast_assign_to_str((AstAssign*)ast);
+        case AST_ERROR: return ast_error_to_str((const AstError*)ast);
+        case AST_INT: return ast_int_to_str((const AstInt*)ast);
+        case AST_VAR: return ast_var_to_str((const AstVar*)ast);
+        case AST_BIN_OP: return ast_bin_op_to_str((const AstBinOp*)ast);
+        case AST_UNARY_OP: return ast_unary_op_to_str((const AstUnaryOp*)ast);
+        case AST_ASSIGN: return ast_assign_to_str((const AstAssign*)ast);
     }
 }
 

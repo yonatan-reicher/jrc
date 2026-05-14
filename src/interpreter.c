@@ -137,10 +137,10 @@ static Value unary_op_eval(Interpreter* i, const AstUnaryOp* ast) {
 Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
     if (interpreter_has_error(i)) return value_null();
     switch (ast->kind) {
-        case AST_INT: return value_int(((AstInt*)ast)->value);
-        case AST_VAR: return var_eval(i, (AstVar*)ast);
-        case AST_BIN_OP: return bin_op_eval(i, (AstBinOp*)ast);
-        case AST_UNARY_OP: return unary_op_eval(i, (AstUnaryOp*)ast);
+        case AST_INT: return value_int(((const AstInt*)ast)->value);
+        case AST_VAR: return var_eval(i, (const AstVar*)ast);
+        case AST_BIN_OP: return bin_op_eval(i, (const AstBinOp*)ast);
+        case AST_UNARY_OP: return unary_op_eval(i, (const AstUnaryOp*)ast);
         case AST_ASSIGN:
         case AST_NULL:
         case AST_ERROR:
@@ -153,7 +153,7 @@ void interpreter_execute_statement(Interpreter* i, const Ast* ast) {
     if (interpreter_has_error(i)) return;
     switch (ast->kind) {
         case AST_ASSIGN: {
-            const AstAssign* assign = (AstAssign*)ast;
+            const AstAssign* assign = (const AstAssign*)ast;
             const Value value = eval(assign->rhs);
             interpreter_add_var(i, str_clone(assign->var), value);
             break;

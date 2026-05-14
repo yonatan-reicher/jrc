@@ -1,4 +1,5 @@
 #include "inst.h"
+#include "str.h"
 #include <assert.h>
 
 InstMachine inst_machine_new(void) {
@@ -44,4 +45,32 @@ void inst_run(Inst inst, InstMachine* m) {
     }
 #undef reg
 #undef imm
+}
+
+const char* inst_op_code_short_name(InstOpCode op_code) {
+#define X(CASE, SHORT_NAME, ...) case INST_OP_CODE_##CASE: return SHORT_NAME;
+    switch (op_code) {
+        // NOLINTNEXTLINE(bugprone-branch-clone)
+        OP_CODE_X_TABLE(X)
+    }
+#undef X
+}
+
+const char* inst_op_code_full_name(InstOpCode op_code) {
+#define X(CASE, SHORT_NAME, SUFFIX, ...) case INST_OP_CODE_##CASE: return SHORT_NAME SUFFIX;
+    switch (op_code) {
+        // NOLINTNEXTLINE(bugprone-branch-clone)
+        OP_CODE_X_TABLE(X)
+    }
+#undef X
+}
+
+char* inst_to_str(Inst inst) {
+    return str_format(
+        "%s %d %d %d",
+        inst_op_code_full_name(inst.op_code),
+        inst.args[0],
+        inst.args[1],
+        inst.args[2]
+    );
 }

@@ -85,4 +85,6 @@ void inst_machine_free(InstMachine*);
 
 void inst_run(Inst, InstMachine*);
 
+char* inst_to_str(Inst);
+
 #define inst(OP, ...) ((Inst) { INST_OP_CODE_##OP, { __VA_ARGS__ } })

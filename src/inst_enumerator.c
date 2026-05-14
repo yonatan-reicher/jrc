@@ -1,4 +1,5 @@
 #include "inst_enumerator.h"
+#include <assert.h>
 
 /* On the implementation:
  * The enumerator keeps a current op-code and indices for each of the 3
@@ -87,8 +88,10 @@ static uint8_t arg_max_index(const This* this, uint8_t which_arg) {
     switch (arg_type(this, which_arg)) {
         case INST_ARG_TYPE_INP_REG:
         case INST_ARG_TYPE_OUT_REG:
-        case INST_ARG_TYPE_INP_OUT_REG: return this->config.registers.len - 1;
-        case INST_ARG_TYPE_IMM: return this->config.immediates.len - 1;
+        case INST_ARG_TYPE_INP_OUT_REG:
+            return (uint8_t)(this->config.registers.len - 1);
+        case INST_ARG_TYPE_IMM:
+            return (uint8_t)(this->config.immediates.len - 1);
     }
 }
 
@@ -116,6 +119,7 @@ static uint8_t arg_current(const This* this, uint8_t which_arg) {
 }
 
 Inst inst_enumerator_current(const This* this) {
+    assert(!inst_enumerator_is_done(this));
     return (Inst) {
         this->op_code,
         {
@@ -135,6 +139,16 @@ bool inst_enumerator_advance(This* this) {
     if (try_advance_arg(this, 2)) return true;
     reset_arg(this, 2);
     if (try_advance_op_code(this)) return true;
+    // We couldn't advance anything!
     this->is_done = true;
     return false;
+}
+
+void inst_enumerator_reset(This* this) {
+    this->op_code = 0;
+    for (uint8_t i = 0; i < INST_N_ARGS; i++) reset_arg(this, i);
+    this->is_done = false;
+    // Get it ready!
+    if (!inst_enumerator_is_done(this) && !inst_enumerator_has_current(this))
+        inst_enumerator_advance(this);
 }

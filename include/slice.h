@@ -19,6 +19,10 @@
 #define slice_empty() { .len = 0, .ptr = NULL }
 /// Return a new slice pointing at some existing data.
 #define slice(PTR, LEN) { .len = (LEN), .ptr = (PTR) }
+/// Return a new slice pointing at some existing stack array.
+#define slice_of_fixed_array(ARRAY) slice((ARRAY), ARRAY_LEN(ARRAY))
+/// Return a new slice pointing at some existing dynamic array.
+#define slice_of_array(ARRAY) slice((ARRAY)->ptr, (ARRAY)->len)
 
 // ------ Some definitions -----------------------------------------------------
 

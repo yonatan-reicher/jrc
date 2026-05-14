@@ -38,8 +38,12 @@ InstEnumerator inst_enumerator_new_ready(const InstEnumeratorConfig*);
 /// calling the first next.
 bool inst_enumerator_has_current(const InstEnumerator*);
 
+/// Returns true when the enumerator does not have a current instruction, and
+/// there are no more instructions to enumerate.
 bool inst_enumerator_is_done(const InstEnumerator*);
 
 Inst inst_enumerator_current(const InstEnumerator* enumerator);
 
 bool inst_enumerator_advance(InstEnumerator* enumerator);
+
+void inst_enumerator_reset(InstEnumerator* enumerator);

@@ -49,7 +49,7 @@ typedef struct TokenStart {
 TokenStart start_token(const Lexer* l) {
     return (TokenStart) {
         .t = {
-            .kind = -1, // To be filled!
+            .kind = 0, // To be filled!
             .text = l->text + l->pos.index,
             .span = {
                 .start = l->pos,
