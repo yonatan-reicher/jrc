@@ -142,6 +142,7 @@ Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
         case AST_BIN_OP: return bin_op_eval(i, (const AstBinOp*)ast);
         case AST_UNARY_OP: return unary_op_eval(i, (const AstUnaryOp*)ast);
         case AST_ASSIGN:
+        case AST_COMPOUND_STATEMENT:
         case AST_NULL:
         case AST_ERROR:
             char* ast_str = ast_to_str(ast);
@@ -156,6 +157,16 @@ void interpreter_execute_statement(Interpreter* i, const Ast* ast) {
             const AstAssign* assign = (const AstAssign*)ast;
             const Value value = eval(assign->rhs);
             interpreter_add_var(i, str_clone(assign->var), value);
+            break;
+        }
+        case AST_COMPOUND_STATEMENT: {
+            const AstCompoundStatement* compound =
+                (const AstCompoundStatement*)ast;
+            for (size_t i_child = 0; i_child < compound->n_children;
+                 i_child++) {
+                interpreter_execute_statement(i, compound->children[i_child]);
+                if (interpreter_has_error(i)) break;
+            }
             break;
         }
         case AST_INT:

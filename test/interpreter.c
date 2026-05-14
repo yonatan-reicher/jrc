@@ -42,7 +42,8 @@ void test_var_eval_not_defined(void) {
     );
     EXPECT(
         interpreter_has_error(&i),
-        "expected an error when evaluating undefined variable, but no error was set"
+        "expected an error when evaluating undefined variable, but no error "
+        "was set"
     );
     interpreter_free(&i);
     parser_free(&p);
@@ -66,9 +67,31 @@ void test_assignment(void) {
     lexer_free(&l);
 }
 
+void test_compound_statement(void) {
+    const char* text = "{"
+                       "    foo := 42;"
+                       "    bar := foo + 1;"
+                       "}";
+    Lexer l = lexer_new(text);
+    Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
+    const Ast* ast = parser_parse_statement(&p);
+    Interpreter i = interpreter_new();
+    interpreter_execute_statement(&i, ast);
+    Value v;
+    const bool success = interpreter_get_var(&i, "bar", &v);
+    EXPECT(success, "expected variable 'bar' to be defined");
+    EXPECT(v.kind == VALUE_INT, "expected variable 'bar' to be an integer");
+    EXPECT(v.data.i == 43, "expected variable 'bar' to have value 43");
+    interpreter_execute_statement(&i, ast);
+    interpreter_free(&i);
+    parser_free(&p);
+    lexer_free(&l);
+}
+
 int main(void) {
     test_operators();
     test_var_eval_not_defined();
     test_assignment();
+    test_compound_statement();
     return 0;
 }

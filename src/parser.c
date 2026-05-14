@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "array.h"
 #include "basic.h"
 #include "slice.h"
 #include "str.h"
@@ -260,7 +261,7 @@ static Ast* parse_expr(Parser* p) {
     return parse_bin_op_expr(p);
 }
 
-static Ast* parser_assign(Parser* p) {
+static Ast* parse_assign(Parser* p) {
     const Token var = get_token(p);
     if (var.kind != TOKEN_KIND_WORD) {
         PANIC("this should never happen!");
@@ -285,10 +286,33 @@ static Ast* parser_assign(Parser* p) {
     return (Ast*)ret;
 }
 
+DECLARE_ARRAY(Ast*, AstPtrArray);
+
+static Ast* parse_compound_statement(Parser* p) {
+    const Token open = get_token(p);
+    EXPECT(open.kind == TOKEN_KIND_LCURLY, "must start with '{'");
+    AstPtrArray children = array_empty();
+    while (peek(p).kind != TOKEN_KIND_RCURLY) {
+        Ast* child = parser_parse_statement(p);
+        array_push(&children, child);
+    }
+    const Token end = get_token(p); // Consume the closing '}'
+    AstCompoundStatement* ast =
+        alloc(p, sizeof(AstCompoundStatement) + children.len * sizeof(Ast*));
+    *ast = (AstCompoundStatement) {
+        { AST_COMPOUND_STATEMENT, { open.span.start, end.span.end } },
+        children.len,
+    };
+    memcpy(ast->children, children.ptr, children.len * sizeof(Ast*));
+    array_free(&children);
+    return (Ast*)ast;
+}
+
 Ast* parser_parse_statement(Parser* p) {
     const Token t = peek(p);
     switch (t.kind) {
-        case TOKEN_KIND_WORD: return parser_assign(p);
+        case TOKEN_KIND_LCURLY: return parse_compound_statement(p);
+        case TOKEN_KIND_WORD: return parse_assign(p);
         default: return (Ast*)err(p, t.span, "not start of a statement");
     }
 }

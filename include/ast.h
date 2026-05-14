@@ -13,7 +13,9 @@ typedef enum AstKind {
     AST_VAR,
     AST_BIN_OP,
     AST_UNARY_OP,
+    // Statements
     AST_ASSIGN,
+    AST_COMPOUND_STATEMENT,
 } AstKind;
 
 typedef struct Ast {
@@ -101,3 +103,9 @@ typedef struct AstAssign {
     Ast* rhs;
     char var[];
 } AstAssign;
+
+typedef struct AstCompoundStatement {
+    Ast ast;
+    size_t n_children;
+    Ast* children[];
+} AstCompoundStatement;

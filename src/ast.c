@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "array.h"
 #include "basic.h"
 #include "str.h"
 
@@ -15,6 +16,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_BIN_OP: return "BIN_OP";
         case AST_UNARY_OP: return "UNARY_OP";
         case AST_ASSIGN: return "ASSIGN";
+        case AST_COMPOUND_STATEMENT: return "COMPOUND_STATEMENT";
     }
 }
 
@@ -59,6 +61,19 @@ static char* ast_assign_to_str(const AstAssign* ast) {
     return ret;
 }
 
+static char* ast_compound_statement_to_str(const AstCompoundStatement* ast) {
+    CharArray buf = array_empty();
+    array_extend(&buf, "{\n", 2);
+    for (size_t i_child = 0; i_child < ast->n_children; i_child++) {
+        char* child_str = ast_to_str(ast->children[i_child]);
+        array_extend(&buf, "    ", 4);
+        array_extend(&buf, child_str, strlen(child_str));
+        array_push(&buf, '\n');
+    }
+    array_extend(&buf, "}\n", 3); // Also add the '\0'!
+    return buf.ptr;
+}
+
 char* ast_to_str(const Ast* ast) {
     switch (ast->kind) {
         case AST_NULL: return str_clone("<NULL>");
@@ -68,6 +83,10 @@ char* ast_to_str(const Ast* ast) {
         case AST_BIN_OP: return ast_bin_op_to_str((const AstBinOp*)ast);
         case AST_UNARY_OP: return ast_unary_op_to_str((const AstUnaryOp*)ast);
         case AST_ASSIGN: return ast_assign_to_str((const AstAssign*)ast);
+        case AST_COMPOUND_STATEMENT:
+            return ast_compound_statement_to_str(
+                (const AstCompoundStatement*)ast
+            );
     }
 }
 

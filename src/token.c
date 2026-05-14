@@ -31,5 +31,5 @@ size_t token_len(const Token* t) {
 }
 
 ConstCharSlice token_slice(const Token* t) {
-    return (ConstCharSlice)slice(t->text + t->span.start.index, token_len(t));
+    return (ConstCharSlice)slice(t->text, token_len(t));
 }
