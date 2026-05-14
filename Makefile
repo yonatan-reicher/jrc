@@ -43,7 +43,7 @@ HEADERS      := $(wildcard $(INC_DIR)/*.h)
 OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # --- Targets ------------------------------------------------------------------
-.PHONY: build release debug test clean install uninstall help
+.PHONY: build release debug test fmt clean install uninstall help
 
 build: $(TARGET)
 
@@ -73,6 +73,11 @@ $(OBJ_DIR) $(LIB_DIR):
 # and delegate to them
 test: debug test/*
 	cd test && make
+
+fmt:
+	@echo "Formatting source files with clang-format"
+	@# -i - in-place editing
+	clang-format -i $(SRCS) $(HEADERS)
 
 # --- Install & Uninstall ------------------------------------------------------
 install: build
