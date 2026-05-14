@@ -43,6 +43,10 @@ typedef enum TokenKind {
 
 typedef struct Token {
     TokenKind kind;
+    /// A pointer to this token's text buffer. This just points to the original
+    /// source text, offset by the span's start, but this may change in the
+    /// future.
+    /// Not owned by the token.
     const char* text;
     TextSpan span;
 } Token;
