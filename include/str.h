@@ -1,6 +1,6 @@
+#include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdarg.h>
 
 /// Does the first c-string begin with the second?
 bool str_starts_with(const char *str, const char *prefix);
