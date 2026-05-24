@@ -111,3 +111,5 @@ typedef struct AstCompoundStatement {
     size_t n_children;
     Ast* children[];
 } AstCompoundStatement;
+
+typedef Ast AstEmptyStatement;
