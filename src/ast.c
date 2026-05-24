@@ -17,6 +17,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_UNARY_OP: return "UNARY_OP";
         case AST_ASSIGN: return "ASSIGN";
         case AST_COMPOUND_STATEMENT: return "COMPOUND_STATEMENT";
+        case AST_EMPTY_STATEMENT: return "EMPTY_STATEMENT";
     }
 }
 
@@ -87,6 +88,7 @@ char* ast_to_str(const Ast* ast) {
             return ast_compound_statement_to_str(
                 (const AstCompoundStatement*)ast
             );
+        case AST_EMPTY_STATEMENT: return str_clone(";");
     }
 }
 

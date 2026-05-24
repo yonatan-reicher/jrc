@@ -308,11 +308,21 @@ static Ast* parse_compound_statement(Parser* p) {
     return (Ast*)ast;
 }
 
+Ast* parse_empty_statement(Parser* p) {
+    // Yes, this is very redundant. But, consistency!
+    const Token t = get_token(p);
+    EXPECT(t.kind == TOKEN_KIND_SEMICOLON, "this should only be called when the next token is a semicolon");
+    Ast* ast = ALLOC(p, Ast);
+    *ast = (Ast) { AST_EMPTY_STATEMENT, t.span };
+    return ast;
+}
+
 Ast* parser_parse_statement(Parser* p) {
     const Token t = peek(p);
     switch (t.kind) {
         case TOKEN_KIND_LCURLY: return parse_compound_statement(p);
         case TOKEN_KIND_WORD: return parse_assign(p);
+        case TOKEN_KIND_SEMICOLON: return parse_empty_statement(p);
         default: return (Ast*)err(p, t.span, "not start of a statement");
     }
 }

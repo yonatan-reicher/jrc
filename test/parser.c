@@ -103,6 +103,22 @@ void test_assignment(void) {
     parser_free(&p);
 }
 
+void test_compound_statement_with_empty_statement(void) {
+    const char* text = "{;}";
+    const char* expected = "{\n    ;\n}";
+    Parser p = new_parser(text);
+    Ast* ast = parser_parse_statement(&p);
+    char* ast_str = ast_to_str(ast);
+    EXPECT(
+        str_eq(ast_str, expected),
+        "expected statement '%s', but got '%s' instead",
+        expected,
+        ast_str
+    );
+    free(ast_str);
+    parser_free(&p);
+}
+
 int main(void) {
     test_empty_input();
     test_int_input();
@@ -110,4 +126,5 @@ int main(void) {
     test_order_of_operations();
     test_error_on_unexpected_token();
     test_assignment();
+    test_compound_statement_with_empty_statement();
 }

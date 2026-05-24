@@ -16,6 +16,7 @@ typedef enum AstKind {
     // Statements
     AST_ASSIGN,
     AST_COMPOUND_STATEMENT,
+    AST_EMPTY_STATEMENT,
 } AstKind;
 
 typedef struct Ast {
