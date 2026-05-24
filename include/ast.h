@@ -9,6 +9,7 @@
 typedef enum AstKind {
     AST_NULL,
     AST_ERROR,
+    // Expressions
     AST_INT,
     AST_VAR,
     AST_BIN_OP,
