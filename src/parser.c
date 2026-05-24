@@ -311,7 +311,10 @@ static Ast* parse_compound_statement(Parser* p) {
 Ast* parse_empty_statement(Parser* p) {
     // Yes, this is very redundant. But, consistency!
     const Token t = get_token(p);
-    EXPECT(t.kind == TOKEN_KIND_SEMICOLON, "this should only be called when the next token is a semicolon");
+    EXPECT(
+        t.kind == TOKEN_KIND_SEMICOLON,
+        "this should only be called when the next token is a semicolon"
+    );
     Ast* ast = ALLOC(p, Ast);
     *ast = (Ast) { AST_EMPTY_STATEMENT, t.span };
     return ast;
@@ -325,6 +328,33 @@ Ast* parser_parse_statement(Parser* p) {
         case TOKEN_KIND_SEMICOLON: return parse_empty_statement(p);
         default: return (Ast*)err(p, t.span, "not start of a statement");
     }
+}
+
+Ast* parser_parse_program(Parser* p) {
+    // Parse the statements
+    AstPtrArray statements = array_empty();
+    while (peek(p).kind != TOKEN_KIND_EOF) {
+        Ast* stmt = parser_parse_statement(p);
+        array_push(&statements, stmt);
+    }
+    // Now should come the end of the file.
+    const Token last_token = peek(p);
+    if (last_token.kind != TOKEN_KIND_EOF) {
+        array_free(&statements);
+        return (Ast*)err(p, last_token.span, "expected end of file");
+    }
+    // Return
+    const size_t size = sizeof(AstProgram) + statements.len * sizeof(Ast*);
+    AstProgram* ast = alloc(p, size);
+    const TextPos start = statements.len > 0 ? statements.ptr[0]->span.start
+                                             : last_token.span.start;
+    *ast = (AstProgram) {
+        { AST_PROGRAM, { start, last_token.span.end } },
+        statements.len,
+    };
+    memcpy(ast->statements, statements.ptr, statements.len * sizeof(Ast*));
+    array_free(&statements);
+    return (Ast*)ast;
 }
 
 Ast* parser_parse(Parser* p) {

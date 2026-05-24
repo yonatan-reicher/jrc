@@ -18,6 +18,8 @@ typedef enum AstKind {
     AST_ASSIGN,
     AST_COMPOUND_STATEMENT,
     AST_EMPTY_STATEMENT,
+    // Programs
+    AST_PROGRAM,
 } AstKind;
 
 typedef struct Ast {
@@ -113,3 +115,9 @@ typedef struct AstCompoundStatement {
 } AstCompoundStatement;
 
 typedef Ast AstEmptyStatement;
+
+typedef struct AstProgram {
+    Ast ast;
+    size_t n_statements;
+    Ast* statements[];
+} AstProgram;

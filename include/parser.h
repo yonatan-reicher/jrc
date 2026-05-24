@@ -29,3 +29,5 @@ void parser_free(Parser* parser);
 Ast* parser_parse(Parser* parser);
 
 Ast* parser_parse_statement(Parser*);
+
+Ast* parser_parse_program(Parser*);

@@ -88,10 +88,31 @@ void test_compound_statement(void) {
     lexer_free(&l);
 }
 
+void test_simple_program(void) {
+    const char* text = "x := 42;\n"
+                       "{\n"
+                       "    y := x + 1;\n"
+                       "}\n";
+    Lexer l = lexer_new(text);
+    Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
+    const Ast* ast = parser_parse_program(&p);
+    Interpreter i = interpreter_new();
+    interpreter_execute_program(&i, ast);
+    Value v;
+    const bool success = interpreter_get_var(&i, "y", &v);
+    EXPECT(success, "expected variable 'y' to be defined");
+    EXPECT(v.kind == VALUE_INT, "expected variable 'y' to be an integer");
+    EXPECT(v.data.i == 43, "expected variable 'y' to have value 43");
+    interpreter_free(&i);
+    parser_free(&p);
+    lexer_free(&l);
+}
+
 int main(void) {
     test_operators();
     test_var_eval_not_defined();
     test_assignment();
     test_compound_statement();
+    test_simple_program();
     return 0;
 }

@@ -58,3 +58,5 @@ Value interpreter_eval_expr(Interpreter*, const Ast*);
 
 /// Executes a statement. If something went wrong, enters an error state.
 void interpreter_execute_statement(Interpreter*, const Ast*);
+
+void interpreter_execute_program(Interpreter*, const Ast*);

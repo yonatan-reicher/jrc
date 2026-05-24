@@ -143,6 +143,8 @@ Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
         case AST_UNARY_OP: return unary_op_eval(i, (const AstUnaryOp*)ast);
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
+        case AST_EMPTY_STATEMENT:
+        case AST_PROGRAM:
         case AST_NULL:
         case AST_ERROR:
             char* ast_str = ast_to_str(ast);
@@ -169,6 +171,8 @@ void interpreter_execute_statement(Interpreter* i, const Ast* ast) {
             }
             break;
         }
+        case AST_EMPTY_STATEMENT: break;
+        case AST_PROGRAM:
         case AST_INT:
         case AST_VAR:
         case AST_BIN_OP:
@@ -178,5 +182,18 @@ void interpreter_execute_statement(Interpreter* i, const Ast* ast) {
             char* ast_str = ast_to_str(ast);
             PANIC("cannot execute AST:\n%s", ast_str);
         }
+    }
+}
+
+void interpreter_execute_program(Interpreter* i, const Ast* a) {
+    EXPECT(
+        a->kind == AST_PROGRAM,
+        "expected a program AST, got %s",
+        ast_kind_name(a->kind)
+    );
+    const AstProgram* program = (const AstProgram*)a;
+    for (size_t i_stmt = 0; i_stmt < program->n_statements; i_stmt++) {
+        interpreter_execute_statement(i, program->statements[i_stmt]);
+        if (interpreter_has_error(i)) return;
     }
 }

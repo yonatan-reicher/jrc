@@ -18,6 +18,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_ASSIGN: return "ASSIGN";
         case AST_COMPOUND_STATEMENT: return "COMPOUND_STATEMENT";
         case AST_EMPTY_STATEMENT: return "EMPTY_STATEMENT";
+        case AST_PROGRAM: return "PROGRAM";
     }
 }
 
@@ -75,6 +76,19 @@ static char* ast_compound_statement_to_str(const AstCompoundStatement* ast) {
     return buf.ptr;
 }
 
+static char* ast_program_to_str(const AstProgram* ast) {
+    if (ast->n_statements == 0) return str_clone("");
+    if (ast->n_statements == 1) return ast_to_str(ast->statements[0]);
+    CharArray buf = array_empty();
+    for (size_t i_stmt = 0; i_stmt < ast->n_statements; i_stmt++) {
+        char* stmt_str = ast_to_str(ast->statements[i_stmt]);
+        array_extend(&buf, stmt_str, strlen(stmt_str));
+        array_push(&buf, '\n');
+        free(stmt_str);
+    }
+    return buf.ptr;
+}
+
 char* ast_to_str(const Ast* ast) {
     switch (ast->kind) {
         case AST_NULL: return str_clone("<NULL>");
@@ -89,6 +103,7 @@ char* ast_to_str(const Ast* ast) {
                 (const AstCompoundStatement*)ast
             );
         case AST_EMPTY_STATEMENT: return str_clone(";");
+        case AST_PROGRAM: return ast_program_to_str((const AstProgram*)ast);
     }
 }
 
