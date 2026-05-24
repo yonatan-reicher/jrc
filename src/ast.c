@@ -71,7 +71,7 @@ static char* ast_compound_statement_to_str(const AstCompoundStatement* ast) {
         array_extend(&buf, child_str, strlen(child_str));
         array_push(&buf, '\n');
     }
-    array_extend(&buf, "}\n", 3); // Also add the '\0'!
+    array_extend(&buf, "}", 2); // Also add the '\0'!
     return buf.ptr;
 }
 
