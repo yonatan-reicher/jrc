@@ -25,7 +25,7 @@ INSTALL_INC  := $(PREFIX)/include/$(NAME)
 TARGET       := $(LIB_DIR)/lib$(NAME).a
 
 # --- Toolchain ----------------------------------------------------------------
-CC           := gcc
+CC           ?= gcc
 AR           := ar
 ARFLAGS      := rcs
 CFLAGS       := $(shell cat compile_flags.txt)
