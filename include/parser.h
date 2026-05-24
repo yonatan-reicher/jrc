@@ -1,6 +1,5 @@
 #pragma once
 #include "ast.h"
-#include "text_pos.h"
 #include "token.h"
 #include <inttypes.h>
 
