@@ -73,7 +73,7 @@ $(OBJ_DIR) $(LIB_DIR):
 # The tests have their own separate makefile, so we just give them the .a file
 # and delegate to them
 test: debug test/*
-	cd test && make
+	cd test && make -j 8
 
 fmt:
 	@echo "Formatting source files with clang-format"
