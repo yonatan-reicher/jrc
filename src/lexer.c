@@ -141,7 +141,10 @@ Token lexer_get_str(Lexer* lexer) {
 static TokenKind lexer_get_sym_kind(Lexer* l) {
     switch (peek(l)) {
         case '+': pop(l); return TOKEN_KIND_PLUS;
-        case '-': pop(l); return TOKEN_KIND_MINUS;
+        case '-':
+            pop(l);
+            return peek(l) == '>' ? (pop(l), TOKEN_KIND_THIN_ARROW)
+                                  : TOKEN_KIND_MINUS;
         case '*': pop(l); return TOKEN_KIND_STAR;
         case '/': pop(l); return TOKEN_KIND_SLASH;
         case '(': pop(l); return TOKEN_KIND_LPAREN;
@@ -155,6 +158,14 @@ static TokenKind lexer_get_sym_kind(Lexer* l) {
             pop(l);
             return peek(l) == '=' ? (pop(l), TOKEN_KIND_COLON_EQ)
                                   : TOKEN_KIND_COLON;
+        case '=':
+            pop(l);
+            return peek(l) == '>' ? (pop(l), TOKEN_KIND_FAT_ARROW)
+                                  : TOKEN_KIND_EQ;
+        case '!':
+            pop(l);
+            return peek(l) == '=' ? (pop(l), TOKEN_KIND_BANG_EQ)
+                                  : TOKEN_KIND_BANG;
         default: return TOKEN_KIND_NULL; // Not a recognized symbol.
     }
 }

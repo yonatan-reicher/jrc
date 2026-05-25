@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "basic.h"
+#include "string.h"
 
 bool token_eq(const Token* a, const Token* b) {
     return a->kind == b->kind && a->span.start.index == b->span.start.index &&
@@ -27,7 +28,7 @@ Token new_token(
     size_t start_index,
     TextRow start_row,
     TextCol start_col,
-    int len
+    TextCol len
 ) {
     return (Token) {
         .kind = kind,
@@ -146,6 +147,35 @@ void test_brackets(void) {
     lexer_free(&l);
 }
 
+#define TOKEN_KIND_TEST(NAME, TEXT, EXPECTED_KIND)                             \
+    void NAME(void) {                                                          \
+        lexer_test(TEXT, TOKEN_KIND_##EXPECTED_KIND);                          \
+    }
+
+static void lexer_test(const char* text, TokenKind expected_kind) {
+    const size_t text_len = strlen(text);
+    Lexer l = lexer_new(text);
+    const Token t1 = lexer_pop(&l);
+    const Token t2 = lexer_pop(&l);
+    const Token expected1 = {
+        expected_kind,
+        text,
+        { { 0, 1, 1 }, { text_len, 1, (TextCol)(text_len + 1) } },
+    };
+    const Token expected2 =
+        NEW_TOKEN(EOF, text_len, 1, (TextCol)(text_len + 1), 0);
+    EXPECT_TOKEN_EQ(t1, expected1);
+    EXPECT_TOKEN_EQ(t2, expected2);
+    lexer_free(&l);
+}
+
+TOKEN_KIND_TEST(test_thin_arrow, "->", THIN_ARROW)
+TOKEN_KIND_TEST(test_fat_arrow, "=>", FAT_ARROW)
+TOKEN_KIND_TEST(test_colon_eq, ":=", COLON_EQ)
+TOKEN_KIND_TEST(test_eq, "=", EQ)
+TOKEN_KIND_TEST(test_bang, "!", BANG)
+TOKEN_KIND_TEST(test_bang_eq, "!=", BANG_EQ)
+
 int main(void) {
     test_eof();
     test_single_int();
@@ -153,5 +183,11 @@ int main(void) {
     test_ints_with_words();
     test_symbols();
     test_brackets();
+    test_thin_arrow();
+    test_fat_arrow();
+    test_colon_eq();
+    test_eq();
+    test_bang();
+    test_bang_eq();
     return 0;
 }

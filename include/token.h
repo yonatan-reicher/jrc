@@ -39,6 +39,16 @@ typedef enum TokenKind {
     TOKEN_KIND_LCURLY,
     /// '}'
     TOKEN_KIND_RCURLY,
+    /// '->'
+    TOKEN_KIND_THIN_ARROW,
+    /// '=>'
+    TOKEN_KIND_FAT_ARROW,
+    /// '='
+    TOKEN_KIND_EQ,
+    /// '!'
+    TOKEN_KIND_BANG,
+    /// '!='
+    TOKEN_KIND_BANG_EQ,
 } TokenKind;
 
 typedef struct Token {

@@ -23,6 +23,11 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_RSQUARE: return "RSQUARE";
         case TOKEN_KIND_LCURLY: return "LCURLY";
         case TOKEN_KIND_RCURLY: return "RCURLY";
+        case TOKEN_KIND_THIN_ARROW: return "THIN-ARROW";
+        case TOKEN_KIND_FAT_ARROW: return "FAT-ARROW";
+        case TOKEN_KIND_EQ: return "EQ";
+        case TOKEN_KIND_BANG: return "BANG";
+        case TOKEN_KIND_BANG_EQ: return "BANG-EQ";
     }
 }
 
