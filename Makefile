@@ -63,6 +63,8 @@ $(TARGET): $(OBJS) | $(LIB_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+-include $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
+
 ## Create output directories if they don't exist
 $(OBJ_DIR) $(LIB_DIR):
 	mkdir -p $@
