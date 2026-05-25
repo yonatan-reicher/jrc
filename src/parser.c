@@ -172,21 +172,7 @@ bool try_parse_bin_op(const Token* t, BinOp* out_op) {
         case TOKEN_KIND_STAR: RETURN(true, BIN_OP_MUL);
         case TOKEN_KIND_SLASH: RETURN(true, BIN_OP_DIV);
         case TOKEN_KIND_PERCENT: RETURN(true, BIN_OP_REM);
-        case TOKEN_KIND_NULL:
-        case TOKEN_KIND_ERROR:
-        case TOKEN_KIND_EOF:
-        case TOKEN_KIND_INT:
-        case TOKEN_KIND_WORD:
-        case TOKEN_KIND_STR:
-        case TOKEN_KIND_LPAREN:
-        case TOKEN_KIND_RPAREN:
-        case TOKEN_KIND_COLON_EQ:
-        case TOKEN_KIND_COLON:
-        case TOKEN_KIND_SEMICOLON:
-        case TOKEN_KIND_LSQUARE:
-        case TOKEN_KIND_RSQUARE:
-        case TOKEN_KIND_LCURLY:
-        case TOKEN_KIND_RCURLY: RETURN(false, 0);
+        default: RETURN(false, 0);
     }
 #undef RETURN
 }
