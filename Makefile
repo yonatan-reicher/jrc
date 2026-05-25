@@ -13,22 +13,26 @@ PROFILE      ?= release
 SRC_DIR      := src
 # We put the header along with the source files
 INC_DIR      := include
-OBJ_BASE_DIR      := obj
-LIB_BASE_DIR      := lib
+OBJ_BASE_DIR := obj
+LIB_BASE_DIR := lib
 OBJ_DIR      := $(OBJ_BASE_DIR)/$(PROFILE)
 LIB_DIR      := $(LIB_BASE_DIR)/$(PROFILE)
 INSTALL_LIB  := $(PREFIX)/lib
 INSTALL_INC  := $(PREFIX)/include/$(NAME)
 
 # ------ Files -----------------------------------------------------------------
-# Output
 TARGET       := $(LIB_DIR)/lib$(NAME).a
+SRCS         := $(wildcard $(SRC_DIR)/*.c)
+HEADERS      := $(wildcard $(INC_DIR)/*.h)
+OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # --- Toolchain ----------------------------------------------------------------
 CC           ?= gcc
 AR           := ar
 ARFLAGS      := rcs
-CFLAGS       := $(shell cat compile_flags.txt)
+CFLAGS       := $(shell cat compile_flags.txt) -MMD -MP
+
+# ------ Profile Specific Settings ---------------------------------------------
 ifeq ($(PROFILE), debug)
 	CFLAGS += -g -O0 -DDEBUG
 else ifeq ($(PROFILE), release)
@@ -36,11 +40,6 @@ else ifeq ($(PROFILE), release)
 else
 	$(error "Invalid PROFILE: $(PROFILE). Use 'debug' or 'release'.")
 endif
-
-# --- Sources & Objects --------------------------------------------------------
-SRCS         := $(wildcard $(SRC_DIR)/*.c)
-HEADERS      := $(wildcard $(INC_DIR)/*.h)
-OBJS         := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # --- Targets ------------------------------------------------------------------
 .PHONY: build release debug test fmt clean install uninstall help
