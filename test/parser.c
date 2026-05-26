@@ -119,6 +119,23 @@ void test_compound_statement_with_empty_statement(void) {
     parser_free(&p);
 }
 
+static void test_func_expression(void) {
+    const char* text = "x => x + 1";
+    const char* expected = "(x => (x + 1))";
+    Parser p = new_parser(text);
+    Ast* ast = parser_parse(&p);
+    char* ast_str = ast_to_str(ast);
+    EXPECT(
+        str_eq(ast_str, expected),
+        "expected AST '%s' on input '%s', got '%s'",
+        expected,
+        text,
+        ast_str
+    );
+    free(ast_str);
+    parser_free(&p);
+}
+
 int main(void) {
     test_empty_input();
     test_int_input();
@@ -127,4 +144,5 @@ int main(void) {
     test_error_on_unexpected_token();
     test_assignment();
     test_compound_statement_with_empty_statement();
+    test_func_expression();
 }

@@ -92,7 +92,7 @@ static char* ast_program_to_str(const AstProgram* ast) {
 
 static char* ast_func_to_str(const AstFunc* ast) {
     char* body_str = ast_to_str(ast->body);
-    char* ret = str_format("%s => %s", ast->param_name, body_str);
+    char* ret = str_format("(%s => %s)", ast->param_name, body_str);
     free(body_str);
     return ret;
 }
