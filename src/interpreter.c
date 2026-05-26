@@ -36,7 +36,7 @@ void interpreter_add_var(Interpreter* self, char* name, Value value) {
 bool interpreter_get_var(
     const Interpreter* self, const char* name, Value* out
 ) {
-    ARRAY_FOREACH(&self->var_table.entries, entry) {
+    ARRAY_FOREACH_REV(&self->var_table.entries, entry) {
         if (str_eq(entry->name, name)) {
             *out = entry->value;
             return true;
