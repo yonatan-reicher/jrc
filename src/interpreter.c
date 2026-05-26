@@ -141,6 +141,7 @@ Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
         case AST_VAR: return var_eval(i, (const AstVar*)ast);
         case AST_BIN_OP: return bin_op_eval(i, (const AstBinOp*)ast);
         case AST_UNARY_OP: return unary_op_eval(i, (const AstUnaryOp*)ast);
+        case AST_FUNC: PANIC("not implemented");
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT:
@@ -177,6 +178,7 @@ void interpreter_execute_statement(Interpreter* i, const Ast* ast) {
         case AST_VAR:
         case AST_BIN_OP:
         case AST_UNARY_OP:
+        case AST_FUNC:
         case AST_NULL:
         case AST_ERROR: {
             char* ast_str = ast_to_str(ast);

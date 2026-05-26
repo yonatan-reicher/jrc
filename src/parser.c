@@ -143,6 +143,22 @@ single_token_success:
     return true;
 }
 
+/// This function assumes that the parameter name already was parsed and we are
+/// at the `=>`.
+static Ast* parse_func(Parser* p, Token param_name) {
+    const Token fat_arrow = get_token(p);
+    EXPECT(fat_arrow.kind == TOKEN_KIND_FAT_ARROW, "Expected '=>'");
+    Ast* body = parse_expr(p);
+    AstFunc* ast = alloc(p, sizeof(AstFunc) + token_len(&param_name) + 1);
+    *ast = (AstFunc) {
+        { AST_FUNC, { param_name.span.start, body->span.end } },
+        body,
+    };
+    memcpy(ast->param_name, param_name.text, token_len(&param_name));
+    ast->param_name[token_len(&param_name)] = '\0';
+    return (Ast*)ast;
+}
+
 static Ast* parse_term(Parser* p) {
     const Token t = peek(p);
     UnaryOp op;
@@ -156,6 +172,13 @@ static Ast* parse_term(Parser* p) {
         };
         return (Ast*)ast;
     } else {
+        if (peek(p).kind == TOKEN_KIND_WORD) {
+            // Now this is either a variable or a function.
+            const Token param_name = get_token(p);
+            return peek(p).kind == TOKEN_KIND_FAT_ARROW
+                       ? parse_func(p, param_name)
+                       : parse_var(p, t);
+        }
         return parse_atom(p);
     }
 }

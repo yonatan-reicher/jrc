@@ -14,6 +14,7 @@ typedef enum AstKind {
     AST_VAR,
     AST_BIN_OP,
     AST_UNARY_OP,
+    AST_FUNC,
     // Statements
     AST_ASSIGN,
     AST_COMPOUND_STATEMENT,
@@ -121,3 +122,9 @@ typedef struct AstProgram {
     size_t n_statements;
     Ast* statements[];
 } AstProgram;
+
+typedef struct AstFunc {
+    Ast ast;
+    Ast* body;
+    char param_name[];
+} AstFunc;

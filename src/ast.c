@@ -19,6 +19,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_COMPOUND_STATEMENT: return "COMPOUND_STATEMENT";
         case AST_EMPTY_STATEMENT: return "EMPTY_STATEMENT";
         case AST_PROGRAM: return "PROGRAM";
+        case AST_FUNC: return "FUNC";
     }
 }
 
@@ -89,6 +90,13 @@ static char* ast_program_to_str(const AstProgram* ast) {
     return buf.ptr;
 }
 
+static char* ast_func_to_str(const AstFunc* ast) {
+    char* body_str = ast_to_str(ast->body);
+    char* ret = str_format("%s => %s", ast->param_name, body_str);
+    free(body_str);
+    return ret;
+}
+
 char* ast_to_str(const Ast* ast) {
     switch (ast->kind) {
         case AST_NULL: return str_clone("<NULL>");
@@ -104,6 +112,7 @@ char* ast_to_str(const Ast* ast) {
             );
         case AST_EMPTY_STATEMENT: return str_clone(";");
         case AST_PROGRAM: return ast_program_to_str((const AstProgram*)ast);
+        case AST_FUNC: return ast_func_to_str((const AstFunc*)ast);
     }
 }
 
