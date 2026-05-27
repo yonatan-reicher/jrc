@@ -6,12 +6,17 @@
 // =============================================================================
 // This module introduces `Value`, which is a generic datatype that can hold all
 // kinds of things, fit for dynamic operations. Made for the interpreter module.
-// Currently only supports integers, but this will change.
+// Supported kinds of values:
+// - Integers
+// - Functions without arguments and without a closure
 // -----------------------------------------------------------------------------
 
 typedef enum ValueKind {
-    VALUE_NULL,
+    /// This is not for a value representing null, but for when no value is
+    /// available.
+    VALUE_NULL, // TODO: rename to VALUE_KIND_NULL or something
     VALUE_INT,
+    // VALUE_FUNC,
 } ValueKind;
 
 typedef struct Value {

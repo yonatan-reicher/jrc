@@ -7,6 +7,8 @@
 // =============================================================================
 
 typedef enum AstKind {
+    /// This is not for an AST that represents a null literal. This is just to
+    /// be used as a placeholder when an AST is expected but not available.
     AST_NULL,
     AST_ERROR,
     // Expressions

@@ -24,7 +24,9 @@ this repo to your project, and compile the C files on your own (`gcc main.c
 - **ast.h** - An Abstract Syntax Tree with some source info.
 - **parser.h** - Parses tokens into an AST.
 - **value.h** - A thing able to hold many kinds of general values.
+- **type.h** - Types for value objects.
 - **interpreter.h** - A simple interpreter.
+- **type_check.h** - A type checker.
 
 ## More Documentation
 
