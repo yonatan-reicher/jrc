@@ -2,9 +2,15 @@
 #include "str.h"
 #include <stdlib.h>
 
-Type type_null(void) { return (Type) { TYPE_NULL, {} }; }
-Type type_error() { return (Type) { TYPE_ERROR, {} }; }
-Type type_int(void) { return (Type) { TYPE_INT, {} }; }
+Type type_null(void) {
+    return (Type) { TYPE_NULL, {} };
+}
+Type type_error() {
+    return (Type) { TYPE_ERROR, {} };
+}
+Type type_int(void) {
+    return (Type) { TYPE_INT, {} };
+}
 
 void type_free(Type* self) {
     switch (self->kind) {
