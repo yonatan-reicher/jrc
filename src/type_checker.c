@@ -14,6 +14,11 @@ static VarTableEntry* var_table_get_entry(VarTable* this, const char* name) {
     return NULL;
 }
 
+static VarTableEntry* var_table_add(VarTable* this, char* name, const Type* t) {
+    array_push(&this->entries, ((VarTableEntry) { name, *t }));
+    return &array_last(&this->entries);
+}
+
 TypeChecker type_checker_new(void) {
     TypeChecker this = { { array_empty() }, NULL };
     const TypeCheckerVarTableEntry e = { str_clone("int"), type_int() };
@@ -39,8 +44,11 @@ const char* type_checker_get_error(const TypeChecker* this) {
     (this->error_message = this->error_message ? this->error_message           \
                                                : str_format(fmt, __VA_ARGS__))
 
-#define infer_expr type_checker_infer_expr
 #define has_error type_checker_has_error
+#define infer_expr type_checker_infer_expr
+#define check_expr type_checker_check_expr
+#define check_stmt type_checker_check_statement
+#define check_prog type_checker_check_program
 
 static Type infer_var(This* this, const AstVar* ast) {
     VarTableEntry* entry = var_table_get_entry(&this->var_table, ast->name);
@@ -125,4 +133,62 @@ void type_checker_check_expr(
         free(expected_type_str);
     }
     return;
+}
+
+static void check_assign_stmt(This* this, const AstAssign* ast) {
+    const Type rhs_type = infer_expr(this, ast->rhs);
+    if (has_error(this)) return;
+    var_table_add(&this->var_table, str_clone(ast->var), &rhs_type);
+}
+
+static void check_compound_stmt(This* this, const AstCompoundStatement* ast) {
+    for (size_t i = 0; i < ast->n_children; i++) {
+        const Ast* s = ast->children[i];
+        check_stmt(this, s);
+        if (has_error(this)) break;
+    }
+}
+
+void check_stmt(This* this, const Ast* ast) {
+    if (has_error(this)) return;
+    switch (ast->kind) {
+        case AST_EMPTY_STATEMENT: break;
+        case AST_ASSIGN: check_assign_stmt(this, (const AstAssign*)ast); break;
+        case AST_COMPOUND_STATEMENT:
+            check_compound_stmt(this, (const AstCompoundStatement*)ast);
+            break;
+        case AST_NULL:
+        case AST_ERROR:
+        case AST_INT:
+        case AST_VAR:
+        case AST_BIN_OP:
+        case AST_UNARY_OP:
+        case AST_FUNC:
+        case AST_PROGRAM:
+            char* s = ast_to_str(ast);
+            PANIC("cannot check statement '%s'", s);
+    }
+}
+
+void check_prog(This* this, const Ast* _ast) {
+    switch (_ast->kind) {
+        case AST_PROGRAM:
+            const AstProgram* ast = (const AstProgram*)_ast;
+            for (size_t i = 0; i < ast->n_statements; i++) {
+                const Ast* s = ast->statements[i];
+                check_stmt(this, s);
+                if (has_error(this)) break;
+            }
+            break;
+        case AST_NULL:
+        case AST_ERROR:
+        case AST_INT:
+        case AST_VAR:
+        case AST_BIN_OP:
+        case AST_UNARY_OP:
+        case AST_FUNC:
+        case AST_ASSIGN:
+        case AST_COMPOUND_STATEMENT:
+        case AST_EMPTY_STATEMENT: break;
+    }
 }
