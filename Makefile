@@ -17,6 +17,7 @@ OBJ_BASE_DIR := obj
 LIB_BASE_DIR := lib
 OBJ_DIR      := $(OBJ_BASE_DIR)/$(PROFILE)
 LIB_DIR      := $(LIB_BASE_DIR)/$(PROFILE)
+BIN_DIR      := $(OBJ_BASE_DIR)/$(PROFILE)/bin
 INSTALL_LIB  := $(PREFIX)/lib
 INSTALL_INC  := $(PREFIX)/include/$(NAME)
 
@@ -42,7 +43,7 @@ else
 endif
 
 # --- Targets ------------------------------------------------------------------
-.PHONY: build release debug test fmt clean install uninstall help
+.PHONY: build release debug test fmt clean install uninstall help repl
 
 build: $(TARGET)
 
@@ -63,10 +64,14 @@ $(TARGET): $(OBJS) | $(LIB_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BIN_DIR)/%: CFLAGS += -DBIN
+$(BIN_DIR)/%: $(SRC_DIR)/%.c $(HEADERS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $< -o $@
+
 -include $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
 
 ## Create output directories if they don't exist
-$(OBJ_DIR) $(LIB_DIR):
+$(OBJ_DIR) $(LIB_DIR) $(BIN_DIR):
 	mkdir -p $@
 
 # --- Test ---------------------------------------------------------------------
@@ -79,6 +84,9 @@ fmt:
 	@echo "Formatting source files with clang-format"
 	@# -i - in-place editing
 	clang-format -i $(SRCS) $(HEADERS)
+
+repl: $(BIN_DIR)/repl
+	$(BIN_DIR)/repl 
 
 # --- Install & Uninstall ------------------------------------------------------
 install: build
@@ -106,6 +114,8 @@ help:
 	@echo "  build     Build the static library (default)"
 	@echo "  debug     Build with debug symbols and no optimisation"
 	@echo "  test      Run all tests"
+	@echo "  fmt       Format source files with clang-format"
+	@echo "  repl      Run a REPL for testing the interpreter implemented in the library"
 	@echo "  install   Install library and headers to PREFIX (default: /usr/local)"
 	@echo "  uninstall Remove installed files"
 	@echo "  clean     Remove all build artifacts"

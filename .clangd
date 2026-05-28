@@ -1,2 +1,16 @@
 CompileFlags:
-  Add: [-Wall, -Wextra, -Wpedantic, -std=c23, -I./include]
+  Add: [
+    # Some warning flags. Actually, that is not all, because clangd will
+    # also use flags from compile_flags.txt.
+    -Wall,
+    -Wextra,
+    -Wpedantic,
+    # We are using C23! Not everything will be supported, but that's fine.
+    -std=c23,
+    # This directory contains our header files.
+    -I./include,
+    # Act as if BIN is defined. In practice, this flag is defined only when
+    # for a single file at a time, and only when it is being built as the
+    # main file.
+    -DBIN,
+  ]
