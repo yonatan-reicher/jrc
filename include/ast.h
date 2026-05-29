@@ -35,6 +35,10 @@ typedef struct Ast {
 
 const char* ast_kind_name(AstKind);
 
+bool ast_is_expr(const Ast*);
+
+bool ast_is_stmt(const Ast*);
+
 DECLARE_ARRAY(const Ast*, ConstAstPtrArray);
 void ast_children(const Ast*, ConstAstPtrArray* out_children);
 

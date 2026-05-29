@@ -9,7 +9,7 @@
 
 Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx) {
     Parser parser = {
-        get_token, get_token_ctx, false, { 0 }, NULL, 0, 0, NULL, 0, false,
+        get_token, get_token_ctx, 0, { 0 }, NULL, 0, 0, NULL, 0, false,
     };
     return parser;
 }
@@ -44,20 +44,37 @@ void* alloc(Parser* p, size_t size) {
 #define ALLOC(p, type) (type*)alloc(p, sizeof(type))
 
 Token get_token(Parser* p) {
-    if (p->has_peeked_token) {
-        p->has_peeked_token = false;
-        return p->peeked_token;
-    } else {
-        return p->get_token(p->get_token_ctx);
+    switch (p->n_tokens_peeked) {
+        case 0: return p->get_token(p->get_token_ctx);
+        case 1: return (p->n_tokens_peeked = 0, p->peeked_tokens[0]);
+        case 2:
+            Token ret = p->peeked_tokens[0];
+            p->peeked_tokens[0] = p->peeked_tokens[1];
+            p->n_tokens_peeked = 1;
+            return ret;
+        default: PANIC("this should not happen");
     }
 }
 
 static Token peek(Parser* p) {
-    if (!p->has_peeked_token) {
-        p->peeked_token = p->get_token(p->get_token_ctx);
-        p->has_peeked_token = true;
+    if (p->n_tokens_peeked == 0) {
+        p->peeked_tokens[0] = p->get_token(p->get_token_ctx);
+        p->n_tokens_peeked = 1;
     }
-    return p->peeked_token;
+    return p->peeked_tokens[0];
+}
+
+/// Peek the token after the next one
+static Token peek_second(Parser* p) {
+    if (p->n_tokens_peeked == 0) {
+        p->peeked_tokens[0] = p->get_token(p->get_token_ctx);
+        p->peeked_tokens[1] = p->get_token(p->get_token_ctx);
+        p->n_tokens_peeked = 2;
+    } else if (p->n_tokens_peeked == 1) {
+        p->peeked_tokens[1] = p->get_token(p->get_token_ctx);
+        p->n_tokens_peeked = 2;
+    }
+    return p->peeked_tokens[1];
 }
 
 #define err(P, SPAN, ...) err_((P), (SPAN), str_format(__VA_ARGS__))
@@ -325,14 +342,20 @@ Ast* parse_empty_statement(Parser* p) {
     return ast;
 }
 
-Ast* parser_parse_statement(Parser* p) {
+static Ast* parse_stmt_or_expr(Parser* p) {
     const Token t = peek(p);
-    switch (t.kind) {
-        case TOKEN_KIND_LCURLY: return parse_compound_statement(p);
-        case TOKEN_KIND_WORD: return parse_assign(p);
-        case TOKEN_KIND_SEMICOLON: return parse_empty_statement(p);
-        default: return (Ast*)err(p, t.span, "not start of a statement");
-    }
+    if (t.kind == TOKEN_KIND_LCURLY) return parse_compound_statement(p);
+    if (t.kind == TOKEN_KIND_SEMICOLON) return parse_empty_statement(p);
+    if (t.kind == TOKEN_KIND_WORD && peek_second(p).kind == TOKEN_KIND_COLON_EQ)
+        return parse_assign(p);
+    return parse_expr(p);
+}
+
+Ast* parser_parse_statement(Parser* p) {
+    Ast* ast = parse_stmt_or_expr(p);
+    return ast_is_stmt(ast)
+               ? ast
+               : (Ast*)err(p, ast->span, "this is not a statement");
 }
 
 Ast* parser_parse_program(Parser* p) {
@@ -364,6 +387,10 @@ Ast* parser_parse_program(Parser* p) {
 
 Ast* parser_parse_expr(Parser* p) {
     return parse_expr(p);
+}
+
+Ast* parser_parse_repl_line(Parser* p) {
+    return parse_stmt_or_expr(p);
 }
 
 bool parser_had_err(const Parser* p) {

@@ -23,6 +23,38 @@ const char* ast_kind_name(AstKind kind) {
     }
 }
 
+bool ast_is_expr(const Ast* ast) {
+    switch (ast->kind) {
+        case AST_INT:
+        case AST_VAR:
+        case AST_BIN_OP:
+        case AST_UNARY_OP:
+        case AST_FUNC: return true;
+        case AST_NULL:
+        case AST_ERROR:
+        case AST_ASSIGN:
+        case AST_COMPOUND_STATEMENT:
+        case AST_EMPTY_STATEMENT:
+        case AST_PROGRAM: return false;
+    }
+}
+
+bool ast_is_stmt(const Ast* ast) {
+    switch (ast->kind) {
+        case AST_ASSIGN:
+        case AST_COMPOUND_STATEMENT:
+        case AST_EMPTY_STATEMENT: return true;
+        case AST_NULL:
+        case AST_ERROR:
+        case AST_INT:
+        case AST_VAR:
+        case AST_BIN_OP:
+        case AST_UNARY_OP:
+        case AST_FUNC:
+        case AST_PROGRAM: return false;
+    }
+}
+
 void ast_children(const Ast* ast, ConstAstPtrArray* out_children) {
     switch (ast->kind) {
         // No children

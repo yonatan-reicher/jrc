@@ -7,8 +7,8 @@ typedef struct Parser {
     // Getting tokens
     Token (*get_token)(void* ctx);
     void* get_token_ctx;
-    bool has_peeked_token;
-    Token peeked_token;
+    int n_tokens_peeked;
+    Token peeked_tokens[2];
     // Managing memory
     void* arena;
     size_t arena_size;
@@ -32,6 +32,8 @@ Ast* parser_parse_expr(Parser* parser);
 Ast* parser_parse_statement(Parser*);
 
 Ast* parser_parse_program(Parser*);
+
+Ast* parser_parse_repl_line(Parser*);
 
 // Error
 
