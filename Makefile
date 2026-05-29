@@ -65,8 +65,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BIN_DIR)/%: CFLAGS += -DBIN
-$(BIN_DIR)/%: $(SRC_DIR)/%.c $(HEADERS) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $< -o $@
+$(BIN_DIR)/%: old_objs := $(OBJS)
+$(BIN_DIR)/%: OBJS = $(filter-out $(OBJ_DIR)/$*.o,$(old_objs))
+$(BIN_DIR)/%: $(SRC_DIR)/%.c $(HEADERS) $(OBJS) | $(BIN_DIR)
+	$(CC) $(CFLAGS) $< $(OBJS) -o $@
 
 -include $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
 
