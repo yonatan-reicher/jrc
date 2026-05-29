@@ -27,8 +27,7 @@ Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx);
 
 void parser_free(Parser* parser);
 
-/// TODO: Rename to `parser_parse_expr`
-Ast* parser_parse(Parser* parser);
+Ast* parser_parse_expr(Parser* parser);
 
 Ast* parser_parse_statement(Parser*);
 

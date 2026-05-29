@@ -362,7 +362,7 @@ Ast* parser_parse_program(Parser* p) {
     return (Ast*)ast;
 }
 
-Ast* parser_parse(Parser* p) {
+Ast* parser_parse_expr(Parser* p) {
     return parse_expr(p);
 }
 

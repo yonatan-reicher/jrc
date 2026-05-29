@@ -14,7 +14,7 @@ Ast* parse_expr(const char* text) {
     l = lexer_new(text);
     p = parser_new((Token(*)(void*))lexer_pop, &l);
     initialized = true;
-    return parser_parse(&p);
+    return parser_parse_expr(&p);
 }
 
 Ast* parse_program(const char* text) {

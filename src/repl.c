@@ -28,7 +28,7 @@ void repl(void) {
         printf("txt: %s\n", line.ptr);
         Lexer l = lexer_new(line.ptr);
         Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
-        const Ast* ast = parser_parse(&p);
+        const Ast* ast = parser_parse_expr(&p);
         printf("ast: %s\n", ast_to_str(ast));
 
         if (parser_had_err(&p)) {

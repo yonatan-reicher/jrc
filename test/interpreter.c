@@ -7,7 +7,7 @@ void test_operators(void) {
     const char* text = "1 + 2 * ---3 - 4 / 5 % 6";
     Lexer l = lexer_new(text);
     Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     Interpreter i = interpreter_new();
     Value v = interpreter_eval_expr(&i, ast);
     EXPECT(
@@ -32,7 +32,7 @@ void test_var_eval_not_defined(void) {
     const char* text = "foo";
     Lexer l = lexer_new(text);
     Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     Interpreter i = interpreter_new();
     Value v = interpreter_eval_expr(&i, ast);
     EXPECT(

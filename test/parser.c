@@ -12,7 +12,7 @@ Parser new_parser(const char* text) {
 void test_empty_input(void) {
     const char* text = "";
     Parser p = new_parser(text);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     EXPECT(
         ast->kind == AST_ERROR,
         "expected an error on empty input, got %s",
@@ -24,7 +24,7 @@ void test_empty_input(void) {
 void test_int_input(void) {
     const char* text = "   123   ";
     Parser p = new_parser(text);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     EXPECT(
         ast->kind == AST_INT,
         "expected an integer on input '%s', got %s",
@@ -43,7 +43,7 @@ void test_int_input(void) {
 static void test_var(void) {
     const char* text = "   foo   ";
     Parser p = new_parser(text);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     EXPECT(
         ast->kind == AST_VAR,
         "expected a variable on input '%s', got %s",
@@ -62,7 +62,7 @@ static void test_var(void) {
 static void test_order_of_operations(void) {
     const char* text = "a + b * c + d * e";
     Parser p = new_parser(text);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     char* ast_str = ast_to_str(ast);
     const char* expected = "((a + (b * c)) + (d * e))";
     EXPECT(
@@ -78,7 +78,7 @@ static void test_order_of_operations(void) {
 void test_error_on_unexpected_token(void) {
     const char* text = "   (   ";
     Parser p = new_parser(text);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     EXPECT(
         ast->kind == AST_ERROR,
         "expected an error on input '%s', got %s",
@@ -123,7 +123,7 @@ static void test_func_expression(void) {
     const char* text = "x => x + 1";
     const char* expected = "(x => (x + 1))";
     Parser p = new_parser(text);
-    Ast* ast = parser_parse(&p);
+    Ast* ast = parser_parse_expr(&p);
     char* ast_str = ast_to_str(ast);
     EXPECT(
         str_eq(ast_str, expected),
