@@ -23,6 +23,49 @@ const char* ast_kind_name(AstKind kind) {
     }
 }
 
+void ast_children(const Ast* ast, ConstAstPtrArray* out_children) {
+    switch (ast->kind) {
+        // No children
+        case AST_NULL:
+        case AST_ERROR:
+        case AST_INT:
+        case AST_VAR:
+        case AST_EMPTY_STATEMENT: break;
+        // Single children
+        case AST_UNARY_OP:
+            array_push(out_children, ((const AstUnaryOp*)ast)->arg);
+            break;
+        case AST_ASSIGN:
+            array_push(out_children, ((const AstAssign*)ast)->rhs);
+            break;
+        case AST_FUNC:
+            array_push(out_children, ((const AstFunc*)ast)->body);
+            break;
+        // Twins
+        case AST_BIN_OP:
+            array_push(out_children, ((const AstBinOp*)ast)->left);
+            array_push(out_children, ((const AstBinOp*)ast)->right);
+            break;
+        // More
+        case AST_COMPOUND_STATEMENT:
+            const AstCompoundStatement* ast_ = (const AstCompoundStatement*)ast;
+            array_extend(out_children, ast_->children, ast_->n_children);
+            break;
+        case AST_PROGRAM:
+            const AstProgram* ast__ = (const AstProgram*)ast;
+            array_extend(out_children, ast__->statements, ast__->n_statements);
+            break;
+    }
+}
+
+void ast_each(const Ast* ast, void f(const Ast*, void*), void* f_data) {
+    f(ast, f_data);
+    ConstAstPtrArray children = array_empty();
+    ast_children(ast, &children);
+    ARRAY_FOREACH(&children, child) ast_each(*child, f, f_data);
+    array_free(&children);
+}
+
 static char* ast_error_to_str(const AstError* ast) {
     return str_format(
         "<ERROR on " TEXT_SPAN_PRINTF_FORMAT ": %s>",
@@ -114,6 +157,74 @@ char* ast_to_str(const Ast* ast) {
         case AST_PROGRAM: return ast_program_to_str((const AstProgram*)ast);
         case AST_FUNC: return ast_func_to_str((const AstFunc*)ast);
     }
+}
+
+/// Returns the full lines in the text that contain the given span, with
+/// additional lines above or below. The span is marked via '>' and '<'.
+static char* get_part_that_matters(
+    const char* text, TextSpan span, int context
+) {
+    const char *span_start = &text[span.start.index],
+               *span_end = &text[span.end.index];
+    const char *start = span_start, *end = span_end;
+    // Go back in start,
+    for (int i = 0; i < context + 1; i++)
+        while (start > text && *(start - 1) != '\n') start--;
+    // and forwards in end.
+    for (int i = 0; i < context + 1; i++)
+        while (*end != 0 && *end != '\n') end++;
+    char* ret = str_format(
+        "%.*s>%.*s<%.*s",
+        (int)(span_start - start),
+        start,
+        (int)(span_end - span_start),
+        span_start,
+        (int)(end - span_end),
+        span_end
+    );
+    return ret;
+}
+
+static void collect_err(const Ast*, ConstAstPtrArray*);
+
+void ast_to_err_report(
+    const Ast* ast, const char* text, const char* file, CharArray* out
+) {
+    ConstAstPtrArray err_asts = array_empty();
+    ast_each(ast, (void (*)(const Ast*, void*))collect_err, &err_asts);
+#define EMIT_STR(S)                                                            \
+    do {                                                                       \
+        const char* _s = (S);                                                  \
+        array_extend(out, _s, strlen(_s));                                     \
+    } while (0)
+#define EMIT_AND_FREE_STR(S)                                                   \
+    do {                                                                       \
+        char* __s = (S);                                                       \
+        EMIT_STR(__s);                                                         \
+        free(__s);                                                             \
+    } while (0)
+    // Actually writing the error
+    ARRAY_FOREACH(&err_asts, x) {
+        const AstError* err_ast = (const AstError*)*x;
+        EMIT_AND_FREE_STR(str_format(
+            "%s" TEXT_SPAN_PRINTF_FORMAT ": ",
+            file,
+            TEXT_SPAN_PRINTF(err_ast->art.span)
+        ));
+        EMIT_STR("error: "); // TODO: Make this red?
+        EMIT_STR(err_ast->message);
+        EMIT_STR("\n\n");
+        EMIT_AND_FREE_STR(get_part_that_matters(text, err_ast->art.span, 1));
+    }
+    array_push(out, 0);
+    // Done
+#undef EMIT_AND_FREE_STR
+#undef EMIT_STR
+    array_free(&err_asts);
+}
+
+static void collect_err(const Ast* ast, ConstAstPtrArray* out) {
+    if (ast->kind == AST_ERROR) array_push(out, ast);
 }
 
 // =============================================================================

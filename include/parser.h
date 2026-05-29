@@ -15,6 +15,8 @@ typedef struct Parser {
     size_t arena_capacity;
     void** previous_arenas;
     size_t n_previous_arenas;
+    // Remembering things
+    bool had_err;
 } Parser;
 
 // =============================================================================
@@ -31,3 +33,9 @@ Ast* parser_parse(Parser* parser);
 Ast* parser_parse_statement(Parser*);
 
 Ast* parser_parse_program(Parser*);
+
+// Error
+
+bool parser_had_err(const Parser* p);
+
+void parser_clear_err(Parser* p);

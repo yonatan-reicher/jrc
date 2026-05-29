@@ -9,15 +9,7 @@
 
 Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx) {
     Parser parser = {
-        .get_token = get_token,
-        .get_token_ctx = get_token_ctx,
-        .has_peeked_token = false,
-        .peeked_token = { 0 },
-        .arena = NULL,
-        .arena_size = 0,
-        .arena_capacity = 0,
-        .previous_arenas = NULL,
-        .n_previous_arenas = 0,
+        get_token, get_token_ctx, false, { 0 }, NULL, 0, 0, NULL, 0, false,
     };
     return parser;
 }
@@ -68,12 +60,15 @@ static Token peek(Parser* p) {
     return p->peeked_token;
 }
 
-static AstError* err(Parser* p, TextSpan span, const char* message) {
+#define err(P, SPAN, ...) err_((P), (SPAN), str_format(__VA_ARGS__))
+
+static AstError* err_(Parser* p, TextSpan span, char* message) {
     size_t message_len = strlen(message);
     AstError* ast = alloc(p, sizeof(AstError) + message_len + 1);
-    ast->art.kind = AST_ERROR;
-    ast->art.span = span;
+    *ast = (AstError) { { AST_ERROR, span } };
     memcpy(ast->message, message, message_len + 1);
+    free(message);
+    p->had_err = true;
     return ast;
 }
 
@@ -95,9 +90,10 @@ static Ast* parse_int(Parser* p, Token t) {
         return (Ast*)err(p, t.span, MSG_RANGE);
     }
     AstInt* ast = ALLOC(p, AstInt);
-    ast->ast.kind = AST_INT;
-    ast->ast.span = t.span;
-    ast->value = (int64_t)i;
+    *ast = (AstInt) {
+        { AST_INT, t.span },
+        (int64_t)i,
+    };
     return (Ast*)ast;
 }
 
@@ -368,4 +364,12 @@ Ast* parser_parse_program(Parser* p) {
 
 Ast* parser_parse(Parser* p) {
     return parse_expr(p);
+}
+
+bool parser_had_err(const Parser* p) {
+    return p->had_err;
+}
+
+void parser_clear_err(Parser* p) {
+    p->had_err = false;
 }

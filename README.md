@@ -1,10 +1,17 @@
 # JRC
 
-A set of useful C utilities, for personal use, packaged as a library.
+A set of useful C utilities, for personal use, packaged aus a library.
 
 For building and installing, you may checkout `make help`. You may just clone
 this repo to your project, and compile the C files on your own (`gcc main.c
 ./jrc/src/*.c`)
+
+## Code Style
+
+When constructing structures, use an initializer list, but not designated
+initializers, when intending to initialize all fields.
+This is because compilers do not warn when fields are missing when using
+designated field initializers.
 
 ## Provides
 

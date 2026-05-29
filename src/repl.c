@@ -30,6 +30,14 @@ void repl(void) {
         Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
         const Ast* ast = parser_parse(&p);
         printf("ast: %s\n", ast_to_str(ast));
+
+        if (parser_had_err(&p)) {
+            CharArray out = array_empty();
+            ast_to_err_report(ast, line.ptr, "<repl input>", &out);
+            printf("%s\n", out.ptr);
+            array_free(&out);
+        }
+
         TypeChecker c = type_checker_new();
         const Type t = type_checker_infer_expr(&c, ast);
         printf("typ: %s\n", type_to_str(&t));

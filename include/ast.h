@@ -1,4 +1,5 @@
 #pragma once
+#include "array.h"
 #include "text_pos.h"
 #include <stdbool.h>
 
@@ -34,7 +35,16 @@ typedef struct Ast {
 
 const char* ast_kind_name(AstKind);
 
+DECLARE_ARRAY(const Ast*, ConstAstPtrArray);
+void ast_children(const Ast*, ConstAstPtrArray* out_children);
+
+/// Visits every node in the tree. Parents are visited before children
+/// (pre-order).
+void ast_each(const Ast*, void(const Ast*, void*), void*);
+
 char* ast_to_str(const Ast*);
+
+void ast_to_err_report(const Ast*, const char* text, const char* file, CharArray* out);
 
 // =============================================================================
 //                                   Operators
