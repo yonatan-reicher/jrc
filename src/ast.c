@@ -69,7 +69,7 @@ void ast_each(const Ast* ast, void f(const Ast*, void*), void* f_data) {
 static char* ast_error_to_str(const AstError* ast) {
     return str_format(
         "<ERROR on " TEXT_SPAN_PRINTF_FORMAT ": %s>",
-        TEXT_SPAN_PRINTF(ast->art.span),
+        TEXT_SPAN_PRINTF(ast->ast.span),
         ast->message
     );
 }
@@ -209,12 +209,12 @@ void ast_to_err_report(
         EMIT_AND_FREE_STR(str_format(
             "%s" TEXT_SPAN_PRINTF_FORMAT ": ",
             file,
-            TEXT_SPAN_PRINTF(err_ast->art.span)
+            TEXT_SPAN_PRINTF(err_ast->ast.span)
         ));
         EMIT_STR("error: "); // TODO: Make this red?
         EMIT_STR(err_ast->message);
         EMIT_STR("\n\n");
-        EMIT_AND_FREE_STR(get_part_that_matters(text, err_ast->art.span, 1));
+        EMIT_AND_FREE_STR(get_part_that_matters(text, err_ast->ast.span, 1));
     }
     array_push(out, 0);
     // Done

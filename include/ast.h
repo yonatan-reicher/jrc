@@ -88,7 +88,7 @@ bool bin_op_is_right_associative(BinOp);
 
 typedef struct AstError {
     /// TODO: rename
-    Ast art;
+    Ast ast;
     char message[];
 } AstError;
 
