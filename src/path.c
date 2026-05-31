@@ -1,6 +1,9 @@
 #include "path.h"
 #include "str.h"
+#if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
+#define HAS_PWD_H
 #include <pwd.h>
+#endif
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -127,7 +130,11 @@ Path path_cwd(void) {
 Path path_home(void) {
     const char* str = getenv("HOME");
     if (str == NULL) {
+#ifdef HAS_PWD_H
         str = getpwuid(getuid())->pw_dir;
+#else
+        PANIC("cannot get home directory - $HOME is not set and getpwuid is not available");
+#endif
     }
     return path_parse(str);
 }
