@@ -24,6 +24,7 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_LCURLY: return "LCURLY";
         case TOKEN_KIND_RCURLY: return "RCURLY";
     }
+    PANIC("invalid token kind %d", kind);
 }
 
 size_t token_len(const Token* t) {

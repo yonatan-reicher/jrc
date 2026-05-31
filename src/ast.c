@@ -18,6 +18,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_ASSIGN: return "ASSIGN";
         case AST_COMPOUND_STATEMENT: return "COMPOUND_STATEMENT";
     }
+    PANIC("Bad AstKind: %d", kind);
 }
 
 static char* ast_error_to_str(const AstError* ast) {
@@ -88,6 +89,7 @@ char* ast_to_str(const Ast* ast) {
                 (const AstCompoundStatement*)ast
             );
     }
+    PANIC("Bad AstKind: %d", ast->kind);
 }
 
 // =============================================================================
@@ -104,6 +106,7 @@ static UnaryOpInfo unary_op_info(UnaryOp op) {
         case UNARY_OP_NEG: return (UnaryOpInfo) { "NEG", "-" };
         case UNARY_OP_POS: return (UnaryOpInfo) { "POS", "+" };
     }
+    PANIC("Bad UnaryOp: %d", op);
 }
 
 const char* unary_op_name(UnaryOp op) {
@@ -133,6 +136,7 @@ static BinOpInfo bin_op_info(BinOp op) {
         case BIN_OP_DIV: return (BinOpInfo) { "DIV", "/", 100, false };
         case BIN_OP_REM: return (BinOpInfo) { "REM", "%", 100, false };
     }
+    PANIC("Bad BinOp: %d", op);
 }
 
 const char* bin_op_name(BinOp op) {

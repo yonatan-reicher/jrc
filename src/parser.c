@@ -189,6 +189,7 @@ bool try_parse_bin_op(const Token* t, BinOp* out_op) {
         case TOKEN_KIND_RCURLY: RETURN(false, 0);
     }
 #undef RETURN
+    PANIC("invalid token kind %d", t->kind);
 }
 
 bool try_parse_bin_op_min_precedence(
