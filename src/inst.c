@@ -57,6 +57,7 @@ const char* inst_op_code_short_name(InstOpCode op_code) {
         OP_CODE_X_TABLE(X)
     }
 #undef X
+    PANIC("Bad InstOpCode: %d", op_code);
 }
 
 const char* inst_op_code_full_name(InstOpCode op_code) {
@@ -67,6 +68,7 @@ const char* inst_op_code_full_name(InstOpCode op_code) {
         OP_CODE_X_TABLE(X)
     }
 #undef X
+    PANIC("Bad InstOpCode: %d", op_code);
 }
 
 char* inst_to_str(Inst inst) {

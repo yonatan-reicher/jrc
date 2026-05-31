@@ -21,6 +21,7 @@ const char* ast_kind_name(AstKind kind) {
         case AST_PROGRAM: return "PROGRAM";
         case AST_FUNC: return "FUNC";
     }
+    PANIC("Bad AstKind: %d", kind);
 }
 
 bool ast_is_expr(const Ast* ast) {
@@ -189,6 +190,7 @@ char* ast_to_str(const Ast* ast) {
         case AST_PROGRAM: return ast_program_to_str((const AstProgram*)ast);
         case AST_FUNC: return ast_func_to_str((const AstFunc*)ast);
     }
+    PANIC("Bad AstKind: %d", ast->kind);
 }
 
 /// Returns the full lines in the text that contain the given span, with
@@ -273,6 +275,7 @@ static UnaryOpInfo unary_op_info(UnaryOp op) {
         case UNARY_OP_NEG: return (UnaryOpInfo) { "NEG", "-" };
         case UNARY_OP_POS: return (UnaryOpInfo) { "POS", "+" };
     }
+    PANIC("Bad UnaryOp: %d", op);
 }
 
 const char* unary_op_name(UnaryOp op) {
@@ -302,6 +305,7 @@ static BinOpInfo bin_op_info(BinOp op) {
         case BIN_OP_DIV: return (BinOpInfo) { "DIV", "/", 100, false };
         case BIN_OP_REM: return (BinOpInfo) { "REM", "%", 100, false };
     }
+    PANIC("Bad BinOp: %d", op);
 }
 
 const char* bin_op_name(BinOp op) {

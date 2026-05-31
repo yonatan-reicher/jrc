@@ -81,6 +81,7 @@ static bool try_apply_bin_op(BinOp op, Value lhs, Value rhs, Value* out) {
         case BIN_OP_DIV: *out = value_int(lhs.data.i / rhs.data.i); return true;
         case BIN_OP_REM: *out = value_int(lhs.data.i % rhs.data.i); return true;
     }
+    PANIC("Bad BinOp: %d", op);
 }
 
 static Value var_eval(Interpreter* i, const AstVar* ast) {
@@ -132,6 +133,7 @@ static Value unary_op_eval(Interpreter* i, const AstUnaryOp* ast) {
         case UNARY_OP_NEG: return value_int(-arg.data.i);
         case UNARY_OP_POS: return arg;
     }
+    PANIC("Bad UnaryOp: %d", ast->op);
 }
 
 Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
@@ -151,6 +153,7 @@ Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
             char* ast_str = ast_to_str(ast);
             PANIC("cannot evaluate AST:\n%s", ast_str);
     }
+    PANIC("Bad AstKind: %d", ast->kind);
 }
 
 void interpreter_execute_statement(Interpreter* i, const Ast* ast) {

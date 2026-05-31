@@ -93,6 +93,7 @@ static uint8_t arg_max_index(const This* this, uint8_t which_arg) {
         case INST_ARG_TYPE_IMM:
             return (uint8_t)(this->config.immediates.len - 1);
     }
+    PANIC("invalid argument type %d", arg_type(this, which_arg));
 }
 
 static bool try_advance_arg(This* this, uint8_t which_arg) {
@@ -116,6 +117,7 @@ static uint8_t arg_current(const This* this, uint8_t which_arg) {
             return this->config.registers.ptr[arg_index];
         case INST_ARG_TYPE_IMM: return this->config.immediates.ptr[arg_index];
     }
+    PANIC("invalid argument type %d", arg_type(this, which_arg));
 }
 
 Inst inst_enumerator_current(const This* this) {

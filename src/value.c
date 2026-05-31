@@ -16,4 +16,5 @@ char* value_to_str(Value v) {
         case VALUE_NULL: return str_clone("null");
         case VALUE_INT: return str_format("%" PRId64, v.data.i);
     }
+    PANIC("invalid value kind %d", v.kind);
 }

@@ -29,6 +29,7 @@ const char* token_kind_name(TokenKind kind) {
         case TOKEN_KIND_BANG: return "BANG";
         case TOKEN_KIND_BANG_EQ: return "BANG-EQ";
     }
+    PANIC("invalid token kind %d", kind);
 }
 
 size_t token_len(const Token* t) {

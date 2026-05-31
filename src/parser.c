@@ -211,6 +211,7 @@ bool try_parse_bin_op(const Token* t, BinOp* out_op) {
         default: RETURN(false, 0);
     }
 #undef RETURN
+    PANIC("invalid token kind %d", t->kind);
 }
 
 bool try_parse_bin_op_min_precedence(
