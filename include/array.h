@@ -79,7 +79,8 @@
 
 #define ARRAY_FOREACH(ARR, VAR)                                                \
     for (size_t i_##VAR = 0; i_##VAR < (ARR)->len; i_##VAR++)                  \
-        for (typeof(&(ARR)->ptr[0]) VAR = &(ARR)->ptr[i_##VAR]; VAR != NULL;   \
+        for (typeof_unqual(&(ARR)->ptr[0]) VAR = &(ARR)->ptr[i_##VAR];         \
+             VAR != NULL;                                                      \
              VAR = NULL)
 
 /// A reversed version of `ARRAY_FOREACH`. The index variable still counts up.
