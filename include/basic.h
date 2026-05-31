@@ -9,6 +9,9 @@
 #define _STR(X) #X
 #define STR(X) _STR(X)
 
+/// Returns the maximum of two values. May evaluate arguments twice.
+#define MAX(A, B) ((A) > (B) ? (A) : (B))
+
 /** Get length of an array variable (does not work on function parameters!) */
 #define ARRAY_LEN(A) (sizeof(A) / sizeof((A)[0]))
 
