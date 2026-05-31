@@ -30,7 +30,7 @@
     do {                                                                       \
         /* Avoid calling `realloc` when capacity is 0. */                      \
         if ((ARR)->cap == 0) {                                                 \
-            (ARR)->cap = 4;                                                    \
+            (ARR)->cap = MAX(4, (ARR)->len + 1);                               \
             (ARR)->ptr = malloc((ARR)->cap * sizeof((ARR)->ptr[0]));           \
         } else if ((ARR)->len == (ARR)->cap) {                                 \
             (ARR)->cap *= 2;                                                   \
