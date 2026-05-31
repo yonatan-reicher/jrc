@@ -208,7 +208,7 @@ bool try_parse_bin_op(const Token* t, BinOp* out_op) {
         case TOKEN_KIND_STAR: RETURN(true, BIN_OP_MUL);
         case TOKEN_KIND_SLASH: RETURN(true, BIN_OP_DIV);
         case TOKEN_KIND_PERCENT: RETURN(true, BIN_OP_REM);
-        default: RETURN(false, 0);
+        default: RETURN(false, (BinOp)0);
     }
 #undef RETURN
     PANIC("invalid token kind %d", t->kind);
@@ -237,7 +237,7 @@ static Ast* parse_bin_op_expr_with_min_precedence(
                 bin_op_is_right_associative(next_op))) {
             const BinOpPrecedence next_op_prec = bin_op_precedence(next_op);
             rhs = parse_bin_op_expr_with_min_precedence(
-                p, rhs, op_prec + (next_op_prec > op_prec ? 1 : 0)
+                p, rhs, (BinOpPrecedence)(op_prec + (next_op_prec > op_prec ? 1 : 0))
             );
             t = peek(p);
         }
