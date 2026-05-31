@@ -49,9 +49,10 @@ char* str_format_va_list(const char* fmt, va_list args) {
     va_list args_copy;
     va_copy(args_copy, args);
     // Get the length of the formatted string.
-    size_t len = (size_t)vsnprintf(NULL, 0, fmt, args_copy);
+    int len_int = vsnprintf(NULL, 0, fmt, args_copy);
     va_end(args_copy);
-    if (len < 0) return NULL;
+    if (len_int < 0) return NULL;
+    size_t len = (size_t)len_int;
     // Allocate a buffer for the formatted string.
     char* buf = malloc(len + 1);
     if (buf == NULL) return NULL;
