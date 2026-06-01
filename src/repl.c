@@ -61,8 +61,9 @@ void repl(void) {
         lexer_free(&l);
         array_clear(&line);
     }
-    interpreter_free(&i);
-    type_checker_free(&c);
+    // We don't free these because this code is unreachable
+    // interpreter_free(&i);
+    // type_checker_free(&c);
 }
 
 #ifdef BIN
