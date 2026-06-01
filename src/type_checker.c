@@ -153,11 +153,11 @@ static void check_compound_stmt(This* this, const AstCompoundStatement* ast) {
 void check_stmt(This* this, const Ast* ast) {
     if (has_error(this)) return;
     switch (ast->kind) {
-        case AST_EMPTY_STATEMENT: break;
-        case AST_ASSIGN: check_assign_stmt(this, (const AstAssign*)ast); break;
+        case AST_EMPTY_STATEMENT: return;
+        case AST_ASSIGN: check_assign_stmt(this, (const AstAssign*)ast); return;
         case AST_COMPOUND_STATEMENT:
             check_compound_stmt(this, (const AstCompoundStatement*)ast);
-            break;
+            return;
         case AST_NULL:
         case AST_ERROR:
         case AST_INT:
@@ -179,9 +179,9 @@ void check_prog(This* this, const Ast* _ast) {
             for (size_t i = 0; i < ast->n_statements; i++) {
                 const Ast* s = ast->statements[i];
                 check_stmt(this, s);
-                if (has_error(this)) break;
+                if (has_error(this)) return;
             }
-            break;
+            return;
         case AST_NULL:
         case AST_ERROR:
         case AST_INT:
@@ -191,7 +191,7 @@ void check_prog(This* this, const Ast* _ast) {
         case AST_FUNC:
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
-        case AST_EMPTY_STATEMENT: break;
+        case AST_EMPTY_STATEMENT: return;
     }
     PANIC("bad AstKind: %d", _ast->kind);
 }
