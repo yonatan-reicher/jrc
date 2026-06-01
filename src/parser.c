@@ -9,7 +9,7 @@
 
 Parser parser_new(Token (*get_token)(void* ctx), void* get_token_ctx) {
     Parser parser = {
-        get_token, get_token_ctx, 0, { 0 }, NULL, 0, 0, NULL, 0, false,
+        get_token, get_token_ctx, 0, {}, NULL, 0, 0, NULL, 0, false,
     };
     return parser;
 }
@@ -237,7 +237,9 @@ static Ast* parse_bin_op_expr_with_min_precedence(
                 bin_op_is_right_associative(next_op))) {
             const BinOpPrecedence next_op_prec = bin_op_precedence(next_op);
             rhs = parse_bin_op_expr_with_min_precedence(
-                p, rhs, (BinOpPrecedence)(op_prec + (next_op_prec > op_prec ? 1 : 0))
+                p,
+                rhs,
+                (BinOpPrecedence)(op_prec + (next_op_prec > op_prec ? 1 : 0))
             );
             t = peek(p);
         }

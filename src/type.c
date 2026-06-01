@@ -1,5 +1,6 @@
-#include "type.h"
+#include "basic.h"
 #include "str.h"
+#include "type.h"
 #include <stdlib.h>
 
 Type type_null(void) {
@@ -32,4 +33,5 @@ bool type_eq(const Type* a, const Type* b) {
         case TYPE_ERROR: return true;
         case TYPE_INT: return true;
     }
+    PANIC("bad TypeKind: %d", a->kind);
 }

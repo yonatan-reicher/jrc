@@ -110,6 +110,7 @@ Type infer_expr(This* this, const Ast* ast) {
         case AST_PROGRAM:
             PANIC("unhandled ast kind %s", ast_kind_name(ast->kind)); // TODO
     }
+    PANIC("bad AstKind: %d", ast->kind);
 }
 
 void type_checker_check_expr(
@@ -168,6 +169,7 @@ void check_stmt(This* this, const Ast* ast) {
             char* s = ast_to_str(ast);
             PANIC("cannot check statement '%s'", s);
     }
+    PANIC("bad AstKind: %d", ast->kind);
 }
 
 void check_prog(This* this, const Ast* _ast) {
@@ -191,4 +193,5 @@ void check_prog(This* this, const Ast* _ast) {
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT: break;
     }
+    PANIC("bad AstKind: %d", _ast->kind);
 }

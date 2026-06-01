@@ -38,6 +38,7 @@ bool ast_is_expr(const Ast* ast) {
         case AST_EMPTY_STATEMENT:
         case AST_PROGRAM: return false;
     }
+    PANIC("Bad AstKind: %d", ast->kind);
 }
 
 bool ast_is_stmt(const Ast* ast) {
@@ -54,6 +55,7 @@ bool ast_is_stmt(const Ast* ast) {
         case AST_FUNC:
         case AST_PROGRAM: return false;
     }
+    PANIC("Bad AstKind: %d", ast->kind);
 }
 
 void ast_children(const Ast* ast, ConstAstPtrArray* out_children) {
@@ -196,16 +198,16 @@ char* ast_to_str(const Ast* ast) {
 /// Returns the full lines in the text that contain the given span, with
 /// additional lines above or below. The span is marked via '>' and '<'.
 static char* get_part_that_matters(
-    const char* text, TextSpan span, int context
+    const char* text, TextSpan span, unsigned int context
 ) {
     const char *span_start = &text[span.start.index],
                *span_end = &text[span.end.index];
     const char *start = span_start, *end = span_end;
     // Go back in start,
-    for (int i = 0; i < context + 1; i++)
+    for (unsigned int i = 0; i < context + 1; i++)
         while (start > text && *(start - 1) != '\n') start--;
     // and forwards in end.
-    for (int i = 0; i < context + 1; i++)
+    for (unsigned int i = 0; i < context + 1; i++)
         while (*end != 0 && *end != '\n') end++;
     char* ret = str_format(
         "%.*s>%.*s<%.*s",

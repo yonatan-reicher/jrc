@@ -26,10 +26,10 @@ void test_all_but_first_bit_minus_one(void) {
 }
 
 void test_is_exactly_one_bit(void) {
-    EXPECT(IS_EXACTLY_ONE_BIT(0b1), "");
-    EXPECT(!IS_EXACTLY_ONE_BIT(0b0), "");
-    EXPECT(!IS_EXACTLY_ONE_BIT(0b11), "");
-    EXPECT(IS_EXACTLY_ONE_BIT(0b1000), "");
+    EXPECT(IS_EXACTLY_ONE_BIT(0b1), "0b1 has exactly one bit");
+    EXPECT(!IS_EXACTLY_ONE_BIT(0b0), "0b0 does not have any bits");
+    EXPECT(!IS_EXACTLY_ONE_BIT(0b11), "0b11 has more than one bit");
+    EXPECT(IS_EXACTLY_ONE_BIT(0b1000), "0b1000 has exactly one bit");
 }
 
 int main(void) {
