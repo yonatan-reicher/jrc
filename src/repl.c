@@ -18,6 +18,8 @@ static bool my_get_line(CharArray* out) {
 
 void repl(void) {
     CharArray line = array_empty();
+    TypeChecker c = type_checker_new();
+    Interpreter i = interpreter_new();
     while (true) {
         printf("> ");
         bool success = my_get_line(&line);
@@ -36,20 +38,31 @@ void repl(void) {
             ast_to_err_report(ast, line.ptr, "<repl input>", &out);
             printf("%s\n", out.ptr);
             array_free(&out);
+            goto cont;
         }
 
-        TypeChecker c = type_checker_new();
-        const Type t = type_checker_infer_expr(&c, ast);
-        printf("typ: %s\n", type_to_str(&t));
-        Interpreter i = interpreter_new();
-        const Value v = interpreter_eval_expr(&i, ast);
-        printf("val: %s\n", value_to_str(v));
-        interpreter_free(&i);
-        type_checker_free(&c);
+        if (ast_is_expr(ast)) {
+            Type t = type_checker_infer_expr(&c, ast);
+            char* t_str = type_to_str(&t);
+            printf("typ: %s\n", t_str);
+            free(t_str);
+        } else {
+            type_checker_check_statement(&c, ast);
+        }
+        if (ast_is_expr(ast)) {
+            Value v = interpreter_eval_expr(&i, ast);
+            printf("val: %s\n", value_to_str(v));
+        } else {
+            interpreter_execute_statement(&i, ast);
+        }
+
+    cont:
         parser_free(&p);
         lexer_free(&l);
         array_clear(&line);
     }
+    interpreter_free(&i);
+    type_checker_free(&c);
 }
 
 #ifdef BIN
