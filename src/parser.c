@@ -295,7 +295,6 @@ static Ast* parse_assign(Parser* p) {
     Ast* rhs = parse_expr(p);
     const Token end = get_token(p);
     if (end.kind != TOKEN_KIND_SEMICOLON) {
-        free(rhs);
         return (Ast*)err(p, end.span, "expected ';' here");
     }
     AstAssign* ret = alloc(p, sizeof(AstAssign) + token_len(&var) + 1);
