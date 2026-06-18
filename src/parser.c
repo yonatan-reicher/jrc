@@ -388,7 +388,12 @@ Ast* parser_parse_program(Parser* p) {
 }
 
 Ast* parser_parse_expr(Parser* p) {
-    return parse_expr(p);
+    Ast* ret = parse_expr(p);
+    if (parser_has_more_tokens(p)) {
+        const Token t = peek(p);
+        return (Ast*)err(p, t.span, "unexpected left-over text: '%s'", t.text);
+    }
+    return ret;
 }
 
 Ast* parser_parse_repl_line(Parser* p) {
@@ -401,4 +406,8 @@ bool parser_had_err(const Parser* p) {
 
 void parser_clear_err(Parser* p) {
     p->had_err = false;
+}
+
+bool parser_has_more_tokens(Parser* p) {
+    return peek(p).kind != TOKEN_KIND_EOF;
 }

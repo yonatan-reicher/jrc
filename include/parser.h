@@ -35,6 +35,8 @@ Ast* parser_parse_program(Parser*);
 
 Ast* parser_parse_repl_line(Parser*);
 
+bool parser_has_more_tokens(Parser*);
+
 // Error
 
 bool parser_had_err(const Parser* p);
