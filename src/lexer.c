@@ -147,6 +147,7 @@ static TokenKind lexer_get_sym_kind(Lexer* l) {
                                   : TOKEN_KIND_MINUS;
         case '*': pop(l); return TOKEN_KIND_STAR;
         case '/': pop(l); return TOKEN_KIND_SLASH;
+        case '%': pop(l); return TOKEN_KIND_PERCENT;
         case '(': pop(l); return TOKEN_KIND_LPAREN;
         case ')': pop(l); return TOKEN_KIND_RPAREN;
         case '[': pop(l); return TOKEN_KIND_LSQUARE;
