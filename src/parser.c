@@ -312,12 +312,14 @@ static Ast* parse_assign(Parser* p) {
 
 DECLARE_ARRAY(Ast*, AstPtrArray);
 
+static Ast* parse_statement(Parser* p);
+
 static Ast* parse_compound_statement(Parser* p) {
     const Token open = get_token(p);
     EXPECT(open.kind == TOKEN_KIND_LCURLY, "must start with '{'");
     AstPtrArray children = array_empty();
     while (peek(p).kind != TOKEN_KIND_RCURLY) {
-        Ast* child = parser_parse_statement(p);
+        Ast* child = parse_statement(p);
         array_push(&children, child);
     }
     const Token end = get_token(p); // Consume the closing '}'
@@ -353,18 +355,27 @@ static Ast* parse_stmt_or_expr(Parser* p) {
     return parse_expr(p);
 }
 
-Ast* parser_parse_statement(Parser* p) {
+static Ast* parse_statement(Parser* p) {
     Ast* ast = parse_stmt_or_expr(p);
     return ast_is_stmt(ast)
                ? ast
                : (Ast*)err(p, ast->span, "this is not a statement");
 }
 
+Ast* parser_parse_statement(Parser* p) {
+    Ast* ret = parse_statement(p);
+    if (parser_has_more_tokens(p)) {
+        const Token t = peek(p);
+        return (Ast*)err(p, t.span, "unexpected left-over text: '%s'", t.text);
+    }
+    return ret;
+}
+
 Ast* parser_parse_program(Parser* p) {
     // Parse the statements
     AstPtrArray statements = array_empty();
     while (peek(p).kind != TOKEN_KIND_EOF) {
-        Ast* stmt = parser_parse_statement(p);
+        Ast* stmt = parse_statement(p);
         array_push(&statements, stmt);
     }
     // Now should come the end of the file.
@@ -397,7 +408,12 @@ Ast* parser_parse_expr(Parser* p) {
 }
 
 Ast* parser_parse_repl_line(Parser* p) {
-    return parse_stmt_or_expr(p);
+    Ast* ret = parse_stmt_or_expr(p);
+    if (parser_has_more_tokens(p)) {
+        const Token t = peek(p);
+        return (Ast*)err(p, t.span, "unexpected left-over text: '%s'", t.text);
+    }
+    return ret;
 }
 
 bool parser_had_err(const Parser* p) {
