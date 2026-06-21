@@ -43,7 +43,7 @@ else
 endif
 
 # --- Targets ------------------------------------------------------------------
-.PHONY: build release debug test fmt clean install uninstall help repl
+.PHONY: build release debug test fmt clean install uninstall help repl whatever
 
 build: $(TARGET)
 
@@ -64,11 +64,10 @@ $(TARGET): $(OBJS) | $(LIB_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN_DIR)/%: CFLAGS += -DBIN
 $(BIN_DIR)/%: old_objs := $(OBJS)
 $(BIN_DIR)/%: OBJS = $(filter-out $(OBJ_DIR)/$*.o,$(old_objs))
 $(BIN_DIR)/%: $(SRC_DIR)/%.c $(HEADERS) $(OBJS) | $(BIN_DIR)
-	$(CC) $(CFLAGS) $< $(OBJS) -o $@
+	$(CC) $(CFLAGS) -DBIN $< $(OBJS) -o $@
 
 -include $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
 
@@ -88,7 +87,11 @@ fmt:
 	clang-format -i $(SRCS) $(HEADERS)
 
 repl: $(BIN_DIR)/repl
-	$(BIN_DIR)/repl 
+	$(BIN_DIR)/repl
+
+# This target is just a placeholder target for trying things out.
+whatever: $(BIN_DIR)/whatever
+	$(BIN_DIR)/whatever
 
 # --- Install & Uninstall ------------------------------------------------------
 install: build
