@@ -58,3 +58,5 @@
         (A) = (B);                                                             \
         (B) = _tmp;                                                            \
     } while (0)
+
+inline void ignore(...);

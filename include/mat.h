@@ -53,7 +53,18 @@ bool mat_shape_eq(MatShape a, MatShape b);
 
 MatShape mat_shape_transpose(MatShape shape);
 
+inline size_t mat_shape_n_elements(MatShape shape) {
+    return shape.n_rows * shape.n_cols;
+}
+
 // ------ Matrix Operations ----------------------------------------------------
+
+inline size_t mat_n_elements(const MatView* m) {
+    return m->shape.n_rows * m->shape.n_cols;
+}
+
+float* mat_get(MatView* a, size_t i_row, size_t i_col);
+const float* mat_const_get(const MatView* a, size_t i_row, size_t i_col);
 
 void mat_mul(const MatView* A, const MatView* B, MatView* C);
 /// Multiplies A and B^T, where B^T is the transpose of B.

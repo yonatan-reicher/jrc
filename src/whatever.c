@@ -18,6 +18,7 @@ int main(void) {
     // 3 inputs, 2 outputs
     NEW_MAT(weights, 2, 3, {});
     NEW_MAT(biases, 2, 1, {});
+    NEW_MAT(out, 2, 1, {});
     NEW_MAT(output_error, 2, 1, {});
     NEW_MAT(weight_deltas, 2, 3, {});
     Perceptron p = perceptron_new(weights, biases);
@@ -26,16 +27,15 @@ int main(void) {
         for (size_t j = 0; j < dataset_len; j++) {
             MatView input = { dataset[j].input, { 3, 1 } };
             MatView target = { dataset[j].target, { 2, 1 } };
-            perceptron_train(
-                &p, &input, &target, 0.03f, &output_error, &weight_deltas
-            );
+            perceptron_forward(&p, &input, &out);
+            mat_sub(&target, &out, &output_error);
+            perceptron_train(&p, &input, &output_error, 0.03f, &weight_deltas);
         }
         float error_sum = 0;
         for (size_t j = 0; j < output_error.shape.n_rows; j++) {
             error_sum += output_error.data[j];
         }
-        if (i % 25 == 0)
-            printf("Iteration %d: Error sum = %f\n", i, error_sum);
+        if (i % 25 == 0) printf("Iteration %d: Error sum = %f\n", i, error_sum);
     }
     return 0;
 }

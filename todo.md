@@ -6,3 +6,8 @@ Make a Str type which holds it's length.
 Make path store it's string representation in itself
 
 Add unit tests inside source files instead of the testing directory
+
+- Paths (this is most important).
+- The interpreter and everything related.
+- `inst.h`
+- a super-optimizer

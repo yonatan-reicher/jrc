@@ -19,3 +19,15 @@ documentation as needed, and as things are interesting to their eyes. This makes
 it very important to make jumping around easy, and the jumps (usually between
 functions in the same file or to another file) should file like going from one
 short story to another.
+
+
+| Name         | Abbreviation |
+| :---         | ------------ |
+| function     | func         |
+| matrix       | mat          |
+| input        | inp          |
+| output       | out          |
+| context      | ctx          |
+| derivative   | deriv        |
+| error        | err          |
+

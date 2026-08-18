@@ -50,6 +50,18 @@ MatShape mat_shape_transposed(MatShape shape) {
 
 // ------ Matrix Operations ----------------------------------------------------
 
+float* mat_get(MatView* a, size_t i_row, size_t i_col) {
+    assert(i_row < a->shape.n_rows);
+    assert(i_col < a->shape.n_cols);
+    return &a->data[i_row * a->shape.n_cols + i_col];
+}
+
+const float* mat_const_get(const MatView* a, size_t i_row, size_t i_col) {
+    assert(i_row < a->shape.n_rows);
+    assert(i_col < a->shape.n_cols);
+    return &a->data[i_row * a->shape.n_cols + i_col];
+}
+
 void mat_mul(const MatView* a, const MatView* b, MatView* c) {
     assert(a->shape.n_cols == b->shape.n_rows);
     c->shape = mat_shape_mul(a->shape, b->shape);
