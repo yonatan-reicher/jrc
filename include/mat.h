@@ -53,13 +53,13 @@ bool mat_shape_eq(MatShape a, MatShape b);
 
 MatShape mat_shape_transpose(MatShape shape);
 
-inline size_t mat_shape_n_elements(MatShape shape) {
+static inline size_t mat_shape_n_elements(MatShape shape) {
     return shape.n_rows * shape.n_cols;
 }
 
 // ------ Matrix Operations ----------------------------------------------------
 
-inline size_t mat_n_elements(const MatView* m) {
+static inline size_t mat_n_elements(const MatView* m) {
     return m->shape.n_rows * m->shape.n_cols;
 }
 

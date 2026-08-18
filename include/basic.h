@@ -59,4 +59,4 @@
         (B) = _tmp;                                                            \
     } while (0)
 
-inline void ignore(...);
+extern inline void ignore(...);

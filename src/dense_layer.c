@@ -57,6 +57,7 @@ void dense_layer_backward(
 void dense_layer_train(
     DenseLayer* p, const MatView* inp, const MatView* out_err, float lr
 ) {
+    size_t n_batches = inp->shape.n_cols;
     // Update the weights!
     // w[i,j] += lr * Δout[i] * inp[j]
     // With batching,
@@ -64,7 +65,7 @@ void dense_layer_train(
     for (size_t i = 0; i < p->weights.shape.n_rows; i++) {
         for (size_t j = 0; j < p->weights.shape.n_cols; j++) {
             float sum = 0;
-            for (size_t k = 0; k < p->weights.shape.n_cols; k++) {
+            for (size_t k = 0; k < n_batches; k++) {
                 sum +=
                     *mat_const_get(out_err, i, k) * *mat_const_get(inp, j, k);
             }
@@ -74,7 +75,7 @@ void dense_layer_train(
     // Now biases
     for (size_t i = 0; i < out_err->shape.n_rows; i++) {
         float sum = 0;
-        for (size_t i_batch = 0; i_batch < p->biases.shape.n_rows; i_batch++) {
+        for (size_t i_batch = 0; i_batch < n_batches; i_batch++) {
             sum += *mat_const_get(out_err, i, i_batch);
         }
         *mat_get(&p->biases, i, 0) += lr * sum;

@@ -1,4 +1,4 @@
 #include "basic.h"
 
-inline void ignore(...) {
+extern inline void ignore(...) {
 }
