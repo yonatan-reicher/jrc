@@ -23,7 +23,9 @@ void dense_layer_randomize(DenseLayer* p, float min, float max) {
     }
 }
 
-void dense_layer_forward(const DenseLayer* p, const MatView* inp, MatView* out) {
+void dense_layer_forward(
+    const DenseLayer* p, const MatView* inp, MatView* out
+) {
     mat_mul(&p->weights, inp, out);
     mat_add(out, &p->biases, out);
 }
@@ -53,10 +55,7 @@ void dense_layer_backward(
 }
 
 void dense_layer_train(
-    DenseLayer* p,
-    const MatView* inp,
-    const MatView* out_err,
-    float lr
+    DenseLayer* p, const MatView* inp, const MatView* out_err, float lr
 ) {
     // Update the weights!
     // w[i,j] += lr * Δout[i] * inp[j]
@@ -82,7 +81,9 @@ void dense_layer_train(
     }
 }
 
-bool dense_layer_supports_inp_shape(const DenseLayer* this, MatShape inp_shape) {
+bool dense_layer_supports_inp_shape(
+    const DenseLayer* this, MatShape inp_shape
+) {
     return this->weights.shape.n_cols == inp_shape.n_rows;
 }
 
@@ -93,10 +94,12 @@ MatShape dense_layer_out_shape(const DenseLayer* this, MatShape inp_shape) {
 
 MLModel dense_layer_ml_model() {
     return (MLModel) {
-        (void(*)(const void*, const MatView*, MatView*))dense_layer_forward,
-        (void(*)(const void*, const MatView*, const MatView*, MatView*))dense_layer_backward,
-        (void(*)(void*, const MatView*, const MatView*, float))dense_layer_train,
-        (bool(*)(const void*, MatShape))dense_layer_supports_inp_shape,
+        (void (*)(const void*, const MatView*, MatView*))dense_layer_forward,
+        (void (*)(const void*, const MatView*, const MatView*, MatView*)
+        )dense_layer_backward,
+        (void (*)(void*, const MatView*, const MatView*, float)
+        )dense_layer_train,
+        (bool (*)(const void*, MatShape))dense_layer_supports_inp_shape,
         (MatShape(*)(const void*, MatShape))dense_layer_out_shape,
     };
 }

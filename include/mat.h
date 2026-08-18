@@ -34,8 +34,8 @@ typedef struct MatView {
 /// ```c
 /// NEW_MAT(my_mat, 3, 2, { 1, 2, 3, 4, 5, 6 });
 /// ```
-#define NEW_MAT(NAME, N_ROWS, N_COLS, ...) \
-    float NAME##_data[N_ROWS * N_COLS] = __VA_ARGS__; \
+#define NEW_MAT(NAME, N_ROWS, N_COLS, ...)                                     \
+    float NAME##_data[N_ROWS * N_COLS] = __VA_ARGS__;                          \
     MatView NAME = { NAME##_data, { (N_ROWS), (N_COLS) } };
 
 // ------ Matrix Shape ---------------------------------------------------------

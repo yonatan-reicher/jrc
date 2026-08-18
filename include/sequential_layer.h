@@ -10,9 +10,7 @@ typedef struct SequentialLayer {
 struct MLModelSlice;
 SequentialLayer sequential_layer_of_slice(struct MLModelSlice);
 
-size_t sequential_layer_buf_size(
-    const SequentialLayer* s, MatShape inp_shape
-);
+size_t sequential_layer_buf_size(const SequentialLayer* s, MatShape inp_shape);
 
 /// The buffer given is used to store intermediate results of the forward pass.
 /// It must be at least as large as the sum of the output sizes of all layers
@@ -42,4 +40,4 @@ void sequential_layer_backward(
     MatView* inp_err
 );
 
- MLModel sequential_layer_ml_model();
+MLModel sequential_layer_ml_model();

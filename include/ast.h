@@ -48,7 +48,9 @@ void ast_each(const Ast*, void(const Ast*, void*), void*);
 
 char* ast_to_str(const Ast*);
 
-void ast_to_err_report(const Ast*, const char* text, const char* file, CharArray* out);
+void ast_to_err_report(
+    const Ast*, const char* text, const char* file, CharArray* out
+);
 
 // =============================================================================
 //                                   Operators

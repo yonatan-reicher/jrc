@@ -7,8 +7,8 @@
 #pragma once
 #include "basic.h"
 #include <stddef.h>
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 #define DECLARE_SLICE(T, NAME)                                                 \
     typedef struct NAME {                                                      \

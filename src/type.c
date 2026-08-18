@@ -1,6 +1,6 @@
+#include "type.h"
 #include "basic.h"
 #include "str.h"
-#include "type.h"
 #include <stdlib.h>
 
 Type type_null(void) {

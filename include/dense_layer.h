@@ -21,10 +21,7 @@ void dense_layer_backward(
 );
 
 void dense_layer_train(
-    DenseLayer*,
-    const MatView* inp,
-    const MatView* out_err,
-    float lr
+    DenseLayer*, const MatView* inp, const MatView* out_err, float lr
 );
 
 bool dense_layer_supports_inp_shape(const DenseLayer*, MatShape inp_shape);

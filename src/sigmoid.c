@@ -54,7 +54,9 @@ static void sigmoid_backward_mat_with_self(
     sigmoid_backward_mat(inp, out_err, inp_err);
 }
 
-static void sigmoid_train(void* self, const MatView* inp, const MatView* out_err, float lr) {
+static void sigmoid_train(
+    void* self, const MatView* inp, const MatView* out_err, float lr
+) {
     UNUSED(self);
     UNUSED(inp);
     UNUSED(out_err);
@@ -74,10 +76,8 @@ static MatShape sigmoid_out_shape(const void* self, MatShape inp_shape) {
 
 MLModel sigmoid_ml_model() {
     return (MLModel) {
-        sigmoid_mat_with_self,
-        sigmoid_backward_mat_with_self,
-        sigmoid_train,
-        sigmoid_supports_inp_shape,
+        sigmoid_mat_with_self, sigmoid_backward_mat_with_self,
+        sigmoid_train,         sigmoid_supports_inp_shape,
         sigmoid_out_shape,
     };
 }

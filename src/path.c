@@ -1,6 +1,7 @@
 #include "path.h"
 #include "str.h"
-#if defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
+#if defined(__unix__) || defined(__unix) ||                                    \
+    (defined(__APPLE__) && defined(__MACH__))
 #define HAS_PWD_H
 #include <pwd.h>
 #endif
@@ -133,7 +134,8 @@ Path path_home(void) {
 #ifdef HAS_PWD_H
         str = getpwuid(getuid())->pw_dir;
 #else
-        PANIC("cannot get home directory - $HOME is not set and getpwuid is not available");
+        PANIC("cannot get home directory - $HOME is not set and getpwuid is "
+              "not available");
 #endif
     }
     return path_parse(str);
