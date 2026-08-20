@@ -3,12 +3,16 @@
 #include "ml_model.h"
 
 typedef struct SequentialLayer {
-    MLModel* layers;
+    void* const* layer_pointers;
+    MLModel const* layer_funcs;
     size_t n_layers;
 } SequentialLayer;
 
-struct MLModelSlice;
-SequentialLayer sequential_layer_of_slice(struct MLModelSlice);
+struct ConstMLModelSlice;
+struct VoidPtrConstSlice;
+SequentialLayer sequential_layer_new(
+    struct VoidPtrConstSlice, struct ConstMLModelSlice
+);
 
 size_t sequential_layer_buf_size(const SequentialLayer* s, MatShape inp_shape);
 
@@ -38,6 +42,10 @@ void sequential_layer_backward(
     const MatView* inp,
     const MatView* out_err,
     MatView* inp_err
+);
+
+void sequential_layer_train(
+    SequentialLayer* this, const MatView* inp, const MatView* out_err, float lr
 );
 
 MLModel sequential_layer_ml_model();

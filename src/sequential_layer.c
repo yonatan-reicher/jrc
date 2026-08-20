@@ -35,10 +35,14 @@ static float* buf_backward_data(void* buf, size_t n_layers) {
     return (float*)(buf_shapes(buf) + n_layers - 1) + n_activations;
 }
 
-DECLARE_SLICE(MLModel, MLModelSlice);
+DECLARE_SLICE(const MLModel, ConstMLModelSlice);
 
-SequentialLayer sequential_layer_of_slice(MLModelSlice slice) {
-    return (SequentialLayer) { slice.ptr, slice.len };
+SequentialLayer sequential_layer_new(
+    VoidPtrConstSlice layer_pointers, ConstMLModelSlice layer_funcs
+) {
+    EXPECT(layer_pointers.len == layer_funcs.len, "Lengths should match");
+    return (SequentialLayer
+    ) { layer_pointers.ptr, layer_funcs.ptr, layer_funcs.len };
 }
 
 static inline size_t saturating_sub(size_t a, size_t b) {
@@ -51,8 +55,9 @@ static inline size_t count_activations(const This* s, MatShape inp_shape) {
     size_t n_activations = 0;
     MatShape curr_inp_shape = inp_shape;
     for (size_t i = 0; i < n_layers_sub_1; i++) {
-        const MLModel* l = &s->layers[i];
-        MatShape curr_out_shape = l->out_shape(l, curr_inp_shape);
+        const MLModel* fs = &s->layer_funcs[i];
+        void* layer = s->layer_pointers[i];
+        MatShape curr_out_shape = fs->out_shape(layer, curr_inp_shape);
         n_activations += mat_shape_n_elements(curr_out_shape);
         curr_inp_shape = curr_out_shape;
     }
@@ -86,9 +91,10 @@ void sequential_layer_forward_with_buf(
     MatView curr_inp = *inp;
     for (size_t i = 0; i < this->n_layers; i++) {
         // The current layer,
-        MLModel* layer = &this->layers[i];
+        const MLModel* fs = &this->layer_funcs[i];
+        void* layer = this->layer_pointers[i];
         // Get it's output.
-        MatShape curr_out_shape = layer->out_shape(layer, curr_inp.shape);
+        MatShape curr_out_shape = fs->out_shape(layer, curr_inp.shape);
         MatView curr_out =
             i == this->n_layers - 1
                 ? *out
@@ -96,7 +102,7 @@ void sequential_layer_forward_with_buf(
         // Save it in the buffer.
         if (i < this->n_layers - 1) shapes[i] = curr_out_shape;
         // Write
-        layer->forward(layer, &curr_inp, &curr_out);
+        fs->forward(layer, &curr_inp, &curr_out);
         // Ready for next iteration.
         curr_inp = curr_out;
         data_index += mat_shape_n_elements(curr_out_shape);
@@ -129,7 +135,8 @@ void sequential_layer_backward_with_buf(
     for (size_t i = 0; i < n_layers; i++) {
         // We are going backwards through the layers,
         size_t layer_index = n_layers - 1 - i;
-        MLModel* layer = &this->layers[layer_index];
+        const MLModel* fs = &this->layer_funcs[layer_index];
+        void* layer = this->layer_pointers[layer_index];
         // The current output shape is given from the shape array except for the
         // first iteration, where the current output shape is given by the
         // output error
@@ -153,7 +160,7 @@ void sequential_layer_backward_with_buf(
             i == n_layers - 1
                 ? *inp_err
                 : (MatView) { backward_data + data_index, curr_inp_shape };
-        layer->backward(layer, &curr_inp, &curr_out_err, &curr_inp_err);
+        fs->backward(layer, &curr_inp, &curr_out_err, &curr_inp_err);
     }
 }
 
@@ -200,7 +207,8 @@ void sequential_layer_train(
     for (size_t i = 0; i < n_layers; i++) {
         // We are going backwards through the layers,
         size_t layer_index = n_layers - 1 - i;
-        MLModel* layer = &this->layers[layer_index];
+        const MLModel* fs = &this->layer_funcs[layer_index];
+        void* layer = this->layer_pointers[layer_index];
         // The current output shape is given from the shape array except for the
         // first iteration, where the current output shape is given by the
         // output error
@@ -220,16 +228,17 @@ void sequential_layer_train(
             i == 0
                 ? *out_err
                 : (MatView) { backward_data + prev_data_index, curr_out_shape };
-        layer->train(layer, &curr_inp, &curr_out_err, lr);
+        fs->train(layer, &curr_inp, &curr_out_err, lr);
     }
 }
 
 bool sequential_layer_supports_inp_shape(const This* this, MatShape inp_shape) {
     MatShape shape = inp_shape;
     for (size_t i = 0; i < this->n_layers; i++) {
-        if (!this->layers[i].supports_inp_shape(&this->layers[i], shape))
-            return false;
-        shape = this->layers[i].out_shape(&this->layers[i], shape);
+        const MLModel* fs = &this->layer_funcs[i];
+        void* layer = this->layer_pointers[i];
+        if (!fs->supports_inp_shape(layer, shape)) return false;
+        shape = fs->out_shape(layer, shape);
     }
     return true;
 }
@@ -237,7 +246,9 @@ bool sequential_layer_supports_inp_shape(const This* this, MatShape inp_shape) {
 MatShape sequential_layer_out_shape(const This* this, MatShape inp_shape) {
     MatShape shape = inp_shape;
     for (size_t i = 0; i < this->n_layers; i++) {
-        shape = this->layers[i].out_shape(&this->layers[i], shape);
+        const MLModel* fs = &this->layer_funcs[i];
+        void* layer = this->layer_pointers[i];
+        shape = fs->out_shape(layer, shape);
     }
     return shape;
 }
