@@ -11,6 +11,7 @@
 
 /// Returns the maximum of two values. May evaluate arguments twice.
 #define MAX(A, B) ((A) > (B) ? (A) : (B))
+#define MIN(A, B) ((A) < (B) ? (A) : (B))
 
 /** Get length of an array variable (does not work on function parameters!) */
 #define ARRAY_LEN(A) (sizeof(A) / sizeof((A)[0]))
