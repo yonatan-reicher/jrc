@@ -26,6 +26,12 @@
 /// Return a new empty array of the given type.
 #define array_empty() { .len = 0, .cap = 0, .ptr = NULL }
 
+#define array_init(ARR, SIZE)                                                  \
+    ((ARR)->len = (SIZE),                                                      \
+     (ARR)->cap = (ARR)->len,                                                  \
+     (ARR)->ptr = malloc((ARR)->cap * sizeof(typeof(*(ARR)->ptr))),            \
+     0)
+
 #define array_push(ARR, ...)                                                   \
     do {                                                                       \
         /* Avoid calling `realloc` when capacity is 0. */                      \
