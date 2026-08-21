@@ -230,6 +230,7 @@ void sequential_layer_train(
                 : (MatView) { backward_data + prev_data_index, curr_out_shape };
         fs->train(layer, &curr_inp, &curr_out_err, lr);
     }
+    free(buf);
 }
 
 bool sequential_layer_supports_inp_shape(const This* this, MatShape inp_shape) {
