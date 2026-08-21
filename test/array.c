@@ -32,8 +32,23 @@ void test_pushing_and_popping(void) {
     EXPECT(arr.ptr == NULL, "Expected array to be empty after free");
 }
 
+static void test_reserve(void) {
+    Int32Array a = array_empty();
+    EXPECT(a.cap == 0, "capacity starts at 0");
+    array_reserve(&a, 10);
+    EXPECT(a.cap == 10, "reserve added place");
+    array_reserve(&a, 10);
+    EXPECT(a.cap == 10, "there already was enough");
+    array_push(&a, 42);
+    array_reserve(&a, 5);
+    EXPECT(a.cap == 10, "there already was enough");
+    array_reserve(&a, 10);
+    EXPECT(a.cap == 11, "now there wasn't enough");
+}
+
 int main(void) {
     test_empty_array();
     test_pushing_and_popping();
+    test_reserve();
     return 0;
 }

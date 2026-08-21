@@ -72,6 +72,14 @@
          : (ARR)->ptr[0])
 #define array_last(ARR) ((ARR)->ptr[(ARR)->len - 1])
 
+/// Make sure there is space for the given amount of items, or more.
+#define array_reserve(A, MORE)                                                 \
+    ((A)->cap > (A)->len + (MORE)                                              \
+         ? 0                                                                   \
+         : ((A)->cap = (A)->len + (MORE),                                      \
+            (A)->ptr = realloc((A)->ptr, (A)->cap * sizeof(*(A)->ptr)),        \
+            0))
+
 #define array_extend(ARR, PTR, LEN)                                            \
     do {                                                                       \
         /* TODO: reserve capacity first. */                                    \
