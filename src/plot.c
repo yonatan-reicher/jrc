@@ -11,12 +11,6 @@ DECLARE_SLICE(const float, ConstFloatSlice);
 DECLARE_SLICE(float, FloatSlice);
 DECLARE_ARRAY(float, FloatArray);
 
-wchar_t heights[] = {
-    L'█',
-    L'▄',
-    L'_',
-};
-
 static double sample_data(ConstFloatSlice data, double fractional_index) {
     fractional_index = MAX(0, MIN(fractional_index, data.len - 1));
     float a = *slice_get(&data, (size_t)floor(fractional_index));
