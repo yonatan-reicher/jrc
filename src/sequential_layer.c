@@ -140,8 +140,7 @@ void sequential_layer_backward_with_buf(
         // The current output shape is given from the shape array except for the
         // first iteration, where the current output shape is given by the
         // output error
-        MatShape curr_out_shape =
-            i == 0 ? out_err->shape : shapes[layer_index];
+        MatShape curr_out_shape = i == 0 ? out_err->shape : shapes[layer_index];
         // The current input shape is given from the shape array except for the
         // last iteration, where the shape is given by the input
         MatShape curr_inp_shape =
@@ -212,8 +211,7 @@ void sequential_layer_train(
         // The current output shape is given from the shape array except for the
         // first iteration, where the current output shape is given by the
         // output error
-        MatShape curr_out_shape =
-            i == 0 ? out_err->shape : shapes[layer_index];
+        MatShape curr_out_shape = i == 0 ? out_err->shape : shapes[layer_index];
         // The current input shape is given from the shape array except for the
         // last iteration, where the shape is given by the input
         MatShape curr_inp_shape =
