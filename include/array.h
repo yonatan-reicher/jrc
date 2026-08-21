@@ -40,12 +40,7 @@
         (ARR)->ptr[(ARR)->len++] = (__VA_ARGS__);                              \
     } while (0)
 
-#define array_free(ARR)                                                        \
-    do {                                                                       \
-        free((ARR)->ptr);                                                      \
-        (ARR)->ptr = NULL;                                                     \
-        (ARR)->len = 0;                                                        \
-    } while (0)
+#define array_free(ARR) (free((ARR)->ptr), (ARR)->ptr = NULL, (ARR)->len = 0, 0)
 
 /// Empty the array without freeing the memory.
 #define array_clear(ARR)                                                       \
