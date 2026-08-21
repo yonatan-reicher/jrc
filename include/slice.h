@@ -42,7 +42,7 @@
     ((NAME) {                                                                  \
         /* A pointer to some array compound literal. */                        \
         ((SLICE_ELEMENT_TYPE(NAME)[])__VA_ARGS__), /* The literal's length. */ \
-        ARRAY_LEN(((SLICE_ELEMENT_TYPE(NAME)[])__VA_ARGS__)),                    \
+        ARRAY_LEN(((SLICE_ELEMENT_TYPE(NAME)[])__VA_ARGS__)),                  \
     })
 
 // ------ Some definitions -----------------------------------------------------
