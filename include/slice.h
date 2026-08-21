@@ -45,6 +45,12 @@
         ARRAY_LEN(((SLICE_ELEMENT_TYPE(NAME)[])__VA_ARGS__)),                  \
     })
 
+#define SLICE_FOREACH(S, VAR)                                                  \
+    for (size_t i_##VAR = 0; i_##VAR < (S)->len; i_##VAR++)                    \
+        for (typeof_unqual(&(S)->ptr[0]) VAR = &(S)->ptr[i_##VAR];             \
+             VAR != NULL;                                                      \
+             VAR = NULL)
+
 // ------ Some definitions -----------------------------------------------------
 
 // void
