@@ -19,7 +19,7 @@ build/%: %.c $(LIB) | build
 build:
 	mkdir -p build
 
-# This is the run for running a test! The 'run/' directory is just for making
+# This is the rule for running a test! The 'run/' directory is just for making
 # a different rule for running, it does not refer to a real directory.
 run/% : | build/%
 	@echo "Running $*"
