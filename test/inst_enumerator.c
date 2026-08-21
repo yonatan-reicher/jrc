@@ -29,8 +29,8 @@ void test_count(void) {
         expected += n_insts_for_op_code;
     };
     const InstEnumeratorConfig config = {
-        slice(immediates, ARRAY_LEN(immediates)),
-        slice(registers, ARRAY_LEN(registers)),
+        slice_new(immediates, ARRAY_LEN(immediates)),
+        slice_new(registers, ARRAY_LEN(registers)),
     };
     InstEnumerator enumerator = inst_enumerator_new_ready(&config);
     uint64_t count = 0;

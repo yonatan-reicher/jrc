@@ -1,5 +1,4 @@
 #include "super_optimizer.h"
-#include "array.h"
 #include "inst.h"
 
 void test_empty_program(void) {
@@ -36,7 +35,10 @@ void test_len_one_solution(void) {
             slice_of_fixed_array(regs),
         },
         // program that adds 1 to register 0 and stores it in register 1
-        slice(((Inst[]) { inst(ADD_RI, 1, 0, 1), inst(ADD_RI, 1, 0, 1) }), 1),
+        slice(
+            ConstInstSlice,
+            { inst(ADD_RI, 1, 0, 1), /* inst(ADD_RI, 1, 0, 1) */ }
+        ),
     });
     const SuperOptimizerResult r = super_optimizer_step(&s);
     EXPECT(

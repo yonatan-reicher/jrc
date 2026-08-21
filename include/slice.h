@@ -21,7 +21,7 @@
 /// Return a new slice pointing at some existing data.
 #define slice_new(PTR, LEN) { .len = (LEN), .ptr = (PTR) }
 /// Return a new slice pointing at some existing stack array.
-#define slice_of_fixed_array(ARRAY) slice((ARRAY), ARRAY_LEN(ARRAY))
+#define slice_of_fixed_array(ARRAY) slice_new((ARRAY), ARRAY_LEN(ARRAY))
 /// Return a new slice pointing at some existing dynamic array.
 #define slice_of_array(ARRAY) slice_new((ARRAY)->ptr, (ARRAY)->len)
 #define slice_get(S, IDX)                                                      \

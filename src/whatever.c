@@ -91,3 +91,7 @@ int main(void) {
 }
 
 #endif
+
+/// C compilers throw warnings when a source file does not export a symbol and
+/// the `-pedantic` file is on.
+int make_compiler_happy = 0;
