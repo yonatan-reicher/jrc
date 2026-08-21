@@ -113,9 +113,15 @@ void plot_bar(
     ARRAY_FOREACH(&heights, h) {
         size_t x = n_y_tick_columns + 1 /* padding */ + 1 /* border */ + i_h;
         *h = MAX(0, MIN(*h, 1));
-        for (size_t i = 0; i < max_height * *h; i++) {
+        size_t i = 0;
+        for (i = 0; i < max_height * *h; i++) {
             size_t y = height - 1 - 1 /* x ticks */ - 1 /* border */ - i;
             AT(x, y) = L'█';
+        }
+        // Half height!
+        if (i < MIN(max_height * *h + 0.5, max_height)) {
+            size_t y = height - 1 - 1 /* x ticks */ - 1 /* border */ - i;
+            AT(x, y) = L'▄';
         }
     }
     // Print.
