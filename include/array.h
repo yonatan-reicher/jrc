@@ -82,7 +82,7 @@
 
 #define array_extend(ARR, PTR, LEN)                                            \
     do {                                                                       \
-        /* TODO: reserve capacity first. */                                    \
+        array_reserve((ARR), LEN);                                             \
         for (size_t i = 0; i < (LEN); i++) array_push((ARR), (PTR)[i]);        \
     } while (0)
 
