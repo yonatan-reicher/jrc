@@ -65,11 +65,13 @@ void plot_bar(
 ) {
     EXPECT(width > 0, "width must be positive");
     EXPECT(height > 2, "height must be at least three");
-    size_t buf_size = (size_t)width * (size_t)height * sizeof(wchar_t);
+    size_t buf_size = ((size_t)width + 1) * (size_t)height * sizeof(wchar_t);
     wchar_t* buf = malloc(buf_size);
-#define AT(X, Y) (buf[(X) + (Y) * width])
+#define AT(X, Y) (buf[(size_t)(X) + (size_t)(Y) * ((size_t)width + 1)])
     // Start with all spaces.
-    for (size_t i = 0; i < (size_t)width * (size_t)height; i++) buf[i] = L' ';
+    for (size_t i = 0; i < buf_size / sizeof(wchar_t); i++) buf[i] = L' ';
+    // Newlines.
+    for (size_t i = 0; i < height; i++) AT(width, i) = L'\n';
     // Y ticks.
     size_t y_label_len = wcslen(y_top_tick_label);
     size_t x_label_len = wcslen(x_right_tick_label);
@@ -117,10 +119,12 @@ void plot_bar(
         }
     }
     // Print.
-    for (size_t i = 0; i < height; i++) {
-        setlocale(LC_ALL, "");
-        fwprintf(f, L"%.*ls\n", (int)width, &AT(0, i));
-    }
+    setlocale(LC_ALL, "");
+    char buf2[BUFSIZ] = { };
+    setbuffer(f, buf2, sizeof(buf2));
+    fwprintf(f, L"%.*ls", buf_size / sizeof(*buf), buf);
+    fflush(f);
+    setlinebuf(f);
 #undef AT
     free(buf);
 }
