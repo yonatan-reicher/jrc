@@ -35,6 +35,9 @@ designated field initializers.
 - **interpreter.h** - A simple interpreter.
 - **type_check.h** - A type checker.
 
+### Visualization
+- **plot.h**
+
 ## More Documentation
 
 Checkout [currently working on](currently-working-on.md) to see what I've
