@@ -24,6 +24,11 @@
 #define slice_of_fixed_array(ARRAY) slice((ARRAY), ARRAY_LEN(ARRAY))
 /// Return a new slice pointing at some existing dynamic array.
 #define slice_of_array(ARRAY) slice_new((ARRAY)->ptr, (ARRAY)->len)
+#define slice_get(S, IDX)                                                      \
+    ((IDX) >= (S)->len                                                         \
+         ? (PANIC("index %zu/%zu out of bounds", (size_t)(IDX), (S)->len),     \
+            (S)->ptr)                                                          \
+         : &(S)->ptr[IDX])
 
 /// Expands to the type of the slice's elements.
 #define SLICE_ELEMENT_TYPE(NAME)                                               \
