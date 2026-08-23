@@ -23,6 +23,8 @@ designated field initializers.
 - **path.h** - A path type for working with files and file systems.
 - **slice.h** - A slice type, that is, a pointer and a length.
 - **str.h** - Working with strings.
+- **my_semaphore.h** - My own implementation of a semaphore.
+- **mac_semaphore.h** - Patch for the missing pthread semaphore on Mac.
 
 ### Programming Language Tools
 - **text_pos.h** - Definitions for tracking source code positions.
