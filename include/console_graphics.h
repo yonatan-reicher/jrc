@@ -17,6 +17,13 @@ typedef struct ConsoleGraphics {
     void* allocation;
 } ConsoleGraphics;
 
-typedef void ConsoleGraphicsDrawFunc(wchar_t* buf, uint16_t w, uint16_t h, void* arg);
+typedef void ConsoleGraphicsDrawFunc(
+    wchar_t* buf, uint16_t w, uint16_t h, void* arg
+);
 
-ConsoleGraphics console_graphics_init(FILE* f, ConsoleGraphicsDrawFunc draw, void* draw_arg);
+ConsoleGraphics console_graphics_init(
+    FILE* f,
+    ConsoleGraphicsDrawFunc draw,
+    void* draw_arg,
+    ConsoleGraphicsOptions opts
+);

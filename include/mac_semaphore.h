@@ -36,6 +36,7 @@ int my_mac_sem_unlink(const char*);
 int my_mac_sem_wait(sem_t*);
 
 #ifndef MAC_SEMAPHORE_DONT_RENAME
+// clang-format off
 #define     sem_close       my_mac_sem_close
 #define     sem_destroy     my_mac_sem_destroy
 #define     sem_getvalue    my_mac_sem_getvalue
@@ -45,6 +46,7 @@ int my_mac_sem_wait(sem_t*);
 #define     sem_trywait     my_mac_sem_trywait
 #define     sem_unlink      my_mac_sem_unlink
 #define     sem_wait        my_mac_sem_wait
+// clang-format on
 #endif
 
 #endif

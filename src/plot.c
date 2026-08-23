@@ -120,7 +120,7 @@ void plot_bar(
     }
     // Print.
     setlocale(LC_ALL, "");
-    char buf2[BUFSIZ] = { };
+    char buf2[BUFSIZ] = {};
     setbuffer(f, buf2, sizeof(buf2));
     fwprintf(f, L"%.*ls", buf_size / sizeof(*buf), buf);
     fflush(f);
