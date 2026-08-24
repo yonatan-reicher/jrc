@@ -3,6 +3,7 @@
 #include "basic.h"
 #include "mac_semaphore.h"
 #include <locale.h>
+#include <math.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <time.h>
@@ -43,6 +44,7 @@ typedef struct ScreenThreadArgs {
     MessageBox* box;
     /// The stream to output to.
     FILE* f;
+    float target_fps;
     /// Are we done with reading these arguments?
     sem_t initialized;
 } ScreenThreadArgs;
@@ -82,7 +84,6 @@ static void draw_screen(FILE* f, const wchar_t* buf, uint16_t w, uint16_t h) {
     for (size_t i = 0; i < h; i++) fwprintf(f, L"%.*ls\n", (int)w, &buf[i * w]);
     fflush(f);
     printf("%d %d\n", w, h);
-    // sleep(1);
 }
 
 static void send_new_render_input(
@@ -112,15 +113,68 @@ static void send_new_render_input(
     sem_post(&box->unread_render_input);
 }
 
+#define SEC_TO_NANO_SEC(S) ((S) * 1000ll * 1000ll * 1000ll)
+
+typedef struct timespec timespec;
+
+static bool timespec_le(timespec a, timespec b) {
+    return a.tv_sec < b.tv_sec ||
+           (a.tv_sec == b.tv_sec && a.tv_nsec <= b.tv_nsec);
+}
+
+static timespec timespec_sub(timespec a, timespec b) {
+    a.tv_sec -= b.tv_sec;
+    a.tv_nsec -= b.tv_nsec;
+    if (a.tv_sec > 0 && a.tv_nsec < 0) {
+        a.tv_sec--;
+        a.tv_nsec += SEC_TO_NANO_SEC(1);
+    } else if (a.tv_sec < 0 && a.tv_nsec > 0) {
+        a.tv_sec++;
+        a.tv_nsec -= SEC_TO_NANO_SEC(1);
+    }
+    return a;
+}
+
+static timespec timespec_add_float_secs(timespec a, double r) {
+    a.tv_sec += (typeof(a.tv_sec))r;
+    a.tv_nsec += (typeof(a.tv_nsec))SEC_TO_NANO_SEC(r - floor(r));
+    if (a.tv_nsec > SEC_TO_NANO_SEC(1)) {
+        a.tv_sec++;
+        a.tv_nsec -= SEC_TO_NANO_SEC(1);
+    }
+    return a;
+}
+
+static double timespec_to_secs(timespec s) {
+    return s.tv_sec + s.tv_nsec * 1e-9;
+}
+
+static void wait_until(timespec t) {
+    timespec now;
+    printf("t %f secs\n", timespec_to_secs(t));
+    EXPECT(timespec_get(&now, TIME_UTC), "could not get time");
+    printf("behind: %s\n", timespec_le(t, now) ? "true" : "false");
+    if (timespec_le(t, now)) return;
+    timespec diff = timespec_sub(t, now);
+    printf("diff %f secs\n", timespec_to_secs(diff));
+    // TODO: check return
+    nanosleep(&diff, NULL);
+}
+
 static void* screen_thread_main(ScreenThreadArgs* args) {
     MessageBox* const box = args->box;
     FILE* const f = args->f;
+    const float target_fps = args->target_fps;
+    // Start
     sem_post(&args->initialized);
     bool render_first_buf = true;
     uint16_t w = 0, h = (uint16_t)~0;
     wchar_t* buf_allocation = NULL;
+    struct timespec next_render_at;
+    EXPECT(timespec_get(&next_render_at, TIME_UTC), "could not get time");
 #define buf1 buf_allocation
 #define buf2 (buf_allocation + (size_t)w * h)
+    const double secs_per_frame = 1.0 / target_fps;
     // Before entering the loop, ready the input for the first time.
     // The semaphore fields have been initialized already by the main thread.
     send_new_render_input(box, f, &w, &h, NULL, &buf_allocation);
@@ -131,13 +185,16 @@ static void* screen_thread_main(ScreenThreadArgs* args) {
         // Before writing it, immediately start rendering the next one.
         wchar_t* buf_to_render_to = render_first_buf ? buf1 : buf2;
         wchar_t* buf_to_write = render_first_buf ? buf2 : buf1;
-
         uint16_t prev_w = w, prev_h = h;
         send_new_render_input(
             box, f, &w, &h, buf_to_render_to, &buf_allocation
         );
         // Now draw while the next frame is rendering!
         draw_screen(f, buf_to_write, prev_w, prev_h);
+        // Now slow down for fps.
+        wait_until(next_render_at);
+        next_render_at =
+            timespec_add_float_secs(next_render_at, secs_per_frame);
     }
     return NULL;
 }
@@ -145,7 +202,7 @@ static void* screen_thread_main(ScreenThreadArgs* args) {
 typedef void* ThreadMain(void*);
 
 ConsoleGraphics console_graphics_init(
-    FILE* f, ConsoleGraphicsDrawFunc draw, void* draw_arg
+    FILE* f, ConsoleGraphicsDrawFunc draw, void* draw_arg, float target_fps
 ) {
     setlocale(LC_ALL, "");
     ConsoleGraphics ret;
@@ -154,7 +211,7 @@ ConsoleGraphics console_graphics_init(
     sem_init(&box->unread_render_output, 0, 0);
     RenderThreadArgs a1 = { box, draw, draw_arg, {} };
     sem_init(&a1.initialized, 0, 0);
-    ScreenThreadArgs a2 = { box, f, {} };
+    ScreenThreadArgs a2 = { box, f, target_fps, {} };
     sem_init(&a2.initialized, 0, 0);
     pthread_create(
         &ret.render_thread, NULL, (ThreadMain*)render_thread_main, &a1
