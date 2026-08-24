@@ -13,8 +13,10 @@
 
 #pragma once
 #include "basic.h"
+#include <memory.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define DECLARE_ARRAY(T, Name)                                                 \
     typedef struct Name {                                                      \
@@ -85,6 +87,18 @@
         array_reserve((ARR), LEN);                                             \
         for (size_t i = 0; i < (LEN); i++) array_push((ARR), (PTR)[i]);        \
     } while (0)
+
+static inline void* array_malloc_clone(void* ptr, size_t size) {
+    void* ret = malloc(size);
+    memcpy(ret, ptr, size);
+    return ret;
+}
+
+/// (FloatArray)array_clone(&src).
+#define array_clone(SRC)                                                       \
+    { array_malloc_clone((SRC)->ptr, (SRC)->len * sizeof(*(SRC)->ptr)),        \
+      (SRC)->len,                                                              \
+      (SRC)->len }
 
 #define ARRAY_FOREACH(ARR, VAR)                                                \
     for (size_t i_##VAR = 0; i_##VAR < (ARR)->len; i_##VAR++)                  \
