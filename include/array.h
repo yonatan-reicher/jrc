@@ -59,7 +59,7 @@
 
 #define array_get(ARR, IDX)                                                    \
     ((IDX) >= (ARR)->len                                                       \
-         ? (PANIC("index %zu/%zu out of bounds", (IDX), (ARR)->len),           \
+         ? (PANIC("index %zu/%zu out of bounds", (size_t)(IDX), (ARR)->len),   \
             (ARR)->ptr)                                                        \
          : &(ARR)->ptr[IDX])
 
