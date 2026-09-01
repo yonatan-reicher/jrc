@@ -3,7 +3,6 @@
 #include "basic.h"
 #include "memory.h"
 #include "slice.h"
-#include <locale.h>
 #include <math.h>
 #include <wchar.h>
 
@@ -12,7 +11,7 @@ DECLARE_SLICE(float, FloatSlice);
 DECLARE_ARRAY(float, FloatArray);
 
 static double sample_data(ConstFloatSlice data, double fractional_index) {
-    fractional_index = MAX(0, MIN(fractional_index, data.len - 1));
+    fractional_index = MAX(0, MIN(fractional_index, (double)(data.len - 1)));
     float a = *slice_get(&data, (size_t)floor(fractional_index));
     float b = *slice_get(&data, (size_t)ceil(fractional_index));
     double t = fractional_index - floor(fractional_index);
@@ -28,8 +27,8 @@ static void adjust_data(ConstFloatSlice inp, FloatSlice out) {
     // A fractional index into the input array.
     double i_inp = 0;
     SLICE_FOREACH(&out, o) {
-        double i_out_percent = (double)i_o / (double)out.len;
-        double i_inp_next = i_out_percent * inp.len;
+        double i_out_percent = (double)(i_o + 1) / (double)out.len;
+        double i_inp_next = i_out_percent * (double)inp.len;
         double sum = 0;
         double area = i_inp_next - i_inp;
         while (i_inp < i_inp_next) {
@@ -50,6 +49,18 @@ static void adjust_data(ConstFloatSlice inp, FloatSlice out) {
 }
 
 void plot_bar(
+    ConstFloatSlice data,
+    unsigned int width,
+    unsigned int height,
+    const wchar_t* x_right_tick_label,
+    const wchar_t* y_top_tick_label
+) {
+    plot_bar_to_file(
+        stdout, data, width, height, x_right_tick_label, y_top_tick_label
+    );
+}
+
+void plot_bar_to_file(
     FILE* f,
     ConstFloatSlice data,
     unsigned int width,
@@ -59,43 +70,91 @@ void plot_bar(
 ) {
     EXPECT(width > 0, "width must be positive");
     EXPECT(height > 2, "height must be at least three");
-    size_t buf_size = ((size_t)width + 1) * (size_t)height * sizeof(wchar_t);
+    size_t buf_size = (size_t)width * (size_t)height * sizeof(wchar_t);
     wchar_t* buf = malloc(buf_size);
-#define AT(X, Y) (buf[(size_t)(X) + (size_t)(Y) * ((size_t)width + 1)])
+    plot_bar_to_buf(
+        buf, data, width, height, x_right_tick_label, y_top_tick_label
+    );
+    // Print.
+    for (unsigned i = 0; i < height; i++)
+        fwprintf(f, L"%.*ls\n", (int)width, &buf[i * (size_t)width]);
+    free(buf);
+}
+
+static void write_to_buf(unsigned x, unsigned y, wchar_t c, void* arg) {
+    struct {
+        wchar_t* buf;
+        unsigned width;
+    }* a = arg;
+    a->buf[(size_t)x + (size_t)y * (size_t)a->width] = c;
+}
+
+void plot_bar_to_buf(
+    wchar_t* buf,
+    ConstFloatSlice data,
+    unsigned int width,
+    unsigned int height,
+    const wchar_t* x_right_tick_label,
+    const wchar_t* y_top_tick_label
+) {
+    struct {
+        wchar_t* buf;
+        unsigned width;
+    } arg = { buf, width };
+    plot_bar_to_func(
+        write_to_buf,
+        &arg,
+        data,
+        width,
+        height,
+        x_right_tick_label,
+        y_top_tick_label
+    );
+}
+
+void plot_bar_to_func(
+    void f(unsigned x, unsigned y, wchar_t, void*),
+    void* f_arg,
+    ConstFloatSlice data,
+    unsigned int width,
+    unsigned int height,
+    const wchar_t* x_right_tick_label,
+    const wchar_t* y_top_tick_label
+) {
+    EXPECT(width > 0, "width must be positive");
+    EXPECT(height > 2, "height must be at least three");
     // Start with all spaces.
-    for (size_t i = 0; i < buf_size / sizeof(wchar_t); i++) buf[i] = L' ';
-    // Newlines.
-    for (size_t i = 0; i < height; i++) AT(width, i) = L'\n';
+    for (unsigned i = 0; i < height; i++)
+        for (unsigned j = 0; j < width; j++)
+            f(j, i, L' ', f_arg);
     // Y ticks.
-    size_t y_label_len = wcslen(y_top_tick_label);
-    size_t x_label_len = wcslen(x_right_tick_label);
+    unsigned y_label_len = (unsigned)wcslen(y_top_tick_label);
+    unsigned x_label_len = (unsigned)wcslen(x_right_tick_label);
     EXPECT(
         y_label_len < width,
         "The y tick label should be less than the total width of the image"
     );
-    size_t n_y_tick_columns = MAX(1, y_label_len);
-    memcpy(buf, y_top_tick_label, y_label_len * sizeof(wchar_t));
-    AT(n_y_tick_columns - 1, height - 2) = L'0';
+    unsigned n_y_tick_columns = MAX(1, y_label_len);
+    for (unsigned i = 0; i < y_label_len; i++)
+        f(i, 0, y_top_tick_label[i], f_arg);
+    f(n_y_tick_columns - 1, height - 2, L'0', f_arg);
     // X ticks.
-    AT(n_y_tick_columns + 1 /* padding */, height - 1) = L'0';
+    f(n_y_tick_columns + 1 /* padding */, height - 1, L'0', f_arg);
     EXPECT(n_y_tick_columns + 1 + x_label_len < width, "not wide enough");
-    memcpy(
-        &AT(width - x_label_len, height - 1),
-        x_right_tick_label,
-        x_label_len * sizeof(wchar_t)
-    );
+    for (unsigned i = 0; i < x_label_len; i++)
+        f(width - x_label_len + i, height - 1, x_right_tick_label[i], f_arg);
     // Border.
-    AT(n_y_tick_columns + 1 /* padding */, 0) = L'┌';
-    AT(n_y_tick_columns + 1 /* padding */, height - 2) = L'└';
-    AT(width - 1, 0) = L'┐';
-    AT(width - 1, height - 2) = L'┘';
-    for (size_t i = n_y_tick_columns + 2; i < width - 1; i++) {
-        AT(i, 0) = L'─';
-        AT(i, height - 2) = L'─';
+    f(n_y_tick_columns + 1 /* padding */, 0, L'┌', f_arg);
+    f(n_y_tick_columns + 1 /* padding */, height - 2, L'└', f_arg);
+    f(width - 1, 0, L'┐', f_arg);
+    f(width - 1, height - 2, L'┘', f_arg);
+    for (unsigned i = n_y_tick_columns + 2; i < width - 1; i++) {
+        f(i, 0, L'─', f_arg);
+        f(i, height - 2, L'─', f_arg);
     }
-    for (size_t i = 1; i < height - 2; i++) {
-        AT(n_y_tick_columns + 1, i) = L'│';
-        AT(width - 1, i) = L'│';
+    for (unsigned i = 1; i < height - 2; i++) {
+        f(n_y_tick_columns + 1, i, L'│', f_arg);
+        f(width - 1, i, L'│', f_arg);
     }
     // Data.
     size_t inner_width =
@@ -105,26 +164,19 @@ void plot_bar(
     adjust_data(data, (FloatSlice)slice_of_array(&heights));
     size_t max_height = height - 2 /* border */ - 1 /* x ticks */;
     ARRAY_FOREACH(&heights, h) {
-        size_t x = n_y_tick_columns + 1 /* padding */ + 1 /* border */ + i_h;
+        unsigned x =
+            n_y_tick_columns + 1 /* padding */ + 1 /* border */ + (unsigned)i_h;
         *h = MAX(0, MIN(*h, 1));
-        size_t i = 0;
-        for (i = 0; i < max_height * *h; i++) {
-            size_t y = height - 1 - 1 /* x ticks */ - 1 /* border */ - i;
-            AT(x, y) = L'█';
+        unsigned i = 0;
+        for (i = 0; (double)i < (double)max_height * *h; i++) {
+            unsigned y = height - 1 - 1 /* x ticks */ - 1 /* border */ - i;
+            f(x, y, L'█', f_arg);
         }
         // Half height!
-        if (i < MIN(max_height * *h + 0.5, max_height)) {
-            size_t y = height - 1 - 1 /* x ticks */ - 1 /* border */ - i;
-            AT(x, y) = L'▄';
+        if ((double)i <
+            MIN((double)max_height * *h + 0.5, (double)max_height)) {
+            unsigned y = height - 1 - 1 /* x ticks */ - 1 /* border */ - i;
+            f(x, y, L'▄', f_arg);
         }
     }
-    // Print.
-    setlocale(LC_ALL, "");
-    char buf2[BUFSIZ] = {};
-    setbuffer(f, buf2, sizeof(buf2));
-    fwprintf(f, L"%.*ls", buf_size / sizeof(*buf), buf);
-    fflush(f);
-    setlinebuf(f);
-#undef AT
-    free(buf);
 }
