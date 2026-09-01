@@ -1,4 +1,6 @@
 #include "dense_layer.h"
+#include "backtrace.h"
+#include "basic.h"
 #include <assert.h>
 #include <stdlib.h>
 
@@ -26,8 +28,14 @@ void dense_layer_randomize(DenseLayer* p, float min, float max) {
 void dense_layer_forward(
     const DenseLayer* p, const MatView* inp, MatView* out
 ) {
+    BACKTRACE_HEY;
     mat_mul(&p->weights, inp, out);
-    mat_add(out, &p->biases, out);
+    // mat_add(out, &p->biases, out);
+    for (size_t i_row = 0; i_row < out->shape.n_rows; i_row++)
+        for (size_t i_batch = 0; i_batch < out->shape.n_cols; i_batch++)
+            *mat_get(out, i_row, i_batch) +=
+                *mat_const_get(&p->biases, i_row, 0);
+    BACKTRACE_BYE;
 }
 
 void dense_layer_backward(
@@ -36,6 +44,7 @@ void dense_layer_backward(
     const MatView* out_err,
     MatView* inp_err
 ) {
+    BACKTRACE_HEY;
     // Calculate the input error
     // Δinp[i] = Σ Δout[j] * w[j,i]
     // Adjusting for batching, it's actually
@@ -52,11 +61,13 @@ void dense_layer_backward(
             }
         }
     }
+    BACKTRACE_BYE;
 }
 
 void dense_layer_train(
     DenseLayer* p, const MatView* inp, const MatView* out_err, float lr
 ) {
+    BACKTRACE_HEY;
     size_t n_batches = inp->shape.n_cols;
     // Update the weights!
     // w[i,j] += lr * Δout[i] * inp[j]
@@ -80,6 +91,7 @@ void dense_layer_train(
         }
         *mat_get(&p->biases, i, 0) += lr * sum;
     }
+    BACKTRACE_BYE;
 }
 
 bool dense_layer_supports_inp_shape(
@@ -89,18 +101,27 @@ bool dense_layer_supports_inp_shape(
 }
 
 MatShape dense_layer_out_shape(const DenseLayer* this, MatShape inp_shape) {
-    assert(dense_layer_supports_inp_shape(this, inp_shape));
+    BACKTRACE_HEY;
+    ASSERT(
+        dense_layer_supports_inp_shape(this, inp_shape),
+        "this dense layer does not support an input of shape %zux%zu, supports "
+        "only inputs of %zuxN",
+        inp_shape.n_rows,
+        inp_shape.n_cols,
+        this->weights.shape.n_cols
+    );
+    BACKTRACE_BYE;
     return (MatShape) { this->weights.shape.n_rows, inp_shape.n_cols };
 }
 
 MLModel dense_layer_ml_model() {
     return (MLModel) {
         (void (*)(const void*, const MatView*, MatView*))dense_layer_forward,
-        (void (*)(const void*, const MatView*, const MatView*, MatView*)
-        )dense_layer_backward,
-        (void (*)(void*, const MatView*, const MatView*, float)
-        )dense_layer_train,
+        (void (*)(const void*, const MatView*, const MatView*, MatView*))
+            dense_layer_backward,
+        (void (*)(void*, const MatView*, const MatView*, float))
+            dense_layer_train,
         (bool (*)(const void*, MatShape))dense_layer_supports_inp_shape,
-        (MatShape(*)(const void*, MatShape))dense_layer_out_shape,
+        (MatShape (*)(const void*, MatShape))dense_layer_out_shape,
     };
 }
