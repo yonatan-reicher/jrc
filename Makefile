@@ -90,6 +90,7 @@ repl: $(BIN_DIR)/repl
 	$(BIN_DIR)/repl
 
 # This target is just a placeholder target for trying things out.
+whatever: CFLAGS += -lncurses
 whatever: $(BIN_DIR)/whatever
 	$(BIN_DIR)/whatever
 
