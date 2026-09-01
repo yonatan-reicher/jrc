@@ -18,7 +18,7 @@ float sigmoid_backward(float inp, float out_err) {
 }
 
 #define MY_MAT_MAP(OUT)                                                        \
-    assert(mat_shape_eq(inp->shape, (OUT)->shape));                            \
+    ASSERT(mat_shape_eq(inp->shape, (OUT)->shape), "");                            \
     size_t n_elements = mat_n_elements(inp);                                   \
     for (size_t i = 0; i < n_elements; i++)
 
