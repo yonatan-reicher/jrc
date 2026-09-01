@@ -69,6 +69,17 @@
         (ARR)->len--;                                                          \
     } while (0)
 
+#define array_pop_at(ARR, I)                                                   \
+    do {                                                                       \
+        if ((ARR)->len == 0) PANIC("cannot pop from empty array");             \
+        (ARR)->len--;                                                          \
+        size_t _i = (I);                                                       \
+        EXPECT(_i < (ARR)->len, "cannot pop outside of the array");            \
+        for (size_t _j = _i; _j + 1 < (ARR)->len; _j++) {                      \
+            (ARR)->ptr[_j] = (ARR)->ptr[_j + 1];                               \
+        }                                                                      \
+    } while (0)
+
 #define array_first(ARR)                                                       \
     ((ARR)->len == 0                                                           \
          ? (PANIC("cannot get first element of empty array"), (ARR)->ptr[0])   \
