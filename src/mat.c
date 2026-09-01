@@ -1,6 +1,6 @@
 #include "mat.h"
+#include "backtrace.h"
 #include "basic.h"
-#include <assert.h>
 #include <math.h>
 #include <string.h>
 
@@ -51,19 +51,46 @@ MatShape mat_shape_transposed(MatShape shape) {
 // ------ Matrix Operations ----------------------------------------------------
 
 float* mat_get(MatView* a, size_t i_row, size_t i_col) {
-    assert(i_row < a->shape.n_rows);
-    assert(i_col < a->shape.n_cols);
+    EXPECT(
+        i_row < a->shape.n_rows,
+        "row index '%zu' too big for '%zu'",
+        i_row,
+        a->shape.n_rows
+    );
+    EXPECT(
+        i_col < a->shape.n_cols,
+        "column index '%zu' too big for '%zu'",
+        i_col,
+        a->shape.n_cols
+    );
     return &a->data[i_row * a->shape.n_cols + i_col];
 }
 
 const float* mat_const_get(const MatView* a, size_t i_row, size_t i_col) {
-    assert(i_row < a->shape.n_rows);
-    assert(i_col < a->shape.n_cols);
+    EXPECT(
+        i_row < a->shape.n_rows,
+        "row index '%zu' too big for '%zu'",
+        i_row,
+        a->shape.n_rows
+    );
+    EXPECT(
+        i_col < a->shape.n_cols,
+        "column index '%zu' too big for '%zu'",
+        i_col,
+        a->shape.n_cols
+    );
     return &a->data[i_row * a->shape.n_cols + i_col];
 }
 
 void mat_mul(const MatView* a, const MatView* b, MatView* c) {
-    assert(a->shape.n_cols == b->shape.n_rows);
+    EXPECT(
+        a->shape.n_cols == b->shape.n_rows,
+        "multiplied matrices had mismatched shapes '%zux%zu' and '%zux%zu'",
+        a->shape.n_rows,
+        a->shape.n_cols,
+        b->shape.n_rows,
+        b->shape.n_cols
+    );
     c->shape = mat_shape_mul(a->shape, b->shape);
     for (size_t i_row = 0; i_row < a->shape.n_rows; i_row++) {
         for (size_t i_col = 0; i_col < b->shape.n_cols; i_col++) {
@@ -78,7 +105,15 @@ void mat_mul(const MatView* a, const MatView* b, MatView* c) {
 }
 
 void mat_mul_transposed(const MatView* a, const MatView* b, MatView* c) {
-    assert(a->shape.n_cols == b->shape.n_cols);
+    EXPECT(
+        a->shape.n_cols == b->shape.n_cols,
+        "transposed multiplied matrices had mismatched shapes '%zux%zu' and "
+        "'%zux%zu'",
+        a->shape.n_rows,
+        a->shape.n_cols,
+        b->shape.n_rows,
+        b->shape.n_cols
+    );
     c->shape = mat_shape_mul(a->shape, mat_shape_transposed(b->shape));
     for (size_t i_row = 0; i_row < a->shape.n_rows; i_row++) {
         for (size_t i_col = 0; i_col < b->shape.n_rows; i_col++) {
@@ -93,7 +128,14 @@ void mat_mul_transposed(const MatView* a, const MatView* b, MatView* c) {
 }
 
 void mat_add(const MatView* a, const MatView* b, MatView* c) {
-    assert(mat_shape_eq(a->shape, b->shape));
+    EXPECT(
+        mat_shape_eq(a->shape, b->shape),
+        "matrices were added but had mismatched shapes '%zux%zu' and '%zux%zu'",
+        a->shape.n_rows,
+        a->shape.n_cols,
+        b->shape.n_rows,
+        b->shape.n_cols
+    );
     c->shape = a->shape;
     size_t n_elements = a->shape.n_rows * a->shape.n_cols;
     for (size_t i = 0; i < n_elements; i++) {
@@ -102,7 +144,15 @@ void mat_add(const MatView* a, const MatView* b, MatView* c) {
 }
 
 void mat_sub(const MatView* a, const MatView* b, MatView* c) {
-    assert(mat_shape_eq(a->shape, b->shape));
+    EXPECT(
+        mat_shape_eq(a->shape, b->shape),
+        "matrices were subtracted but had mismatched shapes '%zux%zu' and "
+        "'%zux%zu'",
+        a->shape.n_rows,
+        a->shape.n_cols,
+        b->shape.n_rows,
+        b->shape.n_cols
+    );
     c->shape = a->shape;
     size_t n_elements = a->shape.n_rows * a->shape.n_cols;
     for (size_t i = 0; i < n_elements; i++) {
@@ -118,9 +168,37 @@ void mat_scale(const MatView* mat, float scalar, MatView* out) {
     }
 }
 
+void mat_transpose(const MatView* mat, MatView* out) {
+    for (size_t y = 0; y < mat->shape.n_rows; y++)
+        for (size_t x = 0; x < mat->shape.n_cols; x++)
+            *mat_get(out, y, x) = *mat_get(out, x, y);
+}
+
+static void swap(float* a, float* b) {
+    float c = *a;
+    *a = *b;
+    *b = c;
+}
+
+void mat_transpose_inplace(MatView* mat) {
+    for (size_t y = 0; y < mat->shape.n_rows; y++)
+        for (size_t x = y + 1; x < mat->shape.n_cols; x++)
+            swap(mat_get(mat, y, x), mat_get(mat, x, y));
+}
+/// Transpose a matrix that's known to be a vector (either 1 x n or n x 1).
+MatView mat_transpose_vector(const MatView* mat) {
+    BACKTRACE_HEY;
+    ASSERT(mat->shape.n_rows == 1 || mat->shape.n_cols == 1, "this is not a vector!");
+    BACKTRACE_BYE;
+    return (MatView) {
+        mat->data,
+        mat_shape_transposed(mat->shape),
+    };
+}
+
 bool mat_eq(const MatView* A, const MatView* B, float epsilon) {
     if (!mat_shape_eq(A->shape, B->shape)) return false;
-    assert(epsilon >= 0);
+    EXPECT(epsilon >= 0, "epsilon must be non-negative");
     size_t n_elements = A->shape.n_rows * A->shape.n_cols;
     for (size_t i = 0; i < n_elements; i++) {
         float diff = A->data[i] - B->data[i];
