@@ -42,6 +42,13 @@
         if (!(E)) PANIC(__VA_ARGS__);                                          \
     } while (0)
 
+/// Like `EXPECT`, but only id `NDEBUG` is not defined.
+#ifdef NDEBUG
+#define ASSERT(...)
+#else
+    #define ASSERT(...) EXPECT(__VA_ARGS__)
+#endif
+
 /** Do an expression and panic if it returns false, but also print the error
  * from the error number. */
 #define EXPECT_ERRNO(E)                                                        \
