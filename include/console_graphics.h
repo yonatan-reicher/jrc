@@ -22,5 +22,7 @@ typedef void ConsoleGraphicsDrawFunc(
 );
 
 ConsoleGraphics console_graphics_init(
-    FILE* f, ConsoleGraphicsDrawFunc draw, void* draw_arg, float targe_fps
+    FILE* f, ConsoleGraphicsDrawFunc draw, void* draw_arg, float targe_fps, bool print_newlines
 );
+
+void console_graphics_free(ConsoleGraphics*);
