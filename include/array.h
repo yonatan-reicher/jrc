@@ -94,6 +94,11 @@
             (A)->ptr = realloc((A)->ptr, (A)->cap * sizeof(*(A)->ptr)),        \
             0))
 
+/// Set the size of the array to be exactly the given number. If it is bigger,
+/// it is truncated, and if it is smaller, it is padded with garbage. The
+/// capacity may increase but may not decrease.
+#define array_resize(A, S) (array_reserve(A, (S) - (A)->len), (A)->len = (S), 0)
+
 #define array_extend(ARR, PTR, LEN)                                            \
     do {                                                                       \
         array_reserve((ARR), LEN);                                             \
