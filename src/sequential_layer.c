@@ -1,6 +1,7 @@
 #include "sequential_layer.h"
-#include "assert.h"
+#include "backtrace.h"
 #include "slice.h"
+#include <assert.h>
 
 /*
  * To train a sequential layer, we need to store the intermediate outputs of
@@ -41,8 +42,9 @@ SequentialLayer sequential_layer_new(
     VoidPtrConstSlice layer_pointers, ConstMLModelSlice layer_funcs
 ) {
     EXPECT(layer_pointers.len == layer_funcs.len, "Lengths should match");
-    return (SequentialLayer
-    ) { layer_pointers.ptr, layer_funcs.ptr, layer_funcs.len };
+    return (SequentialLayer) { layer_pointers.ptr,
+                               layer_funcs.ptr,
+                               layer_funcs.len };
 }
 
 static inline size_t saturating_sub(size_t a, size_t b) {
@@ -82,6 +84,7 @@ size_t sequential_layer_buf_size(const SequentialLayer* s, MatShape inp_shape) {
 void sequential_layer_forward_with_buf(
     const This* this, const MatView* inp, MatView* out, void* buf
 ) {
+    BACKTRACE_HEY;
     ((BufHead*)buf)->n_activations = count_activations(this, inp->shape);
     DESTRUCT_BUF;
     // The index in the forward data buffer where the next layer's output will
@@ -107,17 +110,20 @@ void sequential_layer_forward_with_buf(
         curr_inp = curr_out;
         data_index += mat_shape_n_elements(curr_out_shape);
     }
+    BACKTRACE_BYE;
 }
 
 void sequential_layer_forward(
     const This* this, const MatView* inp, MatView* out
 ) {
+    BACKTRACE_HEY;
     // Allocate a buffer and call the implementation
     size_t buf_size = sequential_layer_buf_size(this, inp->shape);
     void* buf = malloc(buf_size);
     EXPECT_ERRNO(buf != NULL);
     sequential_layer_forward_with_buf(this, inp, out, buf);
     free(buf);
+    BACKTRACE_BYE;
 }
 
 void sequential_layer_backward_with_buf(
@@ -127,6 +133,7 @@ void sequential_layer_backward_with_buf(
     MatView* inp_err,
     void* buf
 ) {
+    BACKTRACE_HEY;
     DESTRUCT_BUF;
     size_t n_activations = ((BufHead*)buf)->n_activations;
     size_t n_layers = this->n_layers;
@@ -161,6 +168,7 @@ void sequential_layer_backward_with_buf(
                 : (MatView) { backward_data + data_index, curr_inp_shape };
         fs->backward(layer, &curr_inp, &curr_out_err, &curr_inp_err);
     }
+    BACKTRACE_BYE;
 }
 
 void sequential_layer_backward(
@@ -169,6 +177,7 @@ void sequential_layer_backward(
     const MatView* out_err,
     MatView* inp_err
 ) {
+    BACKTRACE_HEY;
     // Allocate a buffer and call the implementation
     size_t buf_size = sequential_layer_buf_size(this, inp->shape);
     // We need some more space...
@@ -181,11 +190,13 @@ void sequential_layer_backward(
     sequential_layer_forward_with_buf(this, inp, &out, buf);
     sequential_layer_backward_with_buf(this, inp, out_err, inp_err, buf);
     free(buf);
+    BACKTRACE_BYE;
 }
 
 void sequential_layer_train(
     This* this, const MatView* inp, const MatView* out_err, float lr
 ) {
+    BACKTRACE_HEY;
     // Copy pasted directly from above...
     size_t buf_size = sequential_layer_buf_size(this, inp->shape);
     size_t out_size = mat_n_elements(out_err) * sizeof(float);
@@ -229,6 +240,7 @@ void sequential_layer_train(
         fs->train(layer, &curr_inp, &curr_out_err, lr);
     }
     free(buf);
+    BACKTRACE_BYE;
 }
 
 bool sequential_layer_supports_inp_shape(const This* this, MatShape inp_shape) {
@@ -253,13 +265,14 @@ MatShape sequential_layer_out_shape(const This* this, MatShape inp_shape) {
 }
 
 MLModel sequential_layer_ml_model() {
-    return (MLModel
-    ) { (void (*)(const void*, const MatView*, MatView*)
-        )sequential_layer_forward,
-        (void (*)(const void*, const MatView*, const MatView*, MatView*)
-        )sequential_layer_backward,
-        (void (*)(void*, const MatView*, const MatView*, float)
-        )sequential_layer_train,
+    return (MLModel) {
+        (void (*)(const void*, const MatView*, MatView*))
+            sequential_layer_forward,
+        (void (*)(const void*, const MatView*, const MatView*, MatView*))
+            sequential_layer_backward,
+        (void (*)(void*, const MatView*, const MatView*, float))
+            sequential_layer_train,
         (bool (*)(const void*, MatShape))sequential_layer_supports_inp_shape,
-        (MatShape(*)(const void*, MatShape))sequential_layer_out_shape };
+        (MatShape (*)(const void*, MatShape))sequential_layer_out_shape
+    };
 }
