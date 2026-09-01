@@ -25,6 +25,8 @@ designated field initializers.
 - **str.h** - Working with strings.
 - **my_semaphore.h** - My own implementation of a semaphore.
 - **mac_semaphore.h** - Patch for the missing pthread semaphore on Mac.
+- **endianness.h** - Things relating to bit order.
+- **backtrace.h** - For generating backtraces when the program fails.
 
 ### Programming Language Tools
 - **text_pos.h** - Definitions for tracking source code positions.
@@ -39,6 +41,14 @@ designated field initializers.
 
 ### Visualization
 - **plot.h**
+
+### Machine Learning
+- **mat.h.h**
+- **dense_layer.h**
+- **sigmoid.h**
+- **relu.h**
+- **sequential_layer.h**
+- **idx_file_format.h**
 
 ## More Documentation
 
