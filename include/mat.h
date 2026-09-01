@@ -9,6 +9,8 @@
 // This module abbreviates "matrix" as "mat".
 // -----------------------------------------------------------------------------
 
+// TODO: Add a 'transposed' flag
+
 typedef struct MatShape {
     size_t n_rows;
     size_t n_cols;
