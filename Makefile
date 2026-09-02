@@ -61,12 +61,12 @@ $(TARGET): $(OBJS) | $(LIB_DIR)
 	@echo "Built static library: $@"
 
 ## Compile each source file into an object file
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BIN_DIR)/%: old_objs := $(OBJS)
 $(BIN_DIR)/%: OBJS = $(filter-out $(OBJ_DIR)/$*.o,$(old_objs))
-$(BIN_DIR)/%: $(SRC_DIR)/%.c $(HEADERS) $(OBJS) | $(BIN_DIR)
+$(BIN_DIR)/%: $(SRC_DIR)/%.c $(OBJS) | $(BIN_DIR)
 	$(CC) $(CFLAGS) -DBIN $< $(OBJS) -o $@
 
 -include $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.d)
