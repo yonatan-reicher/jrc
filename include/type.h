@@ -19,7 +19,7 @@ typedef struct Type {
 } Type;
 
 Type type_null(void);
-Type type_error();
+Type type_error(void);
 Type type_int(void);
 
 void type_free(Type*);
