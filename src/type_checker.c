@@ -110,7 +110,9 @@ Type infer_expr(This* this, const Ast* ast) {
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT:
         case AST_PROGRAM:
-            PANIC("unhandled ast kind %s", ast_kind_name(ast->kind)); // TODO
+            PANIC(
+                "ast kind '%s' is not an expression", ast_kind_name(ast->kind)
+            );
         case AST_NULL: return type_null();
         case AST_ERROR: return type_error();
     }
