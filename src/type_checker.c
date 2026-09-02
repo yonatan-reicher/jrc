@@ -101,14 +101,14 @@ Type infer_expr(This* this, const Ast* ast) {
         case AST_VAR: return infer_var(this, (const AstVar*)ast);
         case AST_BIN_OP: return infer_bin_op(this, (const AstBinOp*)ast);
         case AST_UNARY_OP: return infer_unary_op(this, (const AstUnaryOp*)ast);
-        case AST_NULL:
-        case AST_ERROR:
         case AST_FUNC:
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT:
         case AST_PROGRAM:
             PANIC("unhandled ast kind %s", ast_kind_name(ast->kind)); // TODO
+        case AST_NULL: return type_null();
+        case AST_ERROR: return type_error();
     }
     PANIC("bad AstKind: %d", ast->kind);
 }
