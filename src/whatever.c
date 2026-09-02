@@ -2,17 +2,7 @@
 #include <math.h>
 #ifdef BIN
 
-#include "relu.h"
-#include "array.h"
-#include "basic.h"
-#include "console_graphics.h"
-#include "dense_layer.h"
-#include "idx_file_format.h"
-#include "plot.h"
-#include "sequential_layer.h"
-#include "sigmoid.h"
-#include "slice.h"
-#include "str.h"
+#include "everything.h"
 #include <ncurses.h>
 #include <pthread.h>
 #include <stdio.h>
