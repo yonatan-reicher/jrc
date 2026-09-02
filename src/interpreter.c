@@ -9,6 +9,8 @@
 #define set_error(span, fmt, ...)                                              \
     interpreter_set_error(i, span, fmt, __VA_ARGS__)
 
+#define TODO PANIC("todo")
+
 Interpreter interpreter_new(void) {
     return (Interpreter) { { array_empty() }, NULL, {} };
 }
@@ -136,6 +138,10 @@ static Value unary_op_eval(Interpreter* i, const AstUnaryOp* ast) {
     PANIC("Bad UnaryOp: %d", ast->op);
 }
 
+Value eval_func(Interpreter* i, const AstFunc* ast) {
+    TODO;
+}
+
 Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
     if (interpreter_has_error(i)) return value_null();
     switch (ast->kind) {
@@ -143,7 +149,7 @@ Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
         case AST_VAR: return var_eval(i, (const AstVar*)ast);
         case AST_BIN_OP: return bin_op_eval(i, (const AstBinOp*)ast);
         case AST_UNARY_OP: return unary_op_eval(i, (const AstUnaryOp*)ast);
-        case AST_FUNC: PANIC("not implemented");
+        case AST_FUNC: return eval_func(i, (const AstFunc*)ast);
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT:
