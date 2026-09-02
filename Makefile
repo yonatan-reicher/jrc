@@ -45,7 +45,11 @@ endif
 # --- Targets ------------------------------------------------------------------
 .PHONY: build release debug test fmt clean install uninstall help repl whatever
 
-build: $(TARGET)
+build: $(INC_DIR)/everything.h $(TARGET)
+
+$(INC_DIR)/everything.h: MY_HEADERS = $(filter-out $@,$(HEADERS))
+$(INC_DIR)/everything.h: $(BIN_DIR)/generate_everything_header $(MY_HEADERS)
+	$(BIN_DIR)/generate_everything_header $(MY_HEADERS) > $@
 
 release:
 	@# Set the profile to release and recursively call make
