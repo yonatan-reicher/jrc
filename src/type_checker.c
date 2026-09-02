@@ -191,7 +191,7 @@ void check_prog(This* this, const Ast* _ast) {
         case AST_FUNC:
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
-        case AST_EMPTY_STATEMENT: return;
+        case AST_EMPTY_STATEMENT: break;
     }
     PANIC("bad AstKind: %d", _ast->kind);
 }
