@@ -106,6 +106,7 @@ Type infer_expr(This* this, const Ast* ast) {
         case AST_BIN_OP: return infer_bin_op(this, (const AstBinOp*)ast);
         case AST_UNARY_OP: return infer_unary_op(this, (const AstUnaryOp*)ast);
         case AST_FUNC: return infer_func(this, (const AstFunc*)ast);
+        // PANIC("unhandled ast kind %s", ast_kind_name(ast->kind)); // TODO
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT:
