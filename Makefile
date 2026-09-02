@@ -48,7 +48,7 @@ endif
 build: $(INC_DIR)/everything.h $(TARGET)
 
 $(INC_DIR)/everything.h: MY_HEADERS = $(filter-out $@,$(HEADERS))
-$(INC_DIR)/everything.h: $(BIN_DIR)/generate_everything_header $(MY_HEADERS)
+$(INC_DIR)/everything.h: $(BIN_DIR)/generate_everything_header | $(MY_HEADERS)
 	$(BIN_DIR)/generate_everything_header $(MY_HEADERS) > $@
 
 release:
