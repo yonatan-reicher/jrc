@@ -94,6 +94,10 @@ static Type infer_unary_op(This* this, const AstUnaryOp* ast) {
     return type_error();
 }
 
+Type infer_func(This* this, const AstFunc* ast) {
+    return type_error();
+}
+
 Type infer_expr(This* this, const Ast* ast) {
     if (this->error_message) return type_int();
     switch (ast->kind) {
@@ -101,7 +105,7 @@ Type infer_expr(This* this, const Ast* ast) {
         case AST_VAR: return infer_var(this, (const AstVar*)ast);
         case AST_BIN_OP: return infer_bin_op(this, (const AstBinOp*)ast);
         case AST_UNARY_OP: return infer_unary_op(this, (const AstUnaryOp*)ast);
-        case AST_FUNC:
+        case AST_FUNC: return infer_func(this, (const AstFunc*)ast);
         case AST_ASSIGN:
         case AST_COMPOUND_STATEMENT:
         case AST_EMPTY_STATEMENT:
