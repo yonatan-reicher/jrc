@@ -3,8 +3,11 @@
 #include <stdbool.h>
 
 typedef enum TypeKind {
+    /// This is not the type of a null value, but the lack of a type altogether.
     TYPE_NULL,
+    /// Not an error type, but an error where a type is expected.
     TYPE_ERROR,
+    /// The type of integers.
     TYPE_INT,
 } TypeKind;
 
