@@ -24,8 +24,14 @@ typedef struct VarTable {
     VarTableEntryArray entries;
 } VarTable;
 
-typedef struct Interpreter {
+typedef struct InterpreterScope {
     VarTable var_table;
+} InterpreterScope;
+
+DECLARE_ARRAY(InterpreterScope, InterpreterScopeArray);
+
+typedef struct Interpreter {
+    InterpreterScopeArray scopes;
     char* error;
     TextSpan error_span;
 } Interpreter;

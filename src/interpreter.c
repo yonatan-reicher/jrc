@@ -3,6 +3,10 @@
 #include "str.h"
 #include <stdarg.h>
 
+// =============================================================================
+//                                    Helpers
+// =============================================================================
+
 // Let's define some shortcuts for this document
 #define eval(ast) interpreter_eval_expr(i, ast)
 #define execute(ast) interpreter_execute_statement(i, ast)
@@ -11,40 +15,92 @@
 
 #define TODO PANIC("todo")
 
-Interpreter interpreter_new(void) {
-    return (Interpreter) { { array_empty() }, NULL, {} };
-}
+typedef InterpreterScope Scope;
+
+// =============================================================================
+//                             Variable Table Entry
+// =============================================================================
 
 static void var_table_entry_free(VarTableEntry* self) {
+    if (self == NULL) return;
     free(self->name);
     *self = (VarTableEntry) { 0 };
 }
 
+// =============================================================================
+//                                Variable Table
+// =============================================================================
+
+static VarTable var_table_new(void) {
+    return (VarTable) { array_empty() };
+}
+
 static void var_table_free(VarTable* self) {
-    for (size_t i = 0; i < self->entries.len; i++) {
-        var_table_entry_free(&self->entries.ptr[i]);
-    }
+    if (self == NULL) return;
+    ARRAY_FOREACH(&self->entries, x) var_table_entry_free(x);
     array_free(&self->entries);
 }
 
-void interpreter_free(Interpreter* self) {
-    var_table_free(&self->var_table);
+// =============================================================================
+//                                    Scopes
+// =============================================================================
+
+static Scope scope_new(void) {
+    return (Scope) { var_table_new() };
 }
 
-void interpreter_add_var(Interpreter* self, char* name, Value value) {
-    array_push(&self->var_table.entries, ((VarTableEntry) { name, value }));
+static void scope_free(Scope* s) {
+    if (s == NULL) return;
+    var_table_free(&s->var_table);
+    *s = (Scope) { 0 };
 }
 
-bool interpreter_get_var(
-    const Interpreter* self, const char* name, Value* out
-) {
-    ARRAY_FOREACH_REV(&self->var_table.entries, entry) {
+static void scope_add_var(Scope* s, char* name, Value value) {
+    array_push(&s->var_table.entries, ((VarTableEntry) { name, value }));
+}
+
+static bool scope_get_var(Scope* s, const char* name, Value* out) {
+    ARRAY_FOREACH_REV(&s->var_table.entries, entry) {
         if (str_eq(entry->name, name)) {
             *out = entry->value;
             return true;
         }
     }
     return false;
+}
+
+// =============================================================================
+//                                  Interpreter
+// =============================================================================
+
+// ------ Private --------------------------------------------------------------
+
+/// Returns the scope at the top of the scope stack. Macro because of
+/// const-correctness.
+#define current_scope(I) array_last(&(I)->scopes)
+
+// ------ Public ---------------------------------------------------------------
+
+Interpreter interpreter_new(void) {
+    Interpreter ret = { array_empty(), NULL, {} };
+    array_push(&ret.scopes, scope_new());
+    return ret;
+}
+
+void interpreter_free(Interpreter* self) {
+    ARRAY_FOREACH(&self->scopes, x) scope_free(x);
+    array_free(&self->scopes);
+    *self = (Interpreter) { 0 };
+}
+
+void interpreter_add_var(Interpreter* self, char* name, Value value) {
+    scope_add_var(current_scope(self), name, value);
+}
+
+bool interpreter_get_var(
+    const Interpreter* self, const char* name, Value* out
+) {
+    return scope_get_var(current_scope(self), name, out);
 }
 
 bool interpreter_has_error(const Interpreter* self) {
