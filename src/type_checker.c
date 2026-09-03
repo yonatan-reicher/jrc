@@ -16,7 +16,7 @@ static VarTableEntry* var_table_get_entry(VarTable* this, const char* name) {
 
 static VarTableEntry* var_table_add(VarTable* this, char* name, const Type* t) {
     array_push(&this->entries, ((VarTableEntry) { name, *t }));
-    return &array_last(&this->entries);
+    return array_last(&this->entries);
 }
 
 TypeChecker type_checker_new(void) {
