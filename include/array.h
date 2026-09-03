@@ -84,7 +84,10 @@
     ((ARR)->len == 0                                                           \
          ? (PANIC("cannot get first element of empty array"), &(ARR)->ptr[0])  \
          : &(ARR)->ptr[0])
-#define array_last(ARR) (&(ARR)->ptr[(ARR)->len - 1])
+#define array_last(ARR)                                                        \
+    ((ARR)->len == 0                                                           \
+         ? (PANIC("cannot get last element of empty array"), (ARR)->ptr)       \
+         : &(ARR)->ptr[(ARR)->len - 1])
 
 /// Make sure there is space for the given amount of items, or more.
 #define array_reserve(A, MORE)                                                 \
