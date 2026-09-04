@@ -79,11 +79,21 @@ static bool scope_get_var(Scope* s, const char* name, Value* out) {
 /// const-correctness.
 #define current_scope(I) array_last(&(I)->scopes)
 
+static Scope* push_scope(Interpreter* i) {
+    array_push(&i->scopes, scope_new());
+    return current_scope(i);
+}
+
+static void pop_scope(Interpreter* i) {
+    array_pop(&i->scopes);
+    ASSERT(i->scopes.len > 0, "should not pop the first scope (global scope)");
+}
+
 // ------ Public ---------------------------------------------------------------
 
 Interpreter interpreter_new(void) {
     Interpreter ret = { array_empty(), NULL, {} };
-    array_push(&ret.scopes, scope_new());
+    push_scope(&ret);
     return ret;
 }
 
