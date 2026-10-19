@@ -24,7 +24,8 @@
     (fprintf(stderr, PANIC_PREFIX(__FILE__, __LINE__, "%s"), __func__),        \
      fprintf(stderr, __VA_ARGS__),                                             \
      fprintf(stderr, "\n"),                                                    \
-     exit(1))
+     exit(1),                                                                  \
+     0)
 
 /** Soft failure that just prints a message to the screen */
 #define WARNING(...)                                                           \
@@ -46,7 +47,7 @@
 #ifdef NDEBUG
 #define ASSERT(...)
 #else
-    #define ASSERT(...) EXPECT(__VA_ARGS__)
+#define ASSERT(...) EXPECT(__VA_ARGS__)
 #endif
 
 /** Do an expression and panic if it returns false, but also print the error
