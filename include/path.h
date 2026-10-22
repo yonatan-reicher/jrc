@@ -80,3 +80,17 @@ Path path_expand(Path src);
     path_of_slice(ptr_slice(                                                   \
         char, ARRAY_LEN((char*[]) { __VA_ARGS__ }), (char*[]) { __VA_ARGS__ }  \
     ))
+
+// ------ OS Stuff -------------------------------------------------------------
+
+/// Does a path exists?
+bool path_exists(const Path* p);
+/// Can we read from this path?
+bool path_readable(const Path* p);
+/// Can we write to this path?
+bool path_writable(const Path* p);
+/// Is this path a link?
+bool path_is_link(const Path* p);
+/// Read this path, assuming it is a link
+char* path_read_link(const Path* p);
+

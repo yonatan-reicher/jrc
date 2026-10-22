@@ -3,6 +3,12 @@
 #include <limits.h>
 #include <unistd.h>
 
+void test_os_stuff(void) {
+    Path p = path_cwd();
+    EXPECT(path_exists(&p), "the current directory should exist...");
+    path_free(&p);
+}
+
 int main(void) {
     // Check the result of `path-cwd`
     Path p = path_cwd();
@@ -20,5 +26,8 @@ int main(void) {
     free(cwd_from_path);
     // Assert that after the path has been cleared, it is empty.
     if (!path_is_empty(&p)) PANIC("paths should become empty after free");
+
+    test_os_stuff();
+
     return 0;
 }

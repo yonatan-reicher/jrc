@@ -6,6 +6,8 @@
 #include <pwd.h>
 #endif
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 // --- Some helpers to help with the implementation -------------
@@ -134,8 +136,10 @@ Path path_home(void) {
 #ifdef HAS_PWD_H
         str = getpwuid(getuid())->pw_dir;
 #else
-        PANIC("cannot get home directory - $HOME is not set and getpwuid is "
-              "not available");
+        PANIC(
+            "cannot get home directory - $HOME is not set and getpwuid is "
+            "not available"
+        );
 #endif
     }
     return path_parse(str);
@@ -176,4 +180,49 @@ Path path_expand(Path p) {
         }
     }
     return ret;
+}
+
+bool path_exists(const Path* p) {
+    char* str = path_to_str(p);
+    bool ret = access(str, F_OK) == 0;
+    free(str);
+    return ret;
+}
+
+bool path_readable(const Path* p) {
+    char* str = path_to_str(p);
+    bool ret = access(str, R_OK) == 0;
+    free(str);
+    return ret;
+}
+
+bool path_writable(const Path* p) {
+    char* str = path_to_str(p);
+    bool ret = access(str, W_OK) == 0;
+    free(str);
+    return ret;
+}
+
+bool path_is_link(const Path* p) {
+    char* str = path_to_str(p);
+    struct stat s;
+    SYS(lstat(str, &s));
+    free(str);
+    return S_ISLNK(s.st_mode);
+}
+
+char* path_read_link(const Path* p) {
+    char* str = path_to_str(p);
+    char* out;
+    size_t buf_size = 8;
+    while (true) {
+        out = malloc(sizeof(char) * buf_size);
+        ssize_t n_read = readlink(str, out, buf_size);
+        SYS(n_read);
+        if ((size_t)n_read < buf_size) break;
+        free(out);
+        buf_size *= 2;
+    }
+    free(str);
+    return out;
 }
