@@ -67,5 +67,3 @@
         (A) = (B);                                                             \
         (B) = _tmp;                                                            \
     } while (0)
-
-extern inline void ignore(...);
