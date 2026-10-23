@@ -211,7 +211,7 @@ bool path_is_link(const Path* p) {
     return S_ISLNK(s.st_mode);
 }
 
-char* path_read_link(const Path* p) {
+char* path_read_link_to_str(const Path* p) {
     char* str = path_to_str(p);
     char* out;
     size_t buf_size = 8;
@@ -225,4 +225,11 @@ char* path_read_link(const Path* p) {
     }
     free(str);
     return out;
+}
+
+Path path_read_link(const Path* p) {
+    char* s = path_read_link_to_str(p);
+    Path ret = path_parse(s);
+    free(s);
+    return ret;
 }

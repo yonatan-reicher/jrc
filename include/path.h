@@ -92,5 +92,7 @@ bool path_writable(const Path* p);
 /// Is this path a link?
 bool path_is_link(const Path* p);
 /// Read this path, assuming it is a link
-char* path_read_link(const Path* p);
+char* path_read_link_to_str(const Path* p);
+/// Read this path, assuming it is a link
+Path path_read_link(const Path* p);
 
