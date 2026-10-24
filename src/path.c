@@ -145,6 +145,12 @@ Path path_home(void) {
     return path_parse(str);
 }
 
+Path path_root(void) {
+    Path p = path_empty();
+    path_add(&p, str_clone(""));
+    return p;
+}
+
 char* path_to_str(const Path* p) {
     // Just in case, allocate 5 + Σ (n + 5) for every part of length n.
     size_t size = 5;
@@ -213,22 +219,26 @@ bool path_is_link(const Path* p) {
 
 char* path_read_link_to_str(const Path* p) {
     char* str = path_to_str(p);
-    char* out;
+    char* ret = NULL;
     size_t buf_size = 8;
     while (true) {
-        out = malloc(sizeof(char) * buf_size);
-        ssize_t n_read = readlink(str, out, buf_size);
-        SYS(n_read);
+        ret = malloc(sizeof(char) * buf_size);
+        ssize_t n_read = readlink(str, ret, buf_size);
+        if (n_read == -1) {
+            free(ret);
+            return NULL;
+        }
         if ((size_t)n_read < buf_size) break;
-        free(out);
+        free(ret);
         buf_size *= 2;
     }
     free(str);
-    return out;
+    return ret;
 }
 
 Path path_read_link(const Path* p) {
     char* s = path_read_link_to_str(p);
+    if (s == NULL) return path_empty();
     Path ret = path_parse(s);
     free(s);
     return ret;

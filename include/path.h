@@ -39,8 +39,9 @@ typedef struct Path {
     uint16_t n_parts;
 } Path;
 
-/// Returns a new empty path.
+/// Returns a new empty path. This path does not leak memory if not freed.
 Path path_empty(void);
+/// Is the given path equal to the empty path?
 bool path_is_empty(const Path* path);
 /// Free a path.
 void path_free(Path* path);
@@ -71,6 +72,8 @@ Path path_parse_n(const char* path_str, size_t len);
 Path path_cwd(void);
 /// Returns a new path to the user's home directory.
 Path path_home(void);
+/// Returns a path pointing to the root directory. Same as `path_parse("/")`.
+Path path_root(void);
 /// Turn a string into a system representation.
 char* path_to_str(const Path* p);
 /// Takes a path, expands '~', expands '.', and returns it.
@@ -91,8 +94,10 @@ bool path_readable(const Path* p);
 bool path_writable(const Path* p);
 /// Is this path a link?
 bool path_is_link(const Path* p);
-/// Read this path, assuming it is a link
+/// Read the link at the path. If for some reason we cannot, returns NULL and
+/// the error number is set.
 char* path_read_link_to_str(const Path* p);
-/// Read this path, assuming it is a link
+/// Read this path, assuming it is a link. If it is not, returns an empty path
+/// and the error number is set.
 Path path_read_link(const Path* p);
 
