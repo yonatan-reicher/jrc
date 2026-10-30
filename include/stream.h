@@ -40,6 +40,7 @@ Stream stream_from_array(UInt8Array);
 Stream stream_from_str(char*);
 /// Create a stream that copies a string.
 Stream stream_of_str_copy(const char*);
+Stream stream_from_file(FILE*);
 
 // Reading
 
@@ -82,7 +83,8 @@ bool stream_read_to_file(Stream*, FILE*);
     X(slice, Slice, SLICE)                                                     \
     X(array, Array, ARRAY)                                                     \
     X(str, Str, STR)                                                           \
-    X(from_str, FromStr, FROM_STR)
+    X(from_str, FromStr, FROM_STR)                                             \
+    X(file, File, FILE)
 
 // ------ Stream Kind Definitions ----------------------------------------------
 
@@ -128,6 +130,14 @@ typedef struct FromStrStream {
 } FromStrStream;
 
 FromStrStream from_str_stream(char*);
+
+// File
+
+typedef struct FileStream {
+    FILE* file;
+} FileStream;
+
+FileStream file_stream(FILE*);
 
 // Definitions for all
 

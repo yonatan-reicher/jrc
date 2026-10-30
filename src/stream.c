@@ -25,6 +25,7 @@ Stream stream_clone(const Stream* s) {
 }
 
 size_t stream_read(Stream* st, UInt8Slice sl) {
+    ASSERT(sl.len > 0, "when reading from stream, must give a non-empty slice");
     switch (st->kind) {
 #define X(SNAKE, PASCAL, UPPER)                                                \
     case STREAM_KIND_##UPPER: return SNAKE##_stream_read(&st->data.SNAKE, sl);
@@ -70,6 +71,10 @@ Stream stream_of_str_copy(const char* s) {
     UInt8Array a = array_empty();
     array_extend_raw(&a, (const uint8_t*)s, strlen(s));
     return stream_from_array(a);
+}
+
+Stream stream_from_file(FILE* f) {
+    return stream_from_file_stream(file_stream(f));
 }
 
 // Reading
@@ -229,6 +234,39 @@ size_t from_str_stream_read(FromStrStream* st, UInt8Slice sl) {
     StrStream my_str_stream = str_stream(st->str);
     size_t n_read = str_stream_read(&my_str_stream, sl);
     st->index += n_read;
+    return n_read;
+}
+
+// ------ File -----------------------------------------------------------------
+
+FileStream file_stream(FILE* f) {
+    return (FileStream) { f };
+}
+
+void file_stream_free(FileStream* f) {
+    fclose(f->file);
+    return;
+}
+
+Stream file_stream_clone(const FileStream*) {
+    // TODO
+    PANIC("not implemented");
+}
+
+size_t file_stream_read(FileStream* s, UInt8Slice buf) {
+    if (buf.len == 0) return 0;
+start:
+    FILE* const f = s->file;
+    if (feof(f)) return 0;
+    if (ferror(f)) {
+        PANIC(
+            "something went wrong - file stream with ptr %p had it's error "
+            "flag set",
+            (void*)f
+        );
+    }
+    size_t n_read = fread(buf.ptr, 1, buf.len, f);
+    if (n_read == 0) goto start;
     return n_read;
 }
 
