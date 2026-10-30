@@ -84,11 +84,11 @@ void ast_children(const Ast* ast, ConstAstPtrArray* out_children) {
         // More
         case AST_COMPOUND_STATEMENT:
             const AstCompoundStatement* ast_ = (const AstCompoundStatement*)ast;
-            array_extend(out_children, ast_->children, ast_->n_children);
+            array_extend_raw(out_children, ast_->children, ast_->n_children);
             break;
         case AST_PROGRAM:
             const AstProgram* ast__ = (const AstProgram*)ast;
-            array_extend(out_children, ast__->statements, ast__->n_statements);
+            array_extend_raw(out_children, ast__->statements, ast__->n_statements);
             break;
     }
 }
@@ -144,14 +144,14 @@ static char* ast_assign_to_str(const AstAssign* ast) {
 
 static char* ast_compound_statement_to_str(const AstCompoundStatement* ast) {
     CharArray buf = array_empty();
-    array_extend(&buf, "{\n", 2);
+    array_extend_raw(&buf, "{\n", 2);
     for (size_t i_child = 0; i_child < ast->n_children; i_child++) {
         char* child_str = ast_to_str(ast->children[i_child]);
-        array_extend(&buf, "    ", 4);
-        array_extend(&buf, child_str, strlen(child_str));
+        array_extend_raw(&buf, "    ", 4);
+        array_extend_raw(&buf, child_str, strlen(child_str));
         array_push(&buf, '\n');
     }
-    array_extend(&buf, "}", 2); // Also add the '\0'!
+    array_extend_raw(&buf, "}", 2); // Also add the '\0'!
     return buf.ptr;
 }
 
@@ -161,7 +161,7 @@ static char* ast_program_to_str(const AstProgram* ast) {
     CharArray buf = array_empty();
     for (size_t i_stmt = 0; i_stmt < ast->n_statements; i_stmt++) {
         char* stmt_str = ast_to_str(ast->statements[i_stmt]);
-        array_extend(&buf, stmt_str, strlen(stmt_str));
+        array_extend_raw(&buf, stmt_str, strlen(stmt_str));
         array_push(&buf, '\n');
         free(stmt_str);
     }
@@ -231,7 +231,7 @@ void ast_to_err_report(
 #define EMIT_STR(S)                                                            \
     do {                                                                       \
         const char* _s = (S);                                                  \
-        array_extend(out, _s, strlen(_s));                                     \
+        array_extend_raw(out, _s, strlen(_s));                                     \
     } while (0)
 #define EMIT_AND_FREE_STR(S)                                                   \
     do {                                                                       \

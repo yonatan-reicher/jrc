@@ -93,7 +93,7 @@ again:
         slice_of_array(array_get(&this->prefixes, this->i_prefix));
     const Inst inst = inst_enumerator_current(&this->inst_enumerator);
     InstArray new_prog = array_empty();
-    array_extend(&new_prog, prefix.ptr, prefix.len);
+    array_extend_raw(&new_prog, prefix.ptr, prefix.len);
     array_push(&new_prog, inst);
     printf("Trying program of length %zu:\n", new_prog.len);
     ARRAY_FOREACH(&new_prog, i) {

@@ -102,11 +102,13 @@
 /// capacity may increase but may not decrease.
 #define array_resize(A, S) (array_reserve(A, (S) - (A)->len), (A)->len = (S), 0)
 
-#define array_extend(ARR, PTR, LEN)                                            \
+#define array_extend_raw(ARR, PTR, LEN)                                        \
     do {                                                                       \
         array_reserve((ARR), LEN);                                             \
         for (size_t i = 0; i < (LEN); i++) array_push((ARR), (PTR)[i]);        \
     } while (0)
+
+#define array_extend(ARR, SLICE) array_extend_raw(ARR, (SLICE).ptr, (SLICE).len)
 
 static inline void* array_malloc_clone(void* ptr, size_t size) {
     void* ret = malloc(size);

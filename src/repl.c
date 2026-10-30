@@ -12,7 +12,7 @@
 static bool my_get_line(CharArray* out) {
     char buf[BUF_SIZE];
     bool success = fgets(buf, BUF_SIZE, stdin) != NULL;
-    if (success) array_extend(out, buf, strlen(buf));
+    if (success) array_extend_raw(out, buf, strlen(buf));
     return success;
 }
 

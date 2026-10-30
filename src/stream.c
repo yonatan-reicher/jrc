@@ -68,7 +68,7 @@ Stream stream_from_str(char* s) {
 
 Stream stream_of_str_copy(const char* s) {
     UInt8Array a = array_empty();
-    array_extend(&a, (const uint8_t*)s, strlen(s));
+    array_extend_raw(&a, (const uint8_t*)s, strlen(s));
     return stream_from_array(a);
 }
 
