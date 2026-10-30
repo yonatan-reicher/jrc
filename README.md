@@ -54,5 +54,5 @@ designated field initializers.
 
 Checkout [currently working on](currently-working-on.md) to see what I've
 started and haven't finished. [Todo](todo.md) has a list of things I want to do
-but haven't gotten to yet. The file [document style](documentation-style.md) has
-notes on how to read and write documentation for this project.
+but haven't gotten to yet. The file [coding style](coding-style.md) has notes on
+how to read and write documentation and code for this project.
