@@ -144,7 +144,7 @@ FileStream file_stream(FILE*);
 // These are like "abstract methods" for the stream kinds.
 #define X(SNAKE, PASCAL, UPPER)                                                \
     void SNAKE##_stream_free(PASCAL##Stream*);                                 \
-    Stream SNAKE##_stream_clone(PASCAL##Stream*);                              \
+    PASCAL##Stream SNAKE##_stream_clone(PASCAL##Stream*);                      \
     size_t SNAKE##_stream_read(PASCAL##Stream*, UInt8Slice);
 X_ON_STREAM_KINDS
 #undef X

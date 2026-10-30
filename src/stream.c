@@ -18,7 +18,10 @@ void stream_free(Stream* s) {
 Stream stream_clone(Stream* s) {
     switch (s->kind) {
 #define X(SNAKE, PASCAL, UPPER)                                                \
-    case STREAM_KIND_##UPPER: return SNAKE##_stream_clone(&s->data.SNAKE);
+    case STREAM_KIND_##UPPER:                                                  \
+        return stream_from_##SNAKE##_stream(                                   \
+            SNAKE##_stream_clone(&s->data.SNAKE)                               \
+        );
         X_ON_STREAM_KINDS
 #undef X
     }
@@ -128,8 +131,8 @@ void empty_stream_free(EmptyStream*) {
     // nothing
 }
 
-Stream empty_stream_clone(EmptyStream*) {
-    return stream_empty();
+EmptyStream empty_stream_clone(EmptyStream*) {
+    return empty_stream();
 }
 
 size_t empty_stream_read(EmptyStream*, UInt8Slice) {
@@ -146,11 +149,8 @@ void slice_stream_free(SliceStream*) {
     // nothing
 }
 
-Stream slice_stream_clone(SliceStream* s) {
-    return (Stream) {
-        STREAM_KIND_SLICE,
-        { .slice = *s },
-    };
+SliceStream slice_stream_clone(SliceStream* s) {
+    return *s;
 }
 
 size_t slice_stream_read(SliceStream* st, UInt8Slice sl) {
@@ -173,11 +173,9 @@ void array_stream_free(ArrayStream* s) {
     free(s->ptr);
 }
 
-Stream array_stream_clone(ArrayStream* s) {
-    return (Stream) {
-        STREAM_KIND_SLICE,
-        { .array = *s },
-    };
+ArrayStream array_stream_clone(ArrayStream* s) {
+    // TODO: This is a bug.
+    return *s;
 }
 
 size_t array_stream_read(ArrayStream* st, UInt8Slice sl) {
@@ -198,8 +196,8 @@ void str_stream_free(StrStream*) {
     // nothing
 }
 
-Stream str_stream_clone(StrStream* s) {
-    return stream_from_str_stream(*s);
+StrStream str_stream_clone(StrStream* s) {
+    return *s;
 }
 
 size_t str_stream_read(StrStream* st, UInt8Slice sl) {
@@ -226,8 +224,8 @@ void from_str_stream_free(FromStrStream* s) {
     s->str = NULL;
 }
 
-Stream from_str_stream_clone(FromStrStream* s) {
-    return stream_from_from_str_stream(from_str_stream(str_clone(s->str)));
+FromStrStream from_str_stream_clone(FromStrStream* s) {
+    return from_str_stream(str_clone(s->str));
 }
 
 size_t from_str_stream_read(FromStrStream* st, UInt8Slice sl) {
@@ -248,7 +246,7 @@ void file_stream_free(FileStream* f) {
     return;
 }
 
-Stream file_stream_clone(FileStream*) {
+FileStream file_stream_clone(FileStream*) {
     // TODO
     PANIC("not implemented");
 }
