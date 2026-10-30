@@ -1,5 +1,6 @@
 #include "stream.h"
 #include "basic.h"
+#include "str.h"
 
 void test_empty(void) {
     Stream s = stream_empty();
@@ -87,10 +88,42 @@ void test_slice_stream_read_too_much(void) {
 #undef N
 }
 
+void test_sizeof_stream(void) {
+    EXPECT(
+        sizeof(Stream) <= sizeof(size_t) * 4,
+        "struct Stream is bigger than expected"
+    );
+}
+
+void test_str_stream_read(void) {
+    Stream s = stream_of_str("hi");
+    uint8_t buf[1024] = "aaaaaaaaaaa";
+    size_t n_read = stream_read(&s, (UInt8Slice)slice_new(buf, ARRAY_LEN(buf)));
+    EXPECT(n_read == 2, "should read two letters");
+    EXPECT(buf[0] == 'h', "read first letter");
+    EXPECT(buf[1] == 'i', "read second letter");
+    EXPECT(buf[2] == 'a', "make sure that '\\0' was not written");
+    stream_free(&s);
+}
+
+void test_from_str_stream_read(void) {
+    Stream s = stream_from_str(str_clone("hi"));
+    uint8_t buf[1024] = "aaaaaaaaaaa";
+    size_t n_read = stream_read(&s, (UInt8Slice)slice_new(buf, ARRAY_LEN(buf)));
+    EXPECT(n_read == 2, "should read two letters");
+    EXPECT(buf[0] == 'h', "read first letter");
+    EXPECT(buf[1] == 'i', "read second letter");
+    EXPECT(buf[2] == 'a', "make sure that '\\0' was not written");
+    stream_free(&s);
+}
+
 int main(void) {
     test_empty();
     test_slice_stream_read_exact();
     test_slice_stream_read_not_enough();
     test_slice_stream_read_too_much();
+    test_str_stream_read();
+    test_from_str_stream_read();
+    test_sizeof_stream();
     return 0;
 }
