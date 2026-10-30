@@ -56,6 +56,13 @@
              VAR != NULL;                                                      \
              VAR = NULL)
 
+#define slice_drop(S, N)                                                       \
+    ((typeof(S))slice_new( /* A new slice of the same element type */          \
+        (S).ptr + MIN((S).len, N), /* Advance forward */                       \
+        (S).len > (N) ? (S).len - (N) : 0 /* Length */                         \
+    ))
+#define slice_take(S, N) ((typeof(S))slice_new((S).ptr, MIN((S).len, N)))
+
 // ------ Some definitions -----------------------------------------------------
 
 // void
