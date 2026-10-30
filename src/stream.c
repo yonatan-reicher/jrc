@@ -15,7 +15,7 @@ void stream_free(Stream* s) {
     }
 }
 
-Stream stream_clone(const Stream* s) {
+Stream stream_clone(Stream* s) {
     switch (s->kind) {
 #define X(SNAKE, PASCAL, UPPER)                                                \
     case STREAM_KIND_##UPPER: return SNAKE##_stream_clone(&s->data.SNAKE);
@@ -128,7 +128,7 @@ void empty_stream_free(EmptyStream*) {
     // nothing
 }
 
-Stream empty_stream_clone(const EmptyStream*) {
+Stream empty_stream_clone(EmptyStream*) {
     return stream_empty();
 }
 
@@ -146,7 +146,7 @@ void slice_stream_free(SliceStream*) {
     // nothing
 }
 
-Stream slice_stream_clone(const SliceStream* s) {
+Stream slice_stream_clone(SliceStream* s) {
     return (Stream) {
         STREAM_KIND_SLICE,
         { .slice = *s },
@@ -173,7 +173,7 @@ void array_stream_free(ArrayStream* s) {
     free(s->ptr);
 }
 
-Stream array_stream_clone(const ArrayStream* s) {
+Stream array_stream_clone(ArrayStream* s) {
     return (Stream) {
         STREAM_KIND_SLICE,
         { .array = *s },
@@ -198,7 +198,7 @@ void str_stream_free(StrStream*) {
     // nothing
 }
 
-Stream str_stream_clone(const StrStream* s) {
+Stream str_stream_clone(StrStream* s) {
     return stream_from_str_stream(*s);
 }
 
@@ -226,7 +226,7 @@ void from_str_stream_free(FromStrStream* s) {
     s->str = NULL;
 }
 
-Stream from_str_stream_clone(const FromStrStream* s) {
+Stream from_str_stream_clone(FromStrStream* s) {
     return stream_from_from_str_stream(from_str_stream(str_clone(s->str)));
 }
 
@@ -248,7 +248,7 @@ void file_stream_free(FileStream* f) {
     return;
 }
 
-Stream file_stream_clone(const FileStream*) {
+Stream file_stream_clone(FileStream*) {
     // TODO
     PANIC("not implemented");
 }

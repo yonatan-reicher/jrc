@@ -21,7 +21,7 @@ typedef struct Stream Stream;
 /// Free the given streams.
 void stream_free(Stream*);
 /// Clone the stream.
-Stream stream_clone(const Stream*);
+Stream stream_clone(Stream*);
 /// Read up-to the specified amount of bytes from a stream. Returns the actual
 /// amount read.
 size_t stream_read(Stream*, UInt8Slice);
@@ -144,7 +144,7 @@ FileStream file_stream(FILE*);
 // These are like "abstract methods" for the stream kinds.
 #define X(SNAKE, PASCAL, UPPER)                                                \
     void SNAKE##_stream_free(PASCAL##Stream*);                                 \
-    Stream SNAKE##_stream_clone(const PASCAL##Stream*);                        \
+    Stream SNAKE##_stream_clone(PASCAL##Stream*);                              \
     size_t SNAKE##_stream_read(PASCAL##Stream*, UInt8Slice);
 X_ON_STREAM_KINDS
 #undef X
