@@ -1,5 +1,6 @@
 #include "stream.h"
 #include "basic.h"
+#include "slice.h"
 #include "str.h"
 
 void test_empty(void) {
@@ -133,6 +134,30 @@ void test_stream_read_to_array(void) {
     stream_free(&s);
 }
 
+void test_file_stream_clone(void) {
+    FILE* f = tmpfile();
+    fputs("Hello woorld!", f);
+    rewind(f);
+    Stream s1 = stream_from_file(f);
+    Stream s2;
+    uint8_t buf[1024];
+    UInt8Slice slice = slice_of_fixed_array(buf);
+    size_t n_read = stream_read(&s1, slice_take(slice, 6));
+    EXPECT(n_read == 6, "should read");
+    s2 = stream_clone(&s1);
+    // Now read the rest - twice.
+    n_read = stream_read(&s1, slice);
+    EXPECT(n_read == 7, "7 characters left");
+    n_read = stream_read(&s1, slice);
+    EXPECT(n_read == 0, "end");
+    n_read = stream_read(&s2, slice);
+    EXPECT(n_read == 7, "7 characters left");
+    n_read = stream_read(&s2, slice);
+    EXPECT(n_read == 0, "end");
+    stream_free(&s1);
+    stream_free(&s2);
+}
+
 int main(void) {
     test_empty();
     test_slice_stream_read_exact();
@@ -142,5 +167,6 @@ int main(void) {
     test_from_str_stream_read();
     test_sizeof_stream();
     test_stream_read_to_array();
+    test_file_stream_clone();
     return 0;
 }

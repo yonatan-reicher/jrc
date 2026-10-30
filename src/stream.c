@@ -8,7 +8,7 @@
 
 void stream_free(Stream* s) {
     switch (s->kind) {
-#define X(SNAKE, PASCAL, UPPER)                                                \
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND)                                    \
     case STREAM_KIND_##UPPER: SNAKE##_stream_free(&s->data.SNAKE); break;
         X_ON_STREAM_KINDS
 #undef X
@@ -17,20 +17,28 @@ void stream_free(Stream* s) {
 
 Stream stream_clone(Stream* s) {
     switch (s->kind) {
-#define X(SNAKE, PASCAL, UPPER)                                                \
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND)                                    \
+    CLONE_##CLONE_KIND(SNAKE, PASCAL, UPPER)
+#define CLONE_NORMAL(SNAKE, PASCAL, UPPER)                                     \
     case STREAM_KIND_##UPPER:                                                  \
         return stream_from_##SNAKE##_stream(                                   \
             SNAKE##_stream_clone(&s->data.SNAKE)                               \
         );
+#define CLONE_ADVANCED(SNAKE, PASCAL, UPPER)                                   \
+    case STREAM_KIND_##UPPER:                                                  \
+        return SNAKE##_stream_clone(&s->kind, &s->data.SNAKE);
+        /* Call X */
         X_ON_STREAM_KINDS
 #undef X
+#undef CLONE_NORMAL
+#undef CLONE_ADVANCED
     }
 }
 
 size_t stream_read(Stream* st, UInt8Slice sl) {
     ASSERT(sl.len > 0, "when reading from stream, must give a non-empty slice");
     switch (st->kind) {
-#define X(SNAKE, PASCAL, UPPER)                                                \
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND)                                    \
     case STREAM_KIND_##UPPER: return SNAKE##_stream_read(&st->data.SNAKE, sl);
         X_ON_STREAM_KINDS
 #undef X
@@ -246,9 +254,11 @@ void file_stream_free(FileStream* f) {
     return;
 }
 
-FileStream file_stream_clone(FileStream*) {
-    // TODO
-    PANIC("not implemented");
+Stream file_stream_clone(StreamKind* kind, FileStream* s) {
+    SharedFileStream* ss = (SharedFileStream*)s;
+    *kind = STREAM_KIND_SHARED_FILE;
+    *ss = shared_file_stream_from_file_stream(*s);
+    return stream_from_shared_file_stream(shared_file_stream_clone(ss));
 }
 
 size_t file_stream_read(FileStream* s, UInt8Slice buf) {
@@ -268,9 +278,70 @@ start:
     return n_read;
 }
 
+// ------ Shared File Stream ---------------------------------------------------
+
+SharedFileStream shared_file_stream_from_file_stream(FileStream s) {
+    FILE* f = s.file;
+    fpos_t pos;
+    if (fgetpos(f, &pos)) { // error
+        // TODO: handle the error by creating a shared buffer instead of a
+        // seeking.
+        PANIC("not supported yet");
+    }
+    size_t* rc = malloc(sizeof(size_t));
+    *rc = 1;
+    SharedFileStreamCursorInfo* info = malloc(sizeof(*info));
+    *info = (typeof(*info)) { pos, false, false };
+    return (SharedFileStream) { f, info, rc };
+}
+
+void shared_file_stream_free(SharedFileStream* s) {
+    free(s->info);
+    s->info = NULL;
+    (*s->rc)--;
+    if (*s->rc == 0) {
+        free(s->rc);
+        s->rc = NULL;
+        fclose(s->file);
+    }
+}
+
+SharedFileStream shared_file_stream_clone(SharedFileStream* s) {
+    typeof(s->info) info_clone = malloc(sizeof(*info_clone));
+    *info_clone = *s->info;
+    (*s->rc)++;
+    return (SharedFileStream) { s->file, info_clone, s->rc };
+}
+
+size_t shared_file_stream_read(SharedFileStream* s, UInt8Slice buf) {
+start:
+    if (buf.len == 0) return 0;
+    FILE* const f = s->file;
+    typeof(s->info) i = s->info;
+    if (i->eof_reached) return 0;
+    if (i->had_err) {
+        PANIC(
+            "something went wrong - file stream with pointer %p had it's error "
+            "flag set",
+            (void*)f
+        );
+    }
+    // I guess this isn't thread safe...
+    if (fsetpos(f, &i->pos)) { // error
+        PANIC("i have no idea how to handle this");
+    }
+    clearerr(f);
+    size_t n_read = fread(buf.ptr, 1, buf.len, f);
+    i->eof_reached = feof(f);
+    i->had_err = ferror(f);
+    if (fsetpos(f, &i->pos)) PANIC("i have no idea how to handle this");
+    if (n_read == 0) goto start;
+    return n_read;
+}
+
 // ------ Conversions ----------------------------------------------------------
 
-#define X(SNAKE, PASCAL, UPPER)                                                \
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND)                                    \
     Stream stream_from_##SNAKE##_stream(PASCAL##Stream s) {                    \
         return (Stream) { STREAM_KIND_##UPPER, { .SNAKE = s } };               \
     }

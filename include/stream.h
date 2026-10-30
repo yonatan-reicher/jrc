@@ -79,12 +79,16 @@ bool stream_read_to_file(Stream*, FILE*);
 // insert the table.
 
 #define X_ON_STREAM_KINDS                                                      \
-    X(empty, Empty, EMPTY)                                                     \
-    X(slice, Slice, SLICE)                                                     \
-    X(array, Array, ARRAY)                                                     \
-    X(str, Str, STR)                                                           \
-    X(from_str, FromStr, FROM_STR)                                             \
-    X(file, File, FILE)
+    /* X(snake case name, pascal case, upper case, clone kind) */              \
+    /* The clone type is either `NORMAL` for a simple clone signature and */   \
+    /* `ADVANCED` for a stranger one. */                                       \
+    X(empty, Empty, EMPTY, NORMAL)                                             \
+    X(slice, Slice, SLICE, NORMAL)                                             \
+    X(array, Array, ARRAY, NORMAL)                                             \
+    X(str, Str, STR, NORMAL)                                                   \
+    X(from_str, FromStr, FROM_STR, NORMAL)                                     \
+    X(file, File, FILE, ADVANCED)                                              \
+    X(shared_file, SharedFile, SHARED_FILE, NORMAL)
 
 // ------ Stream Kind Definitions ----------------------------------------------
 
@@ -139,20 +143,28 @@ typedef struct FileStream {
 
 FileStream file_stream(FILE*);
 
-// Definitions for all
+// Shared File
 
-// These are like "abstract methods" for the stream kinds.
-#define X(SNAKE, PASCAL, UPPER)                                                \
-    void SNAKE##_stream_free(PASCAL##Stream*);                                 \
-    PASCAL##Stream SNAKE##_stream_clone(PASCAL##Stream*);                      \
-    size_t SNAKE##_stream_read(PASCAL##Stream*, UInt8Slice);
-X_ON_STREAM_KINDS
-#undef X
+typedef struct SharedFileStream {
+    // This field could be stored in the box, because it's shared. But we don't
+    // need to!
+    FILE* file;
+    struct SharedFileStreamCursorInfo* info;
+    size_t* rc;
+} SharedFileStream;
+
+typedef struct SharedFileStreamCursorInfo {
+    fpos_t pos;
+    bool eof_reached;
+    bool had_err;
+} SharedFileStreamCursorInfo;
+
+SharedFileStream shared_file_stream_from_file_stream(FileStream);
 
 // ------ Stream Struct --------------------------------------------------------
 
 typedef enum StreamKind {
-#define X(SNAKE, PASCAL, UPPER) STREAM_KIND_##UPPER,
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND) STREAM_KIND_##UPPER,
     X_ON_STREAM_KINDS
 #undef X
 } StreamKind;
@@ -160,15 +172,30 @@ typedef enum StreamKind {
 typedef struct Stream {
     StreamKind kind;
     union {
-#define X(SNAKE, PASCAL, UPPER) PASCAL##Stream SNAKE;
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND) PASCAL##Stream SNAKE;
         X_ON_STREAM_KINDS
 #undef X
     } data;
 } Stream;
 
+// ------ Define Stream Kind Abstract Functions --------------------------------
+
+#define STREAM_CLONE_SIGNATURE_NORMAL(SNAKE, PASCAL, UPPER)                    \
+    PASCAL##Stream SNAKE##_stream_clone(PASCAL##Stream*)
+
+#define STREAM_CLONE_SIGNATURE_ADVANCED(SNAKE, PASCAL, UPPER)                  \
+    Stream SNAKE##_stream_clone(enum StreamKind*, PASCAL##Stream*)
+
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND)                                    \
+    void SNAKE##_stream_free(PASCAL##Stream*);                                 \
+    STREAM_CLONE_SIGNATURE_##CLONE_KIND(SNAKE, PASCAL, UPPER);                 \
+    size_t SNAKE##_stream_read(PASCAL##Stream*, UInt8Slice);
+X_ON_STREAM_KINDS
+#undef X
+
 // ------ Conversions ----------------------------------------------------------
 
-#define X(SNAKE, PASCAL, UPPER)                                                \
+#define X(SNAKE, PASCAL, UPPER, CLONE_KIND)                                    \
     Stream stream_from_##SNAKE##_stream(PASCAL##Stream);
 X_ON_STREAM_KINDS
 #undef X
