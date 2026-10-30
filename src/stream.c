@@ -72,6 +72,47 @@ Stream stream_of_str_copy(const char* s) {
     return stream_from_array(a);
 }
 
+// Reading
+
+UInt8Array stream_read_to_array(Stream* s) {
+    UInt8Array ret = array_empty();
+    STREAM_READ_BY_CHUNKS(s, 1024, slice) {
+        // This actually extends the array's memory exactly by the needed
+        // amount. If we want to be more performant, we could double it, or
+        // something else that's smart.
+        array_extend(&ret, slice);
+    }
+    return ret;
+}
+
+UInt8Array stream_to_array(Stream s) {
+    UInt8Array a = stream_read_to_array(&s);
+    stream_free(&s);
+    return a;
+}
+
+char* stream_read_to_str(Stream* s) {
+    // Who has time to actually implement stuff?
+    UInt8Array a = stream_read_to_array(s);
+    array_push(&a, '\0');
+    // Assumes `array_free` just calls `free`...
+    return (char*)a.ptr;
+}
+
+char* stream_to_str(Stream s) {
+    char* str = stream_read_to_str(&s);
+    stream_free(&s);
+    return str;
+}
+
+bool stream_read_to_file(Stream* s, FILE* f) {
+    STREAM_READ_BY_CHUNKS(s, 1024, slice) {
+        size_t n_wrote = fwrite(slice.ptr, 1, slice.len, f);
+        if (n_wrote < slice.len) return false;
+    }
+    return true;
+}
+
 // ------ Empty Stream ---------------------------------------------------------
 
 EmptyStream empty_stream() {

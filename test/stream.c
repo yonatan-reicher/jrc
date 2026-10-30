@@ -117,6 +117,22 @@ void test_from_str_stream_read(void) {
     stream_free(&s);
 }
 
+void test_stream_read_to_array(void) {
+    char str[1024 * 5 + 1] = { 0 };
+    for (size_t i = 0; i < ARRAY_LEN(str) - 1; i++) str[i] = 'a';
+    str[ARRAY_LEN(str) - 1] = 0;
+    Stream s = stream_of_str(str);
+    UInt8Array a = stream_read_to_array(&s);
+    EXPECT(
+        a.len == ARRAY_LEN(str) - 1,
+        "expect the length to be '%zu' but was actually '%zu'",
+        ARRAY_LEN(str) - 1,
+        a.len
+    );
+    array_free(&a);
+    stream_free(&s);
+}
+
 int main(void) {
     test_empty();
     test_slice_stream_read_exact();
@@ -125,5 +141,6 @@ int main(void) {
     test_str_stream_read();
     test_from_str_stream_read();
     test_sizeof_stream();
+    test_stream_read_to_array();
     return 0;
 }

@@ -41,6 +41,37 @@ Stream stream_from_str(char*);
 /// Create a stream that copies a string.
 Stream stream_of_str_copy(const char*);
 
+// Reading
+
+UInt8Array stream_read_to_array(Stream*);
+UInt8Array stream_to_array(Stream);
+
+char* stream_read_to_str(Stream*);
+char* stream_to_str(Stream);
+
+bool stream_read_to_file(Stream*, FILE*);
+
+#define STREAM_READ_BY_CHUNKS(S, BUF_SIZE, VAR)                                \
+    uint8_t VAR##_buf[BUF_SIZE];                                               \
+    size_t VAR##_n_read = 0;                                                   \
+    UInt8Slice VAR##_full = slice_of_fixed_array(VAR##_buf);                   \
+    UInt8Slice VAR = slice_empty();                                            \
+    while (                                                                    \
+        (VAR##_n_read = stream_read((S), VAR##_full),                          \
+         (VAR) = slice_take(VAR##_full, VAR##_n_read),                         \
+         VAR##_n_read != 0)                                                    \
+    )
+
+// TO ADD:
+// - file streams
+// - process streams
+// - stream concat
+// - stream concat all
+// - stream char
+// - stream trim
+// - stream take
+// - stream drop
+
 // ------ Stream Name Table ----------------------------------------------------
 // We have a macro holding the name of all kinds of streams in a sort of table
 // where rows are applied onto a macro called `X`. To use it, define `X` and
