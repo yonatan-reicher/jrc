@@ -80,6 +80,22 @@
         }                                                                      \
     } while (0)
 
+#define array_pop_n_at(ARR, I, N)                                              \
+    do {                                                                       \
+        if ((N) == 0) break;                                                   \
+        if ((ARR)->len <= (I) + (N))                                           \
+            PANIC(                                                             \
+                "cannot pop %zu items at index %zu from array of length %zu",  \
+                (size_t)(N),                                                   \
+                (size_t)(I),                                                   \
+                (ARR)->len                                                     \
+            );                                                                 \
+        (ARR)->len -= (N);                                                     \
+        size_t _i = (I);                                                       \
+        for (size_t _j = _i; _j + (N) < (ARR)->len; _j++)                      \
+            (ARR)->ptr[_j] = (ARR)->ptr[_j + (N)];                             \
+    } while (0)
+
 #define array_first(ARR)                                                       \
     ((ARR)->len == 0                                                           \
          ? (PANIC("cannot get first element of empty array"), &(ARR)->ptr[0])  \
@@ -136,6 +152,8 @@ static inline void* array_malloc_clone(void* ptr, size_t size) {
              VAR != NULL;                                                      \
              VAR = NULL)
 
+#define array_trim(ARR)                                                        \
+    ((ARR)->ptr = realloc((ARR)->ptr, (ARR)->len), (ARR)->cap = (ARR)->len)
 // =============================================================================
 //                            Some Array Declarations
 // =============================================================================
@@ -152,3 +170,5 @@ DECLARE_INT_ARRAYS(8)
 DECLARE_INT_ARRAYS(16)
 DECLARE_INT_ARRAYS(32)
 DECLARE_INT_ARRAYS(64)
+DECLARE_ARRAY(size_t, SizeArray);
+DECLARE_ARRAY(ssize_t, SSizeArray);
