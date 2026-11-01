@@ -32,19 +32,19 @@ Generally, words should not be abbreviated (or shortened). That is unless:
    abbreviated in identifiers.
 
 
-| Full | Abbreviation |
-|:-----|:------|
-| number | n |
-| count | n |
-| input | inp |
-| output | out |
-| buffer | buf |
-| string | str |
-| error | err |
-| function     | func         |
-| matrix       | mat          |
-| context      | ctx          |
-| derivative   | deriv        |
+| Full              | Abbreviation |
+|:------------------|:-------------|
+| number            | n            |
+| count             | n            |
+| input             | inp          |
+| output            | out          |
+| buffer            | buf          |
+| string            | str          |
+| error             | err          |
+| function          | func         |
+| matrix            | mat          |
+| context           | ctx          |
+| derivative        | deriv        |
 
 
 ## Namespacing
