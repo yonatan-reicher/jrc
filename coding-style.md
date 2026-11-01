@@ -45,6 +45,7 @@ Generally, words should not be abbreviated (or shortened). That is unless:
 | matrix            | mat          |
 | context           | ctx          |
 | derivative        | deriv        |
+| reference count   | rc           |
 
 
 ## Namespacing
