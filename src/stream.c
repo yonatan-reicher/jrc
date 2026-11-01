@@ -254,11 +254,30 @@ void file_stream_free(FileStream* f) {
     return;
 }
 
+/// NOTE: this is totally not thread safe
+static bool file_supports_set_pos(FILE* f) {
+    fpos_t p;
+    // Make sure we can both get and set the position.
+    if (fgetpos(f, &p) == -1) return false;
+    // Only try setting the position if we actually could get it!
+    if (fsetpos(f, &p) == -1) return false;
+    return true;
+}
+
 Stream file_stream_clone(StreamKind* kind, FileStream* s) {
-    SharedFileStream* ss = (SharedFileStream*)s;
-    *kind = STREAM_KIND_SHARED_FILE;
-    *ss = shared_file_stream_from_file_stream(*s);
-    return stream_from_shared_file_stream(shared_file_stream_clone(ss));
+    if (file_supports_set_pos(s->file)) {
+        SharedFileStream* ss = (SharedFileStream*)s;
+        *kind = STREAM_KIND_SHARED_FILE;
+        *ss = shared_file_stream_from_file_stream(*s);
+        return stream_from_shared_file_stream(shared_file_stream_clone(ss));
+    } else {
+        SharedBufferedFileStream* ss = (SharedBufferedFileStream*)s;
+        *kind = STREAM_KIND_SHARED_BUFFERED_FILE;
+        *ss = shared_buffered_file_stream_from_file_stream(*s);
+        return stream_from_shared_buffered_file_stream(
+            shared_buffered_file_stream_clone(ss)
+        );
+    }
 }
 
 size_t file_stream_read(FileStream* s, UInt8Slice buf) {
