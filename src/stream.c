@@ -271,12 +271,10 @@ Stream file_stream_clone(StreamKind* kind, FileStream* s) {
         *ss = shared_file_stream_from_file_stream(*s);
         return stream_from_shared_file_stream(shared_file_stream_clone(ss));
     } else {
-        SharedBufferedFileStream* ss = (SharedBufferedFileStream*)s;
-        *kind = STREAM_KIND_SHARED_BUFFERED_FILE;
-        *ss = shared_buffered_file_stream_from_file_stream(*s);
-        return stream_from_shared_buffered_file_stream(
-            shared_buffered_file_stream_clone(ss)
-        );
+        BufferedStream* ss = (BufferedStream*)s;
+        *kind = STREAM_KIND_BUFFERED;
+        *ss = buffered_stream_from_stream(*(Stream*)s);
+        return stream_from_buffered_stream(buffered_stream_clone(ss));
     }
 }
 
@@ -358,12 +356,31 @@ start:
     return n_read;
 }
 
-// ------ Shared Buffered File Stream ------------------------------------------
+// ------ Buffered Stream ------------------------------------------------------
 
-#define S SharedBufferedFileStream
-#define SBox SharedBufferedFileStreamBox
+/// Implementation:
+/// All information is stored in a *box*. The box is mutable and shared between
+/// all clones of this stream. It contains:
+/// - data buffer
+/// - mark buffer
+/// - amount of bytes already dropped
+///
+/// Mark buffer: for each byte in the data buffer, has a counter counting the
+/// amount of streams that point to that byte as the next one to read. Also
+/// holds one more counter at the end, counting the amount of streams that
+/// point at unread bytes.
+///
+/// TODO: mark by chunks instead of singular bytes.
+typedef struct BufferedStreamBox {
+    UInt8Array buf;
+    UInt16Array marks;
+    /// When all the streams read some prefix of the buffer, that prefix is
+    /// dropped, and this starting offset is updated to reflect it.
+    size_t bytes_dropped;
+    Stream inner;
+} BufferedStreamBox;
 
-void shared_buffered_file_stream_drop_prefix(SBox* box) {
+void buffered_stream_drop_prefix(BufferedStreamBox* box) {
     // how much to drop?
     size_t n_drop = 0;
     while (*array_get(&box->marks, n_drop) == 0 && n_drop < box->marks.len - 1)
@@ -377,57 +394,54 @@ void shared_buffered_file_stream_drop_prefix(SBox* box) {
     box->bytes_dropped += n_drop;
 }
 
-void shared_buffered_file_stream_free_if_done(S* s) {
+void buffered_stream_free_if_done(BufferedStream* s) {
     if (s->box->marks.len == 1 && *array_first(&s->box->marks) == 0) {
         array_free(&s->box->buf);
         array_free(&s->box->marks);
+        stream_free(&s->box->inner);
         free(s->box);
-        fclose(s->file);
+        memset(s->box, 0, sizeof(BufferedStreamBox));
         s->box = NULL;
-        s->file = NULL;
     }
 }
 
-S shared_buffered_file_stream_from_file_stream(FileStream s) {
-    SBox* box = malloc(sizeof(SBox));
-    *box = (SBox) { array_empty(), array_empty(), 0 };
+BufferedStream buffered_stream_from_stream(Stream s) {
+    BufferedStreamBox* box = malloc(sizeof(BufferedStreamBox));
+    *box = (BufferedStreamBox) { array_empty(), array_empty(), 0, s };
     array_push(&box->marks, 1);
-    return (S) { s.file, box, 0 };
+    return (BufferedStream) { 0, box };
 }
 
-uint16_t* shared_buffered_file_stream_mark(S* s) {
+uint16_t* buffered_stream_mark(BufferedStream* s) {
     return array_get(&s->box->marks, s->box->bytes_dropped + s->index);
 }
 
-void shared_buffered_file_stream_free(S* s) {
-    *shared_buffered_file_stream_mark(s) -= 1;
-    shared_buffered_file_stream_drop_prefix(s->box);
-    shared_buffered_file_stream_free_if_done(s);
+void buffered_stream_free(BufferedStream* s) {
+    *buffered_stream_mark(s) -= 1;
+    buffered_stream_drop_prefix(s->box);
+    buffered_stream_free_if_done(s);
 }
 
-S shared_buffered_file_stream_clone(S* s) {
-    *shared_buffered_file_stream_mark(s) += 1;
-    return (S) { s->file, s->box, s->index };
+BufferedStream buffered_stream_clone(BufferedStream* s) {
+    *buffered_stream_mark(s) += 1;
+    return *s;
 }
 
-size_t shared_buffered_file_stream_read(S* s, UInt8Slice slice) {
-    SBox* b = s->box;
+size_t buffered_stream_read(BufferedStream* s, UInt8Slice slice) {
+    BufferedStreamBox* b = s->box;
     if (s->index == b->marks.len - 1) {
-    again:
         // read
-        if (feof(s->file)) return 0;
-        if (ferror(s->file)) PANIC("not sure what to do");
-        size_t n_read = fread(slice.ptr, 1, slice.len, s->file);
-        if (n_read == 0) goto again;
+        size_t n_read = stream_read(&b->inner, slice);
+        if (n_read == 0) return 0;
         // update
         for (size_t i = 0; i < n_read; i++) {
             array_push(&s->box->buf, *slice_get(&slice, i));
             array_push(&s->box->marks, 0);
         }
-        *shared_buffered_file_stream_mark(s) -= 1;
+        *buffered_stream_mark(s) -= 1;
         s->index += n_read;
-        *shared_buffered_file_stream_mark(s) += 1;
-        shared_buffered_file_stream_drop_prefix(s->box);
+        *buffered_stream_mark(s) += 1;
+        buffered_stream_drop_prefix(s->box);
         return n_read;
     } else {
         // read
@@ -436,16 +450,13 @@ size_t shared_buffered_file_stream_read(S* s, UInt8Slice slice) {
         size_t n = MIN(slice.len, n_left);
         memcpy(slice.ptr, s->box->buf.ptr + real_index, n);
         // update
-        *shared_buffered_file_stream_mark(s) -= 1;
+        *buffered_stream_mark(s) -= 1;
         s->index += n;
-        *shared_buffered_file_stream_mark(s) += 1;
-        shared_buffered_file_stream_drop_prefix(s->box);
+        *buffered_stream_mark(s) += 1;
+        buffered_stream_drop_prefix(s->box);
         return n;
     }
 }
-
-#undef S
-#undef SBox
 
 // ------ Conversions ----------------------------------------------------------
 
