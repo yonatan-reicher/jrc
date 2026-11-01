@@ -88,7 +88,8 @@ bool stream_read_to_file(Stream*, FILE*);
     X(str, Str, STR, NORMAL)                                                   \
     X(from_str, FromStr, FROM_STR, NORMAL)                                     \
     X(file, File, FILE, ADVANCED)                                              \
-    X(shared_file, SharedFile, SHARED_FILE, NORMAL)
+    X(shared_file, SharedFile, SHARED_FILE, NORMAL)                            \
+    X(shared_buffered_file, SharedBufferedFile, SHARED_BUFFERED_FILE, NORMAL)
 
 // ------ Stream Kind Definitions ----------------------------------------------
 
@@ -160,6 +161,47 @@ typedef struct SharedFileStreamCursorInfo {
 } SharedFileStreamCursorInfo;
 
 SharedFileStream shared_file_stream_from_file_stream(FileStream);
+
+// Shared Buffered File
+
+/// This is an alternative to a shared file for `FILE*` objects that do not
+/// support `fgetpos` and whatever. This stream reads from the `FILE*` and then
+/// stores in a buffer. When reading, the buffer is first checked for new data
+/// written by other streams that share that box and `FILE*`.
+typedef struct SharedBufferedFileStream {
+    /* Implementation:
+     *
+     * This stream holds a `FILE*`, an index, and a *box*.
+     *
+     * Box: Holds shared mutable information between all the streams that use
+     * it:
+     * - data buffer
+     * - mark buffer
+     * - bytes already dropped
+     *
+     * Mark buffer: for each byte in the data buffer, has a counter counting the
+     * amount of streams that point to that byte as the next one to read. Also
+     * holds one more counter at the end, counting the amount of streams that
+     * point at unread bytes.
+     *
+     * TODO: mark by chunks instead of singular bytes.
+     */
+    FILE* file;
+    struct SharedBufferedFileStreamBox* box;
+    size_t index;
+} SharedBufferedFileStream;
+
+typedef struct SharedBufferedFileStreamBox {
+    UInt8Array buf;
+    UInt16Array marks;
+    /// When all the streams read some prefix of the buffer, that prefix is
+    /// dropped, and this starting offset is updated to reflect it.
+    size_t bytes_dropped;
+} SharedBufferedFileStreamBox;
+
+SharedBufferedFileStream shared_buffered_file_stream_from_file_stream(
+    FileStream
+);
 
 // ------ Stream Struct --------------------------------------------------------
 
