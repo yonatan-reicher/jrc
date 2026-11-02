@@ -27,6 +27,8 @@
      exit(1),                                                                  \
      0)
 
+#define TODO PANIC("not implemented yet")
+
 /** Soft failure that just prints a message to the screen */
 #define WARNING(...)                                                           \
     do {                                                                       \
