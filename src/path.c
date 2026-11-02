@@ -1,6 +1,6 @@
 #include "path.h"
 #include "str.h"
-#if defined(__unix__) || defined(__unix) ||                                    \
+#if defined(unix) || defined(__unix) || defined(__unix__) ||                   \
     (defined(__APPLE__) && defined(__MACH__))
 #define HAS_PWD_H
 #include <pwd.h>
