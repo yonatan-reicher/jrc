@@ -158,6 +158,22 @@ void test_file_stream_clone(void) {
     stream_free(&s2);
 }
 
+void test_cmd_stream(void) {
+    Stream out, err;
+    bool success = stream_cmd(
+        "echo",
+        slice(ConstCharPtrSlice, { "hello", "world" }),
+        stream_empty(),
+        &out,
+        &err
+    );
+    stream_free(&err);
+    EXPECT(success, "expected success");
+    char* s = stream_to_str(out);
+    str_remove_newline(s);
+    EXPECT(str_eq(s, "hello world"), "output!");
+}
+
 int main(void) {
     test_empty();
     test_slice_stream_read_exact();
@@ -168,5 +184,6 @@ int main(void) {
     test_sizeof_stream();
     test_stream_read_to_array();
     test_file_stream_clone();
+    test_cmd_stream();
     return 0;
 }

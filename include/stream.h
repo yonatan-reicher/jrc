@@ -41,6 +41,13 @@ Stream stream_from_str(char*);
 /// Create a stream that copies a string.
 Stream stream_of_str_copy(const char*);
 Stream stream_from_file(FILE*);
+bool stream_cmd(
+    const char* name,
+    ConstCharPtrSlice args,
+    Stream inp,
+    Stream* out,
+    Stream* err
+);
 
 // Reading
 
@@ -88,7 +95,8 @@ bool stream_read_to_file(Stream*, FILE*);
     X(from_str, FromStr, FROM_STR, NORMAL)                                     \
     X(file, File, FILE, ADVANCED)                                              \
     X(shared_file, SharedFile, SHARED_FILE, NORMAL)                            \
-    X(buffered, Buffered, BUFFERED, NORMAL)
+    X(buffered, Buffered, BUFFERED, NORMAL)                                    \
+    X(cmd, Cmd, CMD, ADVANCED)
 
 // ------ Stream Kind Definitions ----------------------------------------------
 
@@ -172,6 +180,26 @@ typedef struct BufferedStream {
 } BufferedStream;
 
 BufferedStream buffered_stream_from_stream(Stream);
+
+// Cmd
+
+typedef enum CmdStreamKind {
+    CMD_STREAM_OUT,
+    CMD_STREAM_ERR,
+} CmdStreamKind;
+
+typedef struct CmdStream {
+    struct CmdStreamData* data;
+    CmdStreamKind kind;
+} CmdStream;
+
+bool cmd_stream(
+    const char* name,
+    ConstCharPtrSlice args,
+    Stream inp,
+    CmdStream* out,
+    CmdStream* err
+);
 
 // ------ Stream Struct --------------------------------------------------------
 

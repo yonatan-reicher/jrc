@@ -1,6 +1,7 @@
 #include "stream.h"
 #include "slice.h"
 #include "str.h"
+#include <stdatomic.h>
 
 // ------ Stream implementation ------------------------------------------------
 
@@ -87,6 +88,18 @@ Stream stream_of_str_copy(const char* s) {
 
 Stream stream_from_file(FILE* f) {
     return stream_from_file_stream(file_stream(f));
+}
+
+bool stream_cmd(
+    const char* name,
+    ConstCharPtrSlice args,
+    Stream inp,
+    Stream* out,
+    Stream* err
+) {
+    bool success = cmd_stream(name, args, inp, &out->data.cmd, &err->data.cmd);
+    if (success) out->kind = err->kind = STREAM_KIND_CMD;
+    return success;
 }
 
 // Reading
@@ -457,6 +470,160 @@ size_t buffered_stream_read(BufferedStream* s, UInt8Slice slice) {
         buffered_stream_drop_prefix(s->box);
         return n;
     }
+}
+
+// ------ Command Stream -------------------------------------------------------
+
+#if defined(unix) || defined(__unix) || defined(__unix__) ||                   \
+    (defined(__APPLE__) && defined(__MACH__))
+#include <signal.h>
+#include <unistd.h>
+#ifdef _POSIX_THREADS
+#define HAS_PTHREAD
+#endif
+#endif
+
+#ifdef HAS_PTHREAD
+#include <pthread.h>
+#elifdef _WIN32
+#error "not implemented yet"
+#endif
+
+/// This is possible amount of references to the Command Stream's data, which is
+/// shared between both an output stream and an error stream.
+typedef uint8_t CmdStreamDataRc;
+
+/// Shared data between an output command stream and an error command stream.
+typedef struct CmdStreamData {
+    /// A stream reading standard output of the command.
+    FileStream out_stream;
+    /// A stream reading standard error of the command.
+    FileStream err_stream;
+    /// Handle to the thread that feeds the command input.
+    pthread_t feeder_thread;
+    struct FeederThreadArgs* feeder_args;
+    /// Handle to the process that runs the command.
+    pid_t cmd_process;
+    /// Is this data referenced by one, or two streams? This is decremented when
+    /// one stream is freed.
+    CmdStreamDataRc rc;
+} CmdStreamData;
+
+typedef struct FeederThreadArgs {
+    Stream inp;
+    int write_fd;
+    atomic_bool please_close;
+} FeederThreadArgs;
+
+static void* feeder_thread(void* _args) {
+    FeederThreadArgs* args = (FeederThreadArgs*)_args;
+    STREAM_READ_BY_CHUNKS(&args->inp, 1024, chunk) {
+        size_t n_left = chunk.len;
+        while (n_left > 0) {
+            if (atomic_load(&args->please_close)) goto end;
+            ssize_t n_wrote = write(args->write_fd, chunk.ptr, chunk.len);
+            EXPECT_ERRNO(n_wrote != -1);
+            EXPECT(n_wrote > 0, "must write more than zero bytes");
+            n_left -= (size_t)n_wrote;
+        }
+    }
+end:
+    return NULL;
+}
+
+bool cmd_stream(
+    const char* name,
+    ConstCharPtrSlice args,
+    Stream inp,
+    CmdStream* out,
+    CmdStream* err
+) {
+    // create pipes
+    int inp_pipe[2], out_pipe[2], err_pipe[2];
+    SYS(pipe(inp_pipe));
+    SYS(pipe(out_pipe));
+    SYS(pipe(err_pipe));
+    int inp_read_fd = inp_pipe[0], inp_write_fd = inp_pipe[1];
+    int out_read_fd = out_pipe[0], out_write_fd = out_pipe[1];
+    int err_read_fd = err_pipe[0], err_write_fd = err_pipe[1];
+    // create child thread
+    pthread_t feeder_id;
+    FeederThreadArgs* feeder_args = malloc(sizeof(FeederThreadArgs));
+    *feeder_args = (FeederThreadArgs) { inp, inp_write_fd, false };
+    EXPECT_PTHREAD(
+        pthread_create(&feeder_id, NULL, feeder_thread, feeder_args)
+    );
+    // create a subprocess
+    pid_t pid = fork();
+    EXPECT_ERRNO(pid != -1);
+    if (pid == 0) { // child process
+        close(inp_write_fd);
+        close(out_read_fd);
+        close(err_read_fd);
+        CharPtrArray args_null_terminated = array_empty();
+        array_reserve(&args_null_terminated, args.len + 2);
+        array_push(&args_null_terminated, str_clone(name));
+        SLICE_FOREACH(&args, arg) {
+            array_push(&args_null_terminated, str_clone(*arg));
+        }
+        array_push(&args_null_terminated, NULL);
+        dup2(inp_read_fd, STDIN_FILENO);
+        dup2(out_write_fd, STDOUT_FILENO);
+        dup2(err_write_fd, STDERR_FILENO);
+        execvp(name, args_null_terminated.ptr);
+        // if execution of this code hasn't stopped, error.
+        bool execution_stopped = false;
+        EXPECT_ERRNO(execution_stopped);
+    }
+    close(inp_read_fd);
+    close(out_write_fd);
+    close(err_write_fd);
+    FILE* out_read_file = fdopen(out_read_fd, "r");
+    FILE* err_read_file = fdopen(err_read_fd, "r");
+    FileStream out_stream = file_stream(out_read_file);
+    FileStream err_stream = file_stream(err_read_file);
+    CmdStreamData* data = malloc(sizeof(*data));
+    const int rc = 2; // Start with two references.
+    *data = (typeof(*data)) {
+        out_stream, err_stream, feeder_id, feeder_args, pid, rc,
+    };
+    *out = (CmdStream) { data, CMD_STREAM_OUT };
+    *err = (CmdStream) { data, CMD_STREAM_ERR };
+    return true;
+}
+
+static void cmd_stream_data_free(CmdStreamData* d) {
+    SYS(kill(d->cmd_process, SIGKILL));
+    atomic_store(&d->feeder_args->please_close, true);
+    EXPECT_PTHREAD(pthread_join(d->feeder_thread, NULL));
+    file_stream_free(&d->out_stream);
+    file_stream_free(&d->err_stream);
+    stream_free(&d->feeder_args->inp);
+    free(d->feeder_args);
+    free(d);
+}
+
+void cmd_stream_free(CmdStream* s) {
+    s->data->rc -= 1;
+    if (s->data->rc == 0) cmd_stream_data_free(s->data);
+}
+
+Stream cmd_stream_clone(StreamKind* kind, CmdStream*) {
+    Stream* ss = (Stream*)(void*)kind;
+    *ss = stream_from_buffered_stream(buffered_stream_from_stream(*ss));
+    return stream_clone(ss);
+}
+
+FileStream* cmd_stream_file_stream(CmdStream* s) {
+    switch (s->kind) {
+        case CMD_STREAM_OUT: return &s->data->out_stream;
+        case CMD_STREAM_ERR: return &s->data->err_stream;
+    }
+}
+
+size_t cmd_stream_read(CmdStream* s, UInt8Slice buf) {
+    FileStream* inner = cmd_stream_file_stream(s);
+    return file_stream_read(inner, buf);
 }
 
 // ------ Conversions ----------------------------------------------------------
