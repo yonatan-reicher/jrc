@@ -13,6 +13,7 @@ void stream_free(Stream* s) {
         X_ON_STREAM_KINDS
 #undef X
     }
+    *s = stream_empty();
 }
 
 Stream stream_clone(Stream* s) {
