@@ -2,7 +2,6 @@
 Checks: >
     performance-*,
     misc-*,
-    android-cloexec-*,
     readability-duplicate-include,
     readability-misleading-indentation,
     bugprone-assert-side-effect,
