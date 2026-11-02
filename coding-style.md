@@ -46,6 +46,8 @@ Generally, words should not be abbreviated (or shortened). That is unless:
 | context           | ctx          |
 | derivative        | deriv        |
 | reference count   | rc           |
+| command           | cmd          |
+| argument          | arg          |
 
 
 ## Namespacing
