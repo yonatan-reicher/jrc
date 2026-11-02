@@ -61,6 +61,16 @@
 /** Make a system call and check for -1, print based on the error number. */
 #define SYS(E) EXPECT_ERRNO((E) != -1)
 
+/// For pthread-like functions - functions that return 0 on success and an error
+/// number on failure.
+#define EXPECT_PTHREAD(E)                                                      \
+    (/* Note that `errno` is thread-local. */                                  \
+     errno = (E),                                                              \
+     errno != 0                                                                \
+         ? PANIC("'" #E "' failed - %s (errno %d)", strerror(errno), errno)    \
+         : 0                                                                   \
+    )
+
 #define SWAP(A, B)                                                             \
     do {                                                                       \
         typeof((A)) _tmp = (A);                                                \
