@@ -55,10 +55,8 @@
 /** Do an expression and panic if it returns false, but also print the error
  * from the error number. */
 #define EXPECT_ERRNO(E)                                                        \
-    do {                                                                       \
-        if (!(E))                                                              \
-            PANIC("'" #E "' failed - %s (errno %d)", strerror(errno), errno);  \
-    } while (0)
+    (!(E) ? PANIC("'" #E "' failed - %s (errno %d)", strerror(errno), errno)   \
+          : 0)
 
 /** Make a system call and check for -1, print based on the error number. */
 #define SYS(E) EXPECT_ERRNO((E) != -1)
