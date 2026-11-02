@@ -64,7 +64,6 @@ bool stream_read_to_file(Stream*, FILE*);
     )
 
 // TO ADD:
-// - file streams
 // - process streams
 // - stream concat
 // - stream concat all
