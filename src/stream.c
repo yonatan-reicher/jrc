@@ -97,8 +97,13 @@ bool stream_cmd_inp_out_err(
     Stream* out,
     Stream* err
 ) {
-    bool success = cmd_stream(name, args, inp, &out->data.cmd, &err->data.cmd);
-    if (success) out->kind = err->kind = STREAM_KIND_CMD;
+    CmdStream* out_inner = out ? &out->data.cmd : NULL;
+    CmdStream* err_inner = err ? &err->data.cmd : NULL;
+    bool success = cmd_stream(name, args, inp, out_inner, err_inner);
+    if (success) {
+        if (out) out->kind = STREAM_KIND_CMD;
+        if (err) err->kind = STREAM_KIND_CMD;
+    }
     return success;
 }
 
@@ -531,6 +536,17 @@ end:
     return NULL;
 }
 
+static void cmd_stream_data_free(CmdStreamData* d) {
+    SYS(kill(d->cmd_process, SIGKILL));
+    atomic_store(&d->feeder_args->please_close, true);
+    EXPECT_PTHREAD(pthread_join(d->feeder_thread, NULL));
+    file_stream_free(&d->out_stream);
+    file_stream_free(&d->err_stream);
+    stream_free(&d->feeder_args->inp);
+    free(d->feeder_args);
+    free(d);
+}
+
 bool cmd_stream(
     const char* name,
     ConstCharPtrSlice args,
@@ -583,24 +599,17 @@ bool cmd_stream(
     FileStream out_stream = file_stream(out_read_file);
     FileStream err_stream = file_stream(err_read_file);
     CmdStreamData* data = malloc(sizeof(*data));
-    const int rc = 2; // Start with two references.
+    const CmdStreamDataRc rc = (out ? 1 : 0) + (err ? 1 : 0);
     *data = (typeof(*data)) {
         out_stream, err_stream, feeder_id, feeder_args, pid, rc,
     };
-    *out = (CmdStream) { data, CMD_STREAM_OUT };
-    *err = (CmdStream) { data, CMD_STREAM_ERR };
+    if (out) *out = (CmdStream) { data, CMD_STREAM_OUT };
+    if (err) *err = (CmdStream) { data, CMD_STREAM_ERR };
+    if (!out && !err) {
+        ASSERT(data->rc == 0, "because there are zero references");
+        cmd_stream_data_free(data);
+    };
     return true;
-}
-
-static void cmd_stream_data_free(CmdStreamData* d) {
-    SYS(kill(d->cmd_process, SIGKILL));
-    atomic_store(&d->feeder_args->please_close, true);
-    EXPECT_PTHREAD(pthread_join(d->feeder_thread, NULL));
-    file_stream_free(&d->out_stream);
-    file_stream_free(&d->err_stream);
-    stream_free(&d->feeder_args->inp);
-    free(d->feeder_args);
-    free(d);
 }
 
 void cmd_stream_free(CmdStream* s) {
