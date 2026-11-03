@@ -87,7 +87,7 @@ bool stream_read_to_file(Stream*, FILE*);
          VAR##_n_read != 0)                                                    \
     )
 
-// TO ADD:
+// TODO: add
 // - process streams
 // - stream concat
 // - stream concat all
