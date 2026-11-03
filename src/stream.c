@@ -213,8 +213,14 @@ void array_stream_free(ArrayStream* s) {
 }
 
 ArrayStream array_stream_clone(ArrayStream* s) {
-    // TODO: This is a bug.
-    return *s;
+    size_t n_left = s->len - s->index;
+    ArrayStream ret = {
+        malloc(sizeof(uint8_t) * n_left),
+        n_left,
+        0
+    };
+    memcpy(ret.ptr, s->ptr + s->index, n_left);
+    return ret;
 }
 
 size_t array_stream_read(ArrayStream* st, UInt8Slice sl) {
