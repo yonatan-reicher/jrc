@@ -107,6 +107,18 @@ bool stream_cmd_inp_out_err(
     return success;
 }
 
+Stream stream_cmd_out(const char* name, ConstCharPtrSlice args) {
+    return stream_cmd_inp_out(name, args, stream_empty());
+}
+
+Stream stream_cmd_inp_out(
+    const char* name, ConstCharPtrSlice args, Stream inp
+) {
+    Stream ret;
+    EXPECT_ERRNO(stream_cmd_inp_out_err(name, args, inp, &ret, NULL));
+    return ret;
+}
+
 // Reading
 
 UInt8Array stream_read_to_array(Stream* s) {

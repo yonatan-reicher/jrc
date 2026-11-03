@@ -58,6 +58,13 @@ bool stream_cmd_inp_out_err(
     Stream* out,
     Stream* err
 );
+/// Create a stream from the output of a command.
+/// Panics if something went wrong.
+Stream stream_cmd_out(const char* name, ConstCharPtrSlice args);
+/// Create a stream from the output of a command, with the given stream as the
+/// input.
+/// Panics if something went wrong.
+Stream stream_cmd_inp_out(const char* name, ConstCharPtrSlice args, Stream inp);
 
 // Reading
 
