@@ -5,10 +5,6 @@
 /** Mark a variable as unused */
 #define UNUSED(X) (void)(X)
 
-/** Turn a macro argument to string */
-#define _STR(X) #X
-#define STR(X) _STR(X)
-
 /// Returns the maximum of two values. May evaluate arguments twice.
 #define MAX(A, B) ((A) > (B) ? (A) : (B))
 #define MIN(A, B) ((A) < (B) ? (A) : (B))
