@@ -12,6 +12,20 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// ------ Helpers --------------------------------------------------------------
+
+// slices
+DECLARE_SLICE(struct Stream, StreamSlice);
+DECLARE_SLICE(const struct Stream, ConstStreamSlice);
+DECLARE_SLICE(struct Stream*, StreamPtrSlice);
+DECLARE_SLICE(const struct Stream*, ConstStreamPtrSlice);
+DECLARE_SLICE(struct Stream* const, StreamPtrConstSlice);
+DECLARE_SLICE(const struct Stream* const, ConstStreamPtrConstSlice);
+// array
+DECLARE_ARRAY(struct Stream, StreamArray);
+DECLARE_ARRAY(struct Stream*, StreamPtrArray);
+DECLARE_ARRAY(const struct Stream*, ConstStreamPtrArray);
+
 // ------ API ------------------------------------------------------------------
 
 typedef struct Stream Stream;
