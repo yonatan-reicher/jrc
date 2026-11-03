@@ -88,7 +88,6 @@ bool stream_read_to_file(Stream*, FILE*);
     )
 
 // TODO: add
-// - process streams
 // - stream concat
 // - stream concat all
 // - stream char
