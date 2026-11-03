@@ -41,7 +41,7 @@ Stream stream_from_str(char*);
 /// Create a stream that copies a string.
 Stream stream_of_str_copy(const char*);
 Stream stream_from_file(FILE*);
-bool stream_cmd(
+bool stream_cmd_inp_out_err(
     const char* name,
     ConstCharPtrSlice args,
     Stream inp,

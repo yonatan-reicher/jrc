@@ -90,7 +90,7 @@ Stream stream_from_file(FILE* f) {
     return stream_from_file_stream(file_stream(f));
 }
 
-bool stream_cmd(
+bool stream_cmd_inp_out_err(
     const char* name,
     ConstCharPtrSlice args,
     Stream inp,

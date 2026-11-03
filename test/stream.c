@@ -160,7 +160,7 @@ void test_file_stream_clone(void) {
 
 void test_cmd_stream(void) {
     Stream out, err;
-    bool success = stream_cmd(
+    bool success = stream_cmd_inp_out_err(
         "echo",
         slice(ConstCharPtrSlice, { "hello", "world" }),
         stream_empty(),
