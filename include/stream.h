@@ -41,6 +41,16 @@ Stream stream_from_str(char*);
 /// Create a stream that copies a string.
 Stream stream_of_str_copy(const char*);
 Stream stream_from_file(FILE*);
+/// Create a streams from the standard output and standard error of a command,
+/// given some input stream. The command can be an absolute path, a relative
+/// path, or a name from the search path.
+///
+/// In the case where the operation is successful, `true` is
+/// returned. Otherwise, `false` is returned and the `errno` is set accordingly.
+///
+/// Both the output and the error streams can be `NULL`. In that case, they are
+/// redirected to nothing. If both are `NULL`, this function call blocks until
+/// the command completes execution.
 bool stream_cmd_inp_out_err(
     const char* name,
     ConstCharPtrSlice args,
