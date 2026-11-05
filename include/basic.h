@@ -12,6 +12,9 @@
 /** Get length of an array variable (does not work on function parameters!) */
 #define ARRAY_LEN(A) (sizeof(A) / sizeof((A)[0]))
 
+#define STR(X) _STR(X)
+#define _STR(X) #X
+
 #define PANIC_PREFIX(FILE, LINE, FUNC)                                         \
     "[Error] " FILE ":" STR(LINE) " " FUNC ": "
 
