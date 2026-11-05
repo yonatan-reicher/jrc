@@ -39,10 +39,7 @@
     } while (0)
 
 /** Do an expression and panic if it returns false. */
-#define EXPECT(E, ...)                                                         \
-    do {                                                                       \
-        if (!(E)) PANIC(__VA_ARGS__);                                          \
-    } while (0)
+#define EXPECT(E, ...) (!(E) ? PANIC("'" #E "' is false - " __VA_ARGS__) : 0)
 
 /// Like `EXPECT`, but only id `NDEBUG` is not defined.
 #ifdef NDEBUG
