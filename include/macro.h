@@ -145,6 +145,58 @@
 #define _NOT_AUX_0() ~, 1
 #define _NOT_AUX_0_DETECTOR(...) ARG_2(__VA_ARGS__, 0)
 
+#define AND(a, b) _AND(a, b)
+#define _AND(a, b) _AND_##a##b()
+#define _AND_11() 1
+#define _AND_10() 0
+#define _AND_01() 0
+#define _AND_00() 0
+
+#define OR(a, b) _OR(a, b)
+#define _OR(a, b) _OR_##a##b()
+#define _OR_11() 1
+#define _OR_10() 1
+#define _OR_01() 1
+#define _OR_00() 0
+
+#define AND_4(a, b, c, d) _AND_4(a, b, c, d)
+#define _AND_4(a, b, c, d) _AND_4_##a##b##c##d()
+#define _AND_4_1111() 1
+#define _AND_4_0000() 0
+#define _AND_4_0001() 0
+#define _AND_4_0010() 0
+#define _AND_4_0011() 0
+#define _AND_4_0100() 0
+#define _AND_4_0101() 0
+#define _AND_4_0110() 0
+#define _AND_4_0111() 0
+#define _AND_4_1000() 0
+#define _AND_4_1001() 0
+#define _AND_4_1010() 0
+#define _AND_4_1011() 0
+#define _AND_4_1100() 0
+#define _AND_4_1101() 0
+#define _AND_4_1110() 0
+
+#define OR_4(a, b, c, d) _OR_4(a, b, c, d)
+#define _OR_4(a, b, c, d) _OR_4_##a##b##c##d()
+#define _OR_4_0000() 0
+#define _OR_4_0001() 1
+#define _OR_4_0010() 1
+#define _OR_4_0011() 1
+#define _OR_4_0100() 1
+#define _OR_4_0101() 1
+#define _OR_4_0110() 1
+#define _OR_4_0111() 1
+#define _OR_4_1000() 1
+#define _OR_4_1001() 1
+#define _OR_4_1010() 1
+#define _OR_4_1011() 1
+#define _OR_4_1100() 1
+#define _OR_4_1101() 1
+#define _OR_4_1110() 1
+#define _OR_4_1111() 1
+
 /// Returns `0` if the argument is exactly `0`, otherwise returns `1`.
 #define BOOL(...) NOT(NOT(__VA_ARGS__))
 
