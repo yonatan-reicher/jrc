@@ -784,3 +784,8 @@
 #define N_RANGE(n)                                                             \
     IF(EQ_0(n))()(IF(EQ_1(n))(0)(DEFER_3(_N_RANGE)()(DEC(n)), DEC(n)))
 #define _N_RANGE() N_RANGE
+
+/// Returns the expanded given input, but if it is non empty, inserts a comma at
+/// the start.
+#define VA_ARGS_WITH_LEADING_COMMA(...)                                        \
+    IF(ARGS_IS_EMPTY(__VA_ARGS__))()(, __VA_ARGS__)
