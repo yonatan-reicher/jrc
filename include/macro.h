@@ -82,8 +82,17 @@
 #define _STR(x) #x
 
 /// Concatenate two expansions together (`##`).
-#define CAT_2(x, y) _CAT_2(x, y)
-#define _CAT_2(x, y) x##y
+#define CAT_2(a, b) _CAT_2(a, b)
+#define _CAT_2(a, b) a##b
+
+#define CAT_3(a, b, c) _CAT_3(a, b, c)
+#define _CAT_3(a, b, c) a##b##c
+
+#define CAT_4(a, b, c, d) _CAT_4(a, b, c, d)
+#define _CAT_4(a, b, c, d) a##b##c##d
+
+#define CAT_5(a, b, c, d, e) _CAT_5(a, b, c, d, e)
+#define _CAT_5(a, b, c, d, e) a##b##c##d##e
 
 // ------ Some Primitives ------------------------------------------------------
 
