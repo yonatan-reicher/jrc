@@ -34,7 +34,6 @@ int main(void) {
         "open directory '%s'",
         header_dir_path_str
     );
-    // print all the files and directories within directory
     bool err = false;
     while ((ent = readdir(dir)) != NULL) {
         if (str_eq(ent->d_name, ".") || str_eq(ent->d_name, "..")) continue;
