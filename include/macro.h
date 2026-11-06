@@ -226,7 +226,7 @@
 /// This macro expands it's arguments many times.
 #define EVAL(...) EVAL_512(__VA_ARGS__)
 // Each `EVAL_N` macro below expands it's arguments N times.
-#define EVAL_2048(...) EVAL_512(EVAL_512(__VA_ARGS__))
+#define EVAL_2048(...) EVAL_1024(EVAL_1024(__VA_ARGS__))
 #define EVAL_1024(...) EVAL_512(EVAL_512(__VA_ARGS__))
 #define EVAL_512(...) EVAL_256(EVAL_256(__VA_ARGS__))
 #define EVAL_256(...) EVAL_128(EVAL_128(__VA_ARGS__))
