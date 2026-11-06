@@ -1,3 +1,5 @@
+#pragma once
+#include "macro.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,34 +14,31 @@
 /** Get length of an array variable (does not work on function parameters!) */
 #define ARRAY_LEN(A) (sizeof(A) / sizeof((A)[0]))
 
-#define STR(X) _STR(X)
-#define _STR(X) #X
+#define LOG_PREFIX(KIND, FILE, LINE, FUNC)                                     \
+    "[" KIND "] " FILE ":" STR(LINE) " " FUNC ": "
 
-#define PANIC_PREFIX(FILE, LINE, FUNC)                                         \
-    "[Error] " FILE ":" STR(LINE) " " FUNC ": "
+#define ERR_PREFIX(FILE, LINE, FUNC) LOG_PREFIX("Error", FILE, LINE, FUNC)
+#define WARNING_PREFIX(FILE, LINE, FUNC) LOG_PREFIX("Warning", FILE, LINE, FUNC)
 
-/** Hard failure with an error message */
-#define PANIC(...)                                                             \
-    (fprintf(stderr, PANIC_PREFIX(__FILE__, __LINE__, "%s"), __func__),        \
+/** Show a message on standard error. */
+#define LOG(KIND, ...)                                                         \
+    (fprintf(stderr, LOG_PREFIX(KIND, __FILE__, __LINE__, "%s"), __func__),    \
      fprintf(stderr, __VA_ARGS__),                                             \
      fprintf(stderr, "\n"),                                                    \
-     exit(1),                                                                  \
      0)
+
+#define WARNING(...) LOG("Warning", __VA_ARGS__)
+#define PANIC(...) LOG("Error", __VA_ARGS__)
 
 #define TODO PANIC("not implemented yet")
 
-/** Soft failure that just prints a message to the screen */
-#define WARNING(...)                                                           \
-    do {                                                                       \
-        fprintf(                                                               \
-            stderr, "[Warning] " __FILE__ ":" STR(__LINE__) " %s: ", __func__  \
-        );                                                                     \
-        fprintf(stderr, __VA_ARGS__);                                          \
-        fprintf(stderr, "\n");                                                 \
-    } while (0)
-
 /** Do an expression and panic if it returns false. */
-#define EXPECT(E, ...) (!(E) ? PANIC("'" #E "' is false - " __VA_ARGS__) : 0)
+#define EXPECT(E, FMT, ...)                                                    \
+    (!(E) ? PANIC(                                                             \
+                "'%s' is false - " FMT,                                        \
+                #E VA_ARGS_WITH_LEADING_COMMA(__VA_ARGS__)                     \
+            )                                                                  \
+          : 0)
 
 /// Like `EXPECT`, but only id `NDEBUG` is not defined.
 #ifdef NDEBUG
@@ -51,7 +50,7 @@
 /** Do an expression and panic if it returns false, but also print the error
  * from the error number. */
 #define EXPECT_ERRNO(E)                                                        \
-    (!(E) ? PANIC("'" #E "' failed - %s (errno %d)", strerror(errno), errno)   \
+    (!(E) ? PANIC("'%s' failed - %s (errno %d)", #E, strerror(errno), errno)   \
           : 0)
 
 /** Make a system call and check for -1, print based on the error number. */
@@ -63,13 +62,13 @@
     (/* Note that `errno` is thread-local. */                                  \
      errno = (E),                                                              \
      errno != 0                                                                \
-         ? PANIC("'" #E "' failed - %s (errno %d)", strerror(errno), errno)    \
+         ? PANIC("'%s' failed - %s (errno %d)", #E, strerror(errno), errno)    \
          : 0                                                                   \
     )
 
 #define SWAP(A, B)                                                             \
     do {                                                                       \
-        typeof((A)) _tmp = (A);                                                \
+        typeof(A) _tmp = (A);                                                \
         (A) = (B);                                                             \
         (B) = _tmp;                                                            \
     } while (0)
