@@ -780,5 +780,6 @@
 #define EQ_1(n) EQ_0(DEC(n))
 
 /// `EVAL(N_RANGE(N))` expands to `0, ..., N-1`
-#define N_RANGE(n) IF(EQ_0(n))()(IF(EQ_1(n))(0)(DEFER_3(_N_RANGE)()(DEC(n)), DEC(n)))
+#define N_RANGE(n)                                                             \
+    IF(EQ_0(n))()(IF(EQ_1(n))(0)(DEFER_3(_N_RANGE)()(DEC(n)), DEC(n)))
 #define _N_RANGE() N_RANGE
