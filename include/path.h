@@ -100,4 +100,7 @@ char* path_read_link_to_str(const Path* p);
 /// Read this path, assuming it is a link. If it is not, returns an empty path
 /// and the error number is set.
 Path path_read_link(const Path* p);
+/// Call `fopen` on the file.
+FILE* path_fopen(const Path*, const char* mode);
+struct Stream path_open_stream(const Path*);
 

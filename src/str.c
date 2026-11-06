@@ -1,5 +1,6 @@
 #include "str.h"
 #include "array.h"
+#include "slice.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -59,4 +60,11 @@ char* str_format_va_list(const char* fmt, va_list args) {
     // Write the formatted string to the buffer.
     vsnprintf(buf, len + 1, fmt, args);
     return buf;
+}
+
+char* str_of_slice(CharSlice s) {
+    char* ret = malloc(s.len + 1);
+    memcpy(ret, s.ptr, s.len);
+    ret[s.len] = 0;
+    return ret;
 }

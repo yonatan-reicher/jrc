@@ -1,3 +1,4 @@
+#pragma once
 #include <stdarg.h>
 #include <stdbool.h>
 #include <string.h>
@@ -17,3 +18,5 @@ struct CharArray str_to_array(char* str);
 /// freed.
 char* str_format(const char* fmt, ...);
 char* str_format_va_list(const char* fmt, va_list args);
+struct CharSlice;
+char* str_of_slice(struct CharSlice);

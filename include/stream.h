@@ -79,6 +79,10 @@ Stream stream_cmd_out(const char* name, ConstCharPtrSlice args);
 /// input.
 /// Panics if something went wrong.
 Stream stream_cmd_inp_out(const char* name, ConstCharPtrSlice args, Stream inp);
+Stream stream_concat_2(Stream, Stream);
+Stream stream_concat_3(Stream, Stream, Stream);
+Stream stream_concat_4(Stream, Stream, Stream, Stream);
+Stream stream_concat(StreamArray);
 
 // Reading
 
@@ -126,7 +130,18 @@ bool stream_read_to_file(Stream*, FILE*);
     X(file, File, FILE, ADVANCED)                                              \
     X(shared_file, SharedFile, SHARED_FILE, NORMAL)                            \
     X(buffered, Buffered, BUFFERED, NORMAL)                                    \
-    X(cmd, Cmd, CMD, ADVANCED)
+    X(cmd, Cmd, CMD, ADVANCED)                                                 \
+    X(concat, Concat, CONCAT, NORMAL)
+
+// ------ Boolean Operators ----------------------------------------------------
+
+// TODO: Should these be taken by reference and cloned?
+bool stream_starts_with(Stream, Stream);
+
+// ------ Boolean Operators ----------------------------------------------------
+
+// TODO: Should these be taken by reference and cloned?
+bool stream_starts_with(Stream, Stream);
 
 // ------ Stream Kind Definitions ----------------------------------------------
 
@@ -230,6 +245,16 @@ bool cmd_stream(
     CmdStream* out,
     CmdStream* err
 );
+
+// Concat
+
+typedef struct ConcatStream {
+    size_t n;
+    Stream* sub_streams;
+    size_t index;
+} ConcatStream;
+
+ConcatStream concat_stream(StreamArray);
 
 // ------ Stream Struct --------------------------------------------------------
 

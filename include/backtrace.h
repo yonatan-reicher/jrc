@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 
 /// This macro adds the current function to the backtrace. Use it at the top of

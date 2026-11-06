@@ -49,9 +49,15 @@
 
 /** Do an expression and panic if it returns false, but also print the error
  * from the error number. */
-#define EXPECT_ERRNO(E)                                                        \
-    (!(E) ? PANIC("'%s' failed - %s (errno %d)", #E, strerror(errno), errno)   \
-          : 0)
+#define EXPECT_ERRNO(E, ...)                                                                             \
+    (!(E)                                                                                                \
+         ? PANIC(                                                                                        \
+               "'%s' failed - %s (errno %d)" IF(ARGS_ISNT_EMPTY(__VA_ARGS__))(" " ARG_1(__VA_ARGS__))(), \
+               #E,                                                                                       \
+               strerror(errno),                                                                          \
+               errno VA_ARGS_WITH_LEADING_COMMA(SKIP_1(__VA_ARGS__))                                     \
+           )                                                                                             \
+         : 0)
 
 /** Make a system call and check for -1, print based on the error number. */
 #define SYS(E) EXPECT_ERRNO((E) != -1)
@@ -68,7 +74,7 @@
 
 #define SWAP(A, B)                                                             \
     do {                                                                       \
-        typeof(A) _tmp = (A);                                                \
+        typeof(A) _tmp = (A);                                                  \
         (A) = (B);                                                             \
         (B) = _tmp;                                                            \
     } while (0)

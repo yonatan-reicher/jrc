@@ -174,6 +174,29 @@ void test_cmd_stream(void) {
     EXPECT(str_eq(s, "hello world"), "output!");
 }
 
+void test_stream_concat(void) {
+    char* s = stream_to_str(
+        stream_concat_2(stream_of_str("hello "), stream_of_str("world!"))
+    );
+    EXPECT(str_eq(s, "hello world!"), "wrong, was '%s'", s);
+    free(s);
+}
+
+void test_stream_starts_with(void) {
+    Stream s1 = stream_of_str("hello world!");
+    Stream s2 = stream_of_str("hello");
+    EXPECT(
+        stream_starts_with(stream_clone(&s1), stream_clone(&s2)),
+        "'hello world!' should start with 'hello'"
+    );
+    EXPECT(
+        !stream_starts_with(stream_clone(&s2), stream_clone(&s1)),
+        "'hello' should not start with 'hello world!'"
+    );
+    stream_free(&s1);
+    stream_free(&s2);
+}
+
 int main(void) {
     test_empty();
     test_slice_stream_read_exact();
@@ -185,5 +208,7 @@ int main(void) {
     test_stream_read_to_array();
     test_file_stream_clone();
     test_cmd_stream();
+    test_stream_concat();
+    test_stream_starts_with();
     return 0;
 }

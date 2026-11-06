@@ -43,9 +43,11 @@ else
 endif
 
 # --- Targets ------------------------------------------------------------------
-.PHONY: build release debug test fmt clean install uninstall help repl whatever
+.PHONY: build check release debug test fmt clean install uninstall help repl whatever check-headers
 
-build: $(INC_DIR)/everything.h $(TARGET)
+build: $(INC_DIR)/everything.h check $(TARGET)
+
+check: check-headers
 
 $(INC_DIR)/everything.h: MY_HEADERS = $(filter-out $@,$(HEADERS))
 $(INC_DIR)/everything.h: $(BIN_DIR)/generate_everything_header | $(MY_HEADERS)
@@ -97,6 +99,9 @@ repl: $(BIN_DIR)/repl
 whatever: CFLAGS += -lncurses
 whatever: $(BIN_DIR)/whatever
 	$(BIN_DIR)/whatever
+
+check-headers: $(BIN_DIR)/check_headers
+	$(BIN_DIR)/check_headers
 
 # --- Install & Uninstall ------------------------------------------------------
 install: build

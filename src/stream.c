@@ -1,4 +1,5 @@
 #include "stream.h"
+#include "macro.h"
 #include "slice.h"
 #include "str.h"
 #include <stdatomic.h>
@@ -119,6 +120,25 @@ Stream stream_cmd_inp_out(
     return ret;
 }
 
+#define GENERATE_STREAM_CONCAT_N(N)                                            \
+    Stream CAT_2(stream_concat_, N)(EVAL(                                      \
+        DEFER_1(MAP)(_STREAM_PARAM, EVAL(N_RANGE(DEC(N))))                     \
+    ) Stream CAT_2(s, DEC(N))) {                                               \
+        StreamArray a = array_empty();                                         \
+        EVAL(MAP EMPTY()(_STREAM_CONCAT_PUSH, EVAL(N_RANGE(N))))               \
+        return stream_from_concat_stream(concat_stream(a));                    \
+    }
+#define _STREAM_PARAM(N) Stream CAT_2(s, N),
+#define _STREAM_CONCAT_PUSH(N) array_push(&a, CAT_2(s, N));
+
+GENERATE_STREAM_CONCAT_N(2)
+GENERATE_STREAM_CONCAT_N(3)
+GENERATE_STREAM_CONCAT_N(4)
+
+Stream stream_concat(StreamArray a) {
+    return stream_from_concat_stream(concat_stream(a));
+}
+
 // Reading
 
 UInt8Array stream_read_to_array(Stream* s) {
@@ -158,6 +178,38 @@ bool stream_read_to_file(Stream* s, FILE* f) {
         if (n_wrote < slice.len) return false;
     }
     return true;
+}
+
+// ------ Boolean Operators ----------------------------------------------------
+
+bool stream_starts_with(Stream a, Stream b) {
+#define N 1024
+    bool ret = true;
+    uint8_t a_buf[1024];
+    UInt8Slice a_slice = slice_new(a_buf, N);
+    STREAM_READ_BY_CHUNKS(&b, 1024, b_slice) {
+        size_t n_left = b_slice.len;
+        while (n_left > 0) {
+            size_t n_read = stream_read(&a, slice_take(a_slice, n_left));
+            if (n_read == 0) {
+                ret = false;
+                goto end;
+            }
+            for (size_t i = 0; i < n_read; i++) {
+                if (*slice_get(&b_slice, b_slice.len - n_left + i) !=
+                    *slice_get(&a_slice, i)) {
+                    ret = false;
+                    goto end;
+                }
+            }
+            n_left -= n_read;
+        }
+    }
+end:
+    stream_free(&a);
+    stream_free(&b);
+    return ret;
+#undef N
 }
 
 // ------ Empty Stream ---------------------------------------------------------
@@ -214,11 +266,7 @@ void array_stream_free(ArrayStream* s) {
 
 ArrayStream array_stream_clone(ArrayStream* s) {
     size_t n_left = s->len - s->index;
-    ArrayStream ret = {
-        malloc(sizeof(uint8_t) * n_left),
-        n_left,
-        0
-    };
+    ArrayStream ret = { malloc(sizeof(uint8_t) * n_left), n_left, 0 };
     memcpy(ret.ptr, s->ptr + s->index, n_left);
     return ret;
 }
@@ -651,6 +699,42 @@ FileStream* cmd_stream_file_stream(CmdStream* s) {
 size_t cmd_stream_read(CmdStream* s, UInt8Slice buf) {
     FileStream* inner = cmd_stream_file_stream(s);
     return file_stream_read(inner, buf);
+}
+
+// Concat
+
+ConcatStream concat_stream(StreamArray a) {
+    return (ConcatStream) { a.len, a.ptr, 0 };
+}
+
+void concat_stream_free(ConcatStream* s) {
+    // We freed the previous sub-streams as we went.
+    for (size_t i = s->index; i < s->n; i++) stream_free(&s->sub_streams[i]);
+    free(s->sub_streams);
+}
+
+ConcatStream concat_stream_clone(ConcatStream* s) {
+    size_t n_left = s->n - s->index;
+    Stream* sub_streams = malloc(n_left * sizeof(Stream));
+    for (size_t i = 0; i < n_left; i++)
+        sub_streams[i] = stream_clone(&s->sub_streams[i + s->index]);
+    return (ConcatStream) { n_left, sub_streams, 0 };
+}
+
+size_t concat_stream_read(ConcatStream* s, UInt8Slice slice) {
+again:
+    // check if we are done
+    if (s->index == s->n) return 0;
+    // read
+    Stream* curr = &s->sub_streams[s->index];
+    size_t n_read = stream_read(curr, slice);
+    // nothing read! - stream was empty
+    if (n_read == 0) {
+        stream_free(curr);
+        s->index++;
+        goto again;
+    }
+    return n_read;
 }
 
 // ------ Conversions ----------------------------------------------------------

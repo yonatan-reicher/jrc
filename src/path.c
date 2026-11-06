@@ -1,5 +1,6 @@
 #include "path.h"
 #include "str.h"
+#include "stream.h"
 #if defined(unix) || defined(__unix) || defined(__unix__) ||                   \
     (defined(__APPLE__) && defined(__MACH__))
 #define HAS_PWD_H
@@ -242,4 +243,15 @@ Path path_read_link(const Path* p) {
     Path ret = path_parse(s);
     free(s);
     return ret;
+}
+
+FILE* path_fopen(const Path* p, const char* mode) {
+    char* s = path_to_str(p);
+    FILE* f = fopen(s, mode);
+    free(s);
+    return f;
+}
+
+Stream path_open_stream(const Path* p) {
+    return stream_from_file(path_fopen(p, "r"));
 }

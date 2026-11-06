@@ -1,14 +1,15 @@
+#pragma once
+#include "basic.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 // =============================================================================
 //          slice.h
 // =============================================================================
 // A slice is a non-owned pointer to a classic c-style array, and it's length.
 // You may access these with `.ptr` and `.len` respectively.
 // -----------------------------------------------------------------------------
-#pragma once
-#include "basic.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
 
 #define DECLARE_SLICE(T, NAME)                                                 \
     typedef struct NAME {                                                      \

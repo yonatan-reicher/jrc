@@ -789,3 +789,5 @@
 /// the start.
 #define VA_ARGS_WITH_LEADING_COMMA(...)                                        \
     IF(ARGS_IS_EMPTY(__VA_ARGS__))()(, __VA_ARGS__)
+
+#define SKIP_1(a, ...) __VA_ARGS__

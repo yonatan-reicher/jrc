@@ -1,3 +1,10 @@
+#pragma once
+#include "basic.h"
+#include <memory.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 // =============================================================================
 //                                    Array.h
 // =============================================================================
@@ -10,13 +17,6 @@
 // to the correct type (e.g. `(CharArray) array_empty()`). Use `array_push` to
 // add elements to the array. Finally, call `array_free` when you are done.
 // -----------------------------------------------------------------------------
-
-#pragma once
-#include "basic.h"
-#include <memory.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
 
 #define DECLARE_ARRAY(T, Name)                                                 \
     typedef struct Name {                                                      \
