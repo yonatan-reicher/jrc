@@ -198,7 +198,7 @@
 #define _OR_4_1111() 1
 
 /// Returns `0` if the argument is exactly `0`, otherwise returns `1`.
-#define BOOL(...) NOT(NOT(__VA_ARGS__))
+#define BOOL(x) NOT(NOT(x))
 
 // TODO: This doesn't work in the case where the first argument expands to
 // empty.
