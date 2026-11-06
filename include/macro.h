@@ -96,7 +96,7 @@
 
 // ------ Some Primitives ------------------------------------------------------
 
-/// Expands to nothing.
+/// Expands to nothing when applied to `()`.
 #define EMPTY()
 
 /// `IF(cond)(a)(b)` expands to `a` if `cond` is `1` and `b` if it is `0`.
