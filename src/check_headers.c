@@ -35,6 +35,7 @@ int main(void) {
         header_dir_path_str
     );
     bool err = false;
+    // go through all headers files and check them
     while ((ent = readdir(dir)) != NULL) {
         if (str_eq(ent->d_name, ".") || str_eq(ent->d_name, "..")) continue;
         Path p = path_clone(&header_dir_path);
