@@ -126,6 +126,20 @@
         _99, _100, _101, ...) _101
 // clang-format on
 
+// clang-format off
+/// Expands to 1 if given more than 1 argument, else 0.
+#define ARGS_HAS_COMMA(...) \
+    ARG_101( \
+        __VA_ARGS__, \
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   \
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   \
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   \
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,   \
+        1, 1, 1, 1, 1, 1, 1,                                                   \
+        0                                                                      \
+    )
+// clang-format on
+
 /// Returns `1` if the argument expands exactly to `0`. Otherwise, returns `0`.
 #define NOT(x) _NOT_AUX_0_DETECTOR(CAT_2(_NOT_AUX_, x)())
 #define _NOT_AUX_0() ~, 1
