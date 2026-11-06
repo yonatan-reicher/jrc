@@ -246,7 +246,7 @@
 
 #define MAP(m, first, ...)                                                     \
     m(first)                                                                   \
-    IF(HAS_ARGS(__VA_ARGS__))(                                                 \
+    IF(ARGS_ISNT_EMPTY(__VA_ARGS__))(                                                 \
         DEFER_2(_MAP)()(m, __VA_ARGS__)                                        \
     )(                                                                         \
         /* Do nothing, just terminate */                                       \
@@ -255,7 +255,9 @@
 
 /// Just like `MAP`, but puts commas between the results.
 #define MAP_COMMA(m, first, ...)                                               \
-    IF(HAS_ARGS(__VA_ARGS__))(m(first), DEFER_2(_MAP_COMMA)()(m, __VA_ARGS))
+    IF(ARGS_ISNT_EMPTY(__VA_ARGS__))(                                          \
+        m(first), DEFER_2(_MAP_COMMA)()(m, __VA_ARGS)                          \
+    )
 
 // ------ Naturals -------------------------------------------------------------
 
