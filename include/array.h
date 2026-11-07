@@ -153,7 +153,8 @@ static inline void* array_malloc_clone(void* ptr, size_t size) {
              VAR = NULL)
 
 #define array_trim(ARR)                                                        \
-    ((ARR)->ptr = realloc((ARR)->ptr, (ARR)->len), (ARR)->cap = (ARR)->len)
+    ((ARR)->ptr = realloc((ARR)->ptr, (ARR)->len * sizeof(*(ARR)->ptr)),       \
+     (ARR)->cap = (ARR)->len)
 // =============================================================================
 //                            Some Array Declarations
 // =============================================================================
