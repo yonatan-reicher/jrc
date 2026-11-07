@@ -28,7 +28,7 @@
      0)
 
 #define WARNING(...) LOG("Warning", __VA_ARGS__)
-#define PANIC(...) LOG("Error", __VA_ARGS__)
+#define PANIC(...) ( LOG("Error", __VA_ARGS__), exit(1), 0 )
 
 #define TODO PANIC("not implemented yet")
 
