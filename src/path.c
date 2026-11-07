@@ -153,6 +153,7 @@ Path path_root(void) {
 }
 
 char* path_to_str(const Path* p) {
+    if (p->n_parts == 0) return str_clone("");
     // Just in case, allocate 5 + Σ (n + 5) for every part of length n.
     size_t size = 5;
     for (uint16_t i = 0; i < p->n_parts; i++) {
@@ -227,9 +228,13 @@ char* path_read_link_to_str(const Path* p) {
         ssize_t n_read = readlink(str, ret, buf_size);
         if (n_read == -1) {
             free(ret);
+            free(str);
             return NULL;
         }
-        if ((size_t)n_read < buf_size) break;
+        if ((size_t)n_read < buf_size) {
+            ret[n_read] = 0;
+            break;
+        }
         free(ret);
         buf_size *= 2;
     }

@@ -34,10 +34,14 @@ static Func* func_alloc(
     ValueFuncCapture* ret_captured = (ValueFuncCapture*)(ret + 1);
     char* ret_param_name = (char*)(ret_captured + n_captured);
     *ret = (Func) { 0, ret_param_name, ast, n_captured };
+    memcpy(ret_param_name, param_name, param_name_len + 1);
     char* next_name = ret_param_name + param_name_len + 1;
     for (size_t i = 0; i < n_captured; i++) {
+        size_t captured_name_len = strlen(captured_names[i]);
         ret->captured[i].var_name = next_name;
         ret->captured[i].value = captured_values[i];
+        memcpy(next_name, captured_names[i], captured_name_len + 1);
+        next_name += captured_name_len + 1;
     }
     return ret;
 }
@@ -80,7 +84,7 @@ static void func_free(Func* f) {
 static char* func_to_str(const Func* f) {
     // Make a string showing the substituted variables
     CharPtrArray subst;
-    bool first = false;
+    bool first = true;
     size_t subst_str_size = 1;
     array_init(&subst, f->n_captured);
     ARRAY_FOREACH(&subst, s) {
@@ -90,6 +94,7 @@ static char* func_to_str(const Func* f) {
         *s = str_format("%s%s:=%s", start, c->var_name, value_str);
         free(value_str);
         subst_str_size += strlen(*s);
+        first = false;
     }
     char* subst_str = malloc(subst_str_size);
     size_t i = 0;
@@ -99,6 +104,7 @@ static char* func_to_str(const Func* f) {
         i += l;
         free(*s);
     }
+    subst_str[i] = '\0';
     array_free(&subst);
     // Now finish
     char* ast_str = ast_to_str(f->body);

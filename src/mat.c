@@ -15,6 +15,10 @@ bool mat_shape_is_zero(MatShape shape) {
     return shape.n_rows == 0 || shape.n_cols == 0;
 }
 
+bool mat_shape_is_square(MatShape shape) {
+    return shape.n_rows == shape.n_cols;
+}
+
 bool mat_shape_try_mul(MatShape lhs, MatShape rhs, MatShape* out) {
     if (lhs.n_cols != rhs.n_rows) return false;
     out->n_rows = lhs.n_rows;
@@ -169,9 +173,10 @@ void mat_scale(const MatView* mat, float scalar, MatView* out) {
 }
 
 void mat_transpose(const MatView* mat, MatView* out) {
+    out->shape = mat_shape_transposed(mat->shape);
     for (size_t y = 0; y < mat->shape.n_rows; y++)
         for (size_t x = 0; x < mat->shape.n_cols; x++)
-            *mat_get(out, y, x) = *mat_get(out, x, y);
+            *mat_get(out, x, y) = *mat_const_get(mat, y, x);
 }
 
 static void swap(float* a, float* b) {
@@ -181,6 +186,10 @@ static void swap(float* a, float* b) {
 }
 
 void mat_transpose_inplace(MatView* mat) {
+    EXPECT(
+        mat_shape_is_square(mat->shape),
+        "can only transpose in-place a square matrix"
+    );
     for (size_t y = 0; y < mat->shape.n_rows; y++)
         for (size_t x = y + 1; x < mat->shape.n_cols; x++)
             swap(mat_get(mat, y, x), mat_get(mat, x, y));

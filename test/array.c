@@ -46,9 +46,30 @@ static void test_reserve(void) {
     EXPECT(a.cap == 11, "now there wasn't enough");
 }
 
+static void test_pop_n_at(void) {
+    Int32Array arr = array_empty();
+    for (int32_t i = 0; i < 6; i++) array_push(&arr, i);
+
+    array_pop_n_at(&arr, 1, 2);
+    EXPECT(arr.len == 4, "removing a range updates the length");
+    EXPECT(arr.ptr[0] == 0 && arr.ptr[1] == 3 && arr.ptr[2] == 4 &&
+               arr.ptr[3] == 5,
+           "removing an interior range shifts the remaining elements");
+
+    array_pop_n_at(&arr, 2, 2);
+    EXPECT(arr.len == 2, "removing a suffix updates the length");
+    EXPECT(arr.ptr[0] == 0 && arr.ptr[1] == 3,
+           "removing a suffix preserves the preceding elements");
+
+    array_pop_n_at(&arr, 0, 2);
+    EXPECT(arr.len == 0, "removing the whole array is valid");
+    array_free(&arr);
+}
+
 int main(void) {
     test_empty_array();
     test_pushing_and_popping();
     test_reserve();
+    test_pop_n_at();
     return 0;
 }

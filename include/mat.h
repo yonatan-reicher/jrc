@@ -47,13 +47,15 @@ MatShape mat_shape_zero(void);
 /// Notice that even shapes such as 0 x 5 and 42 x 0 are considered zero shapes.
 bool mat_shape_is_zero(MatShape shape);
 
+bool mat_shape_is_square(MatShape shape);
+
 bool mat_shape_try_mul(MatShape lhs, MatShape rhs, MatShape* out);
 
 MatShape mat_shape_mul(MatShape lhs, MatShape rhs);
 
 bool mat_shape_eq(MatShape a, MatShape b);
 
-MatShape mat_shape_transpose(MatShape shape);
+MatShape mat_shape_transposed(MatShape shape);
 
 static inline size_t mat_shape_n_elements(MatShape shape) {
     return shape.n_rows * shape.n_cols;

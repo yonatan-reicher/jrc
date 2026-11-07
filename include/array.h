@@ -72,28 +72,30 @@
 #define array_pop_at(ARR, I)                                                   \
     do {                                                                       \
         if ((ARR)->len == 0) PANIC("cannot pop from empty array");             \
-        (ARR)->len--;                                                          \
         size_t _i = (I);                                                       \
         EXPECT(_i < (ARR)->len, "cannot pop outside of the array");            \
         for (size_t _j = _i; _j + 1 < (ARR)->len; _j++) {                      \
             (ARR)->ptr[_j] = (ARR)->ptr[_j + 1];                               \
         }                                                                      \
+        (ARR)->len--;                                                          \
     } while (0)
 
 #define array_pop_n_at(ARR, I, N)                                              \
     do {                                                                       \
-        if ((N) == 0) break;                                                   \
-        if ((ARR)->len <= (I) + (N))                                           \
+        size_t _i = (I);                                                       \
+        size_t _n = (N);                                                       \
+        size_t _len = (ARR)->len;                                              \
+        if (_n == 0) break;                                                    \
+        if (_i > _len || _n > _len - _i)                                       \
             PANIC(                                                             \
                 "cannot pop %zu items at index %zu from array of length %zu",  \
-                (size_t)(N),                                                   \
-                (size_t)(I),                                                   \
-                (ARR)->len                                                     \
+                _n,                                                            \
+                _i,                                                            \
+                _len                                                           \
             );                                                                 \
-        (ARR)->len -= (N);                                                     \
-        size_t _i = (I);                                                       \
-        for (size_t _j = _i; _j + (N) < (ARR)->len; _j++)                      \
-            (ARR)->ptr[_j] = (ARR)->ptr[_j + (N)];                             \
+        for (size_t _j = _i; _j < _len - _n; _j++)                             \
+            (ARR)->ptr[_j] = (ARR)->ptr[_j + _n];                              \
+        (ARR)->len = _len - _n;                                                \
     } while (0)
 
 #define array_first(ARR)                                                       \

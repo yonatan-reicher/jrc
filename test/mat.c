@@ -26,7 +26,20 @@ void test_a_generic_multiplication() {
     );
 }
 
+void test_transpose_rectangular_matrix(void) {
+    NEW_MAT(input, 2, 3, { 1, 2, 3, 4, 5, 6 });
+    NEW_MAT(expected, 3, 2, { 1, 4, 2, 5, 3, 6 });
+    MatView output = mat_alloc((MatShape) { 3, 2 });
+    mat_transpose(&input, &output);
+    EXPECT(
+        mat_eq(&output, &expected, 0.0f),
+        "rectangular matrix transpose has incorrect values or shape"
+    );
+    mat_free(&output);
+}
+
 int main(void) {
     test_empty_mul();
+    test_transpose_rectangular_matrix();
     return 0;
 }
