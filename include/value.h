@@ -16,7 +16,7 @@
 typedef enum ValueKind {
     /// This is not for a value representing null, but for when no value is
     /// available.
-    VALUE_NULL, // TODO: rename to VALUE_KIND_NULL or something
+    VALUE_NULL,
     VALUE_INT,
     VALUE_FUNC,
 } ValueKind;
