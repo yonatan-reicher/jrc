@@ -13,8 +13,6 @@
 #define set_error(span, fmt, ...)                                              \
     interpreter_set_error(i, span, fmt, __VA_ARGS__)
 
-#define TODO PANIC("todo")
-
 typedef InterpreterScope Scope;
 
 // =============================================================================
