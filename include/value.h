@@ -10,7 +10,7 @@
 // kinds of things, fit for dynamic operations. Made for the interpreter module.
 // Supported kinds of values:
 // - Integers
-// - Functions without arguments and without a closure
+// - Functions with a single argument and a closure
 // -----------------------------------------------------------------------------
 
 typedef enum ValueKind {
