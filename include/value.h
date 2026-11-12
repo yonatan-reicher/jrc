@@ -29,6 +29,11 @@ typedef struct Value {
     } data;
 } Value;
 
+DECLARE_ARRAY(Value, ValueArray);
+DECLARE_ARRAY(const Value, ConstValueArray);
+DECLARE_SLICE(Value, ValueSlice);
+DECLARE_SLICE(const Value, ConstValueSlice);
+
 typedef struct ValueFuncCapture {
     char* var_name;
     Value value;
