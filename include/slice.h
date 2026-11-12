@@ -78,6 +78,8 @@ DECLARE_SLICE(char, CharSlice);
 DECLARE_SLICE(const char, ConstCharSlice);
 DECLARE_SLICE(char*, CharPtrSlice);
 DECLARE_SLICE(const char*, ConstCharPtrSlice);
+DECLARE_SLICE(char* const, CharPtrConstSlice);
+DECLARE_SLICE(const char* const, ConstCharPtrConstSlice);
 
 // ------ Some string functions! -----------------------------------------------
 
