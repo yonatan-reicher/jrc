@@ -197,7 +197,10 @@ void mat_transpose_inplace(MatView* mat) {
 /// Transpose a matrix that's known to be a vector (either 1 x n or n x 1).
 MatView mat_transpose_vector(const MatView* mat) {
     BACKTRACE_HEY;
-    ASSERT(mat->shape.n_rows == 1 || mat->shape.n_cols == 1, "this is not a vector!");
+    ASSERT(
+        mat->shape.n_rows == 1 || mat->shape.n_cols == 1,
+        "this is not a vector!"
+    );
     BACKTRACE_BYE;
     return (MatView) {
         mat->data,

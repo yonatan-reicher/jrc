@@ -80,10 +80,14 @@ void get_terminal_size(FILE* f, uint16_t* w, uint16_t* h) {
     *h = ws.ws_row;
 }
 
-static void draw_screen(FILE* f, const wchar_t* buf, uint16_t w, uint16_t h, bool print_newlines) {
+static void draw_screen(
+    FILE* f, const wchar_t* buf, uint16_t w, uint16_t h, bool print_newlines
+) {
     system("clear");
     for (size_t i = 0; i < h - 1; i++)
-        fwprintf(f, L"%.*ls%s", (int)w, &buf[i * w], print_newlines ? "\n" : "");
+        fwprintf(
+            f, L"%.*ls%s", (int)w, &buf[i * w], print_newlines ? "\n" : ""
+        );
     if (h > 0) fwprintf(f, L"%.*ls", (int)w, &buf[(h - 1) * w]);
     fflush(f);
 }
@@ -205,7 +209,11 @@ static void* screen_thread_main(ScreenThreadArgs* args) {
 typedef void* ThreadMain(void*);
 
 ConsoleGraphics console_graphics_init(
-    FILE* f, ConsoleGraphicsDrawFunc draw, void* draw_arg, float target_fps, bool print_newlines
+    FILE* f,
+    ConsoleGraphicsDrawFunc draw,
+    void* draw_arg,
+    float target_fps,
+    bool print_newlines
 ) {
     // setlocale(LC_ALL, "");
     ConsoleGraphics ret;

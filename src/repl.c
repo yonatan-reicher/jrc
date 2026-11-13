@@ -28,7 +28,7 @@ void repl(void) {
         // TODO: remove all starting and trailing whitespace
         if (str_eq(line.ptr, "quit") || str_eq(line.ptr, "exit")) exit(0);
         Lexer l = lexer_new(line.ptr);
-        Parser p = parser_new((Token(*)(void*))lexer_pop, &l);
+        Parser p = parser_new((Token (*)(void*))lexer_pop, &l);
         const Ast* ast = parser_parse_repl_line(&p);
         printf("ast: %s\n", ast_to_str(ast));
 

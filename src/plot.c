@@ -125,8 +125,7 @@ void plot_bar_to_func(
     EXPECT(height > 2, "height must be at least three");
     // Start with all spaces.
     for (unsigned i = 0; i < height; i++)
-        for (unsigned j = 0; j < width; j++)
-            f(j, i, L' ', f_arg);
+        for (unsigned j = 0; j < width; j++) f(j, i, L' ', f_arg);
     // Y ticks.
     unsigned y_label_len = (unsigned)wcslen(y_top_tick_label);
     unsigned x_label_len = (unsigned)wcslen(x_right_tick_label);

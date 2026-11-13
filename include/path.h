@@ -103,4 +103,3 @@ Path path_read_link(const Path* p);
 /// Call `fopen` on the file.
 FILE* path_fopen(const Path*, const char* mode);
 struct Stream path_open_stream(const Path*);
-
