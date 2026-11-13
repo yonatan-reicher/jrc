@@ -19,6 +19,8 @@ typedef struct VarTableEntry {
 } VarTableEntry;
 
 DECLARE_ARRAY(VarTableEntry, VarTableEntryArray);
+DECLARE_SLICE(VarTableEntry, VarTableEntrySlice);
+DECLARE_SLICE(const VarTableEntry, ConstVarTableEntrySlice);
 
 typedef struct VarTable {
     VarTableEntryArray entries;
@@ -29,6 +31,8 @@ typedef struct InterpreterScope {
 } InterpreterScope;
 
 DECLARE_ARRAY(InterpreterScope, InterpreterScopeArray);
+DECLARE_SLICE(InterpreterScope, InterpreterScopeSlice);
+DECLARE_SLICE(const InterpreterScope, ConstInterpreterScopeSlice);
 
 typedef struct Interpreter {
     InterpreterScopeArray scopes;
