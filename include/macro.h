@@ -791,3 +791,8 @@
     IF(ARGS_IS_EMPTY(__VA_ARGS__))()(, __VA_ARGS__)
 
 #define SKIP_1(a, ...) __VA_ARGS__
+
+/// Make a variable name in a macro unique to it's scope. This only works inside
+/// a macro, as this works, by appending the line number to the variable's name,
+/// and in a macro, the used line number is that of the root macro call.
+#define UNIQUE_VAR(V) CAT_2(V, __LINE__)
