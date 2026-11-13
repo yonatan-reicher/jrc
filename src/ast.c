@@ -88,7 +88,9 @@ void ast_children(const Ast* ast, ConstAstPtrArray* out_children) {
             break;
         case AST_PROGRAM:
             const AstProgram* ast__ = (const AstProgram*)ast;
-            array_extend_raw(out_children, ast__->statements, ast__->n_statements);
+            array_extend_raw(
+                out_children, ast__->statements, ast__->n_statements
+            );
             break;
     }
 }
@@ -300,7 +302,7 @@ void ast_to_err_report(
 #define EMIT_STR(S)                                                            \
     do {                                                                       \
         const char* _s = (S);                                                  \
-        array_extend_raw(out, _s, strlen(_s));                                     \
+        array_extend_raw(out, _s, strlen(_s));                                 \
     } while (0)
 #define EMIT_AND_FREE_STR(S)                                                   \
     do {                                                                       \
