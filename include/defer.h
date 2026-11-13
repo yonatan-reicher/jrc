@@ -11,3 +11,13 @@
         for (bool _FLAG2 = true; _FLAG2; _FLAG2 = false)
 #define _FLAG1 UNIQUE_VAR(flag_1)
 #define _FLAG2 UNIQUE_VAR(flag_2)
+
+/// This macro runs `INIT`, then `BODY`, then `CLEAN`. Useful for putting
+/// cleanup code next to it's setup! Do not ever ever call `return` from this,
+/// but using `break` will still run the cleanup code.
+#define WITH(INIT, CLEAN, ...)                                                 \
+    do {                                                                       \
+        INIT;                                                                  \
+        for (bool _FLAG1 = true; _FLAG1; _FLAG1 = false) __VA_ARGS__;          \
+        CLEAN;                                                                 \
+    } while (0)
