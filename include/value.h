@@ -62,9 +62,8 @@ Value value_null(void);
 Value value_func_new(
     const char* param_name,
     Ast* body,
-    size_t n_captured,
-    const char* const captured_variable_names[],
-    Value captured_values[]
+    ConstCharPtrConstSlice captured_variable_names,
+    ValueSlice captured_values
 );
 ValueFuncCaptureSlice value_func_captured(Value);
 

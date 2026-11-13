@@ -17,15 +17,16 @@ typedef ConstValueFuncCaptureSlice ConstCaptureSlice;
 static Func* func_alloc(
     const char* param_name,
     const Ast* ast,
-    size_t n_captured,
-    const char* const* captured_names,
-    Value* captured_values
+    ConstCharPtrConstSlice captured_names,
+    ValueSlice captured_values
 ) {
+    ASSERT(captured_names.len == captured_values.len, "must be equal");
+    size_t n_captured = captured_names.len;
     // count
     size_t param_name_len = strlen(param_name);
     size_t n_chars = param_name_len + 1;
     for (size_t i = 0; i < n_captured; i++)
-        n_chars += strlen(captured_names[i]) + 1;
+        n_chars += strlen(captured_names.ptr[i]) + 1;
     // allocate
     size_t size = sizeof(Func) + n_captured * sizeof(ValueFuncCapture) +
                   n_chars * sizeof(char);
@@ -37,10 +38,10 @@ static Func* func_alloc(
     memcpy(ret_param_name, param_name, param_name_len + 1);
     char* next_name = ret_param_name + param_name_len + 1;
     for (size_t i = 0; i < n_captured; i++) {
-        size_t captured_name_len = strlen(captured_names[i]);
+        size_t captured_name_len = strlen(captured_names.ptr[i]);
         ret->captured[i].var_name = next_name;
-        ret->captured[i].value = captured_values[i];
-        memcpy(next_name, captured_names[i], captured_name_len + 1);
+        ret->captured[i].value = captured_values.ptr[i];
+        memcpy(next_name, captured_names.ptr[i], captured_name_len + 1);
         next_name += captured_name_len + 1;
     }
     return ret;
@@ -149,17 +150,11 @@ Value value_null(void) {
 Value value_func_new(
     const char* param_name,
     Ast* body,
-    size_t n_captured,
-    const char* const captured_variable_names[],
-    Value captured_values[]
+    ConstCharPtrConstSlice captured_variable_names,
+    ValueSlice captured_values
 ) {
-    Func* f = func_alloc(
-        param_name,
-        body,
-        n_captured,
-        captured_variable_names,
-        captured_values
-    );
+    Func* f =
+        func_alloc(param_name, body, captured_variable_names, captured_values);
     return (Value) { VALUE_FUNC, { .f = f } };
 }
 
