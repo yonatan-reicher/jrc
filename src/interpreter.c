@@ -202,8 +202,49 @@ static Value unary_op_eval(Interpreter* i, const AstUnaryOp* ast) {
     PANIC("Bad UnaryOp: %d", ast->op);
 }
 
+#define Data GetAstFuncCapturesFuncData
+
+typedef struct Data {
+    Interpreter* i;
+    ConstCharPtrArray* names;
+    ValueArray* values;
+} Data;
+
+static void get_ast_func_captures_visit(const Ast* a, void* data) {
+    EXPECT(a->kind == AST_VAR, "this AST must be a variable reference");
+    const AstVar* av = (const AstVar*)a;
+    Data* d = data;
+    Interpreter* i = d->i;
+    Value v;
+    if (!interpreter_get_var(i, av->name, &v))
+        set_error(a->span, "variable '%s' is not in scope", av->name);
+    array_push(d->names, av->name);
+    array_push(d->values, v);
+}
+
+static void get_ast_func_captures(
+    Interpreter* i,
+    const AstFunc* a,
+    ConstCharPtrArray* names,
+    ValueArray* values
+) {
+    Data data = { i, names, values };
+    ast_free_vars((const Ast*)a, get_ast_func_captures_visit, &data);
+}
+
+#undef Data
+
 Value eval_func(Interpreter* i, const AstFunc* ast) {
-    TODO;
+    ConstCharPtrArray captured_names;
+    ValueArray captured_values;
+    get_ast_func_captures(i, ast, &captured_names, &captured_values);
+    ASSERT(captured_names.len == captured_values.len, "these should be equal");
+    return value_func_new(
+        ast->param_name,
+        ast->body,
+        (ConstCharPtrConstSlice)slice_of_array(&captured_names),
+        (ValueSlice)slice_of_array(&captured_values)
+    );
 }
 
 Value interpreter_eval_expr(Interpreter* i, const Ast* ast) {
