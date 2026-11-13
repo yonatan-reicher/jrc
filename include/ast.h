@@ -53,6 +53,10 @@ void ast_children(const Ast*, ConstAstPtrArray* out_children);
 /// (pre-order).
 void ast_each(const Ast*, void(const Ast*, void*), void*);
 
+/// This gets the free variables, unrelated to freeing variables. Thanks
+/// English.
+void ast_free_vars(const Ast*, void(const Ast*, void*), void*);
+
 char* ast_to_str(const Ast*);
 
 void ast_to_err_report(

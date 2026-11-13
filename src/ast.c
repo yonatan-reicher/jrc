@@ -101,6 +101,75 @@ void ast_each(const Ast* ast, void f(const Ast*, void*), void* f_data) {
     array_free(&children);
 }
 
+static bool free_vars_contains(ConstCharPtrArray* not_free, const char* v1) {
+    ARRAY_FOREACH(not_free, v2) if (str_eq(v1, *v2)) return true;
+    // all weren't equal!
+    return false;
+}
+
+static void ast_free_vars_aux(
+    const Ast* a,
+    void f(const Ast*, void*),
+    void* f_data,
+    ConstCharPtrArray* not_free
+) {
+#define visit(VAR) f(VAR, f_data)
+#define recurse(AST) ast_free_vars_aux(AST, f, f_data, not_free)
+#define push(NAME) array_push(not_free, NAME)
+#define pop() array_pop(not_free)
+    switch (a->kind) {
+        case AST_NULL: return;
+        case AST_ERROR: return;
+        case AST_INT: return;
+        case AST_VAR:
+            const AstVar* av = (const AstVar*)a;
+            if (free_vars_contains(not_free, av->name)) return;
+            visit(a);
+            return;
+        case AST_BIN_OP:
+            const AstBinOp* ab = (const AstBinOp*)a;
+            recurse(ab->left);
+            recurse(ab->right);
+            return;
+        case AST_UNARY_OP:
+            const AstUnaryOp* au = (const AstUnaryOp*)a;
+            recurse(au->arg);
+            return;
+        case AST_FUNC:
+            const AstFunc* af = (const AstFunc*)a;
+            push(af->param_name);
+            recurse(af->body);
+            pop();
+            return;
+        case AST_ASSIGN:
+            const AstAssign* aa = (const AstAssign*)a;
+            recurse(aa->rhs);
+            push(aa->var);
+            return;
+        case AST_COMPOUND_STATEMENT:
+            const AstCompoundStatement* ac = (const AstCompoundStatement*)a;
+            for (size_t i = 0; i < ac->n_children; i++)
+                recurse(ac->children[i]);
+            return;
+        case AST_EMPTY_STATEMENT: return;
+        case AST_PROGRAM:
+            const AstProgram* ap = (const AstProgram*)a;
+            for (size_t i = 0; i < ap->n_statements; i++)
+                recurse(ap->statements[i]);
+            return;
+    }
+#undef visit
+#undef recurse
+#undef push
+#undef pop
+}
+
+void ast_free_vars(const Ast* a, void f(const Ast*, void*), void* f_data) {
+    ConstCharPtrArray not_free = array_empty();
+    ast_free_vars_aux(a, f, f_data, &not_free);
+    array_free(&not_free);
+}
+
 static char* ast_error_to_str(const AstError* ast) {
     return str_format(
         "<ERROR on " TEXT_SPAN_PRINTF_FORMAT ": %s>",
