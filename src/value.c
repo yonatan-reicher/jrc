@@ -1,5 +1,6 @@
 #include "value.h"
 #include "basic.h"
+#include "defer.h"
 #include "str.h"
 #include <inttypes.h>
 
@@ -91,30 +92,32 @@ static char* func_to_str(const Func* f) {
     ARRAY_FOREACH(&subst, s) {
         const char* start = first ? "" : ",";
         const Capture* c = &f->captured[i_s];
-        char* value_str = value_to_str(c->value);
-        *s = str_format("%s%s:=%s", start, c->var_name, value_str);
-        free(value_str);
+        WITH(char* value_str = value_to_str(c->value), free(value_str), {
+            *s = str_format("%s%s:=%s", start, c->var_name, value_str);
+        });
         subst_str_size += strlen(*s);
         first = false;
     }
-    char* subst_str = malloc(subst_str_size);
-    size_t i = 0;
-    ARRAY_FOREACH(&subst, s) {
-        size_t l = strlen(*s);
-        memcpy(&subst_str[i], *s, l);
-        i += l;
-        free(*s);
-    }
-    subst_str[i] = '\0';
-    array_free(&subst);
-    // Now finish
-    char* ast_str = ast_to_str(f->body);
-    char* ret =
-        str_eq(subst_str, "")
-            ? str_format("(%s => %s)", f->param_name, ast_str)
-            : str_format("(%s => %s)[%s]", f->param_name, ast_str, subst_str);
-    free(ast_str);
-    free(subst_str);
+    char* ret;
+    WITH(char* subst_str = malloc(subst_str_size), free(subst_str), {
+        size_t i = 0;
+        ARRAY_FOREACH(&subst, s) {
+            size_t l = strlen(*s);
+            memcpy(&subst_str[i], *s, l);
+            i += l;
+            free(*s);
+        }
+        subst_str[i] = '\0';
+        array_free(&subst);
+        // Now finish
+        WITH(char* ast_str = ast_to_str(f->body), free(ast_str), {
+            ret = str_eq(subst_str, "")
+                      ? str_format("(%s => %s)", f->param_name, ast_str)
+                      : str_format(
+                            "(%s => %s)[%s]", f->param_name, ast_str, subst_str
+                        );
+        });
+    });
     return ret;
 }
 
