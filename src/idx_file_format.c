@@ -97,7 +97,7 @@ IdxReadErr idx_file_read_mnist_images(FILE* f, struct FloatArray* out_data) {
     IdxReadResult r = idx_file_read(f);
     DEFER(idx_read_result_free(&r)) {
         err = r.err;
-        if (err) goto end;
+        if (err) break;
         UInt8Array* data = &r.data;
         UInt32Array* shape = &r.shape;
         EXPECT(
@@ -126,7 +126,6 @@ IdxReadErr idx_file_read_mnist_images(FILE* f, struct FloatArray* out_data) {
             uint8_t x = *array_get(data, i * idx_item_type_size(r.item_type));
             a[i] = (float)x / 255.0f;
         }
-end:
     }
     return err;
 }
