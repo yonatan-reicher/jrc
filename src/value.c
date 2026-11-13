@@ -109,7 +109,10 @@ static char* func_to_str(const Func* f) {
     array_free(&subst);
     // Now finish
     char* ast_str = ast_to_str(f->body);
-    char* ret = str_format("(%s => %s)[%s]", f->param_name, ast_str, subst_str);
+    char* ret =
+        str_eq(subst_str, "")
+            ? str_format("(%s => %s)", f->param_name, ast_str)
+            : str_format("(%s => %s)[%s]", f->param_name, ast_str, subst_str);
     free(ast_str);
     free(subst_str);
     return ret;
