@@ -1,5 +1,6 @@
 #pragma once
 #include "array.h"
+#include "slice.h"
 #include "text_pos.h"
 #include <stdbool.h>
 
@@ -31,6 +32,13 @@ typedef struct Ast {
     TextSpan span;
 } Ast;
 
+DECLARE_ARRAY(Ast*, AstPtrArray);
+DECLARE_ARRAY(const Ast*, ConstAstPtrArray);
+DECLARE_SLICE(Ast*, AstPtrSlice);
+DECLARE_SLICE(const Ast*, ConstAstPtrSlice);
+DECLARE_SLICE(Ast* const, AstPtrConstSlice);
+DECLARE_SLICE(const Ast* const, ConstAstPtrConstSlice);
+
 // ------ Functions ------------------------------------------------------------
 
 const char* ast_kind_name(AstKind);
@@ -39,7 +47,6 @@ bool ast_is_expr(const Ast*);
 
 bool ast_is_stmt(const Ast*);
 
-DECLARE_ARRAY(const Ast*, ConstAstPtrArray);
 void ast_children(const Ast*, ConstAstPtrArray* out_children);
 
 /// Visits every node in the tree. Parents are visited before children
