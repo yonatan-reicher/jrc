@@ -1,4 +1,5 @@
 #include "idx_file_format.h"
+#include "defer.h"
 #include "endianness.h"
 #include <stdlib.h>
 
@@ -92,37 +93,40 @@ IdxReadResult idx_file_read(FILE* f) {
 DECLARE_ARRAY(float, FloatArray);
 
 IdxReadErr idx_file_read_mnist_images(FILE* f, struct FloatArray* out_data) {
-    IdxReadErr ret = 0;
+    IdxReadErr err;
     IdxReadResult r = idx_file_read(f);
-    UInt8Array* data = &r.data;
-    UInt32Array* shape = &r.shape;
-    if (r.err) {
-        idx_read_result_free(&r);
-        return r.err;
+    DEFER(idx_read_result_free(&r)) {
+        err = r.err;
+        if (err) goto end;
+        UInt8Array* data = &r.data;
+        UInt32Array* shape = &r.shape;
+        EXPECT(
+            shape->len == 3,
+            "this .idx file is supposed to have 3 dimensions, but had a shape "
+            "with "
+            "%zu dimensions",
+            shape->len
+        );
+        EXPECT(
+            *array_get(shape, 1) == 28 && *array_get(shape, 2) == 28,
+            "this .idx is supposed to be something by 28 by 28, but was %d by "
+            "%d "
+            "by %d",
+            *array_get(shape, 0),
+            *array_get(shape, 1),
+            *array_get(shape, 2)
+        );
+        EXPECT(
+            r.item_type == IDX_ITEM_TYPE_U8,
+            "this .idx file is supposed to have bytes."
+        );
+        float* a = malloc(sizeof(float) * data->len);
+        *out_data = (FloatArray) { a, data->len, data->len };
+        for (size_t i = 0; i < data->len; i++) {
+            uint8_t x = *array_get(data, i * idx_item_type_size(r.item_type));
+            a[i] = (float)x / 255.0f;
+        }
+end:
     }
-    EXPECT(
-        shape->len == 3,
-        "this .idx file is supposed to have 3 dimensions, but had a shape with "
-        "%zu dimensions",
-        shape->len
-    );
-    EXPECT(
-        *array_get(shape, 1) == 28 && *array_get(shape, 2) == 28,
-        "this .idx is supposed to be something by 28 by 28, but was %d by %d "
-        "by %d",
-        *array_get(shape, 0),
-        *array_get(shape, 1),
-        *array_get(shape, 2)
-    );
-    EXPECT(
-        r.item_type == IDX_ITEM_TYPE_U8,
-        "this .idx file is supposed to have bytes."
-    );
-    float* a = malloc(sizeof(float) * data->len);
-    *out_data = (FloatArray) { a, data->len, data->len };
-    for (size_t i = 0; i < data->len; i++) {
-        uint8_t x = *array_get(data, i * idx_item_type_size(r.item_type));
-        a[i] = (float)x / 255.0f;
-    }
-    return ret;
+    return err;
 }
