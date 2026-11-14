@@ -6,7 +6,7 @@ VERSION      := 0.0.1
 # Path for installation.
 PREFIX       ?= /usr/local
 # Compilation profile (release / debug).
-PROFILE      ?= release
+PROFILE      ?= debug
 
 # ------ Paths -----------------------------------------------------------------
 # Directories
