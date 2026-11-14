@@ -235,8 +235,8 @@ static void get_ast_func_captures(
 #undef Data
 
 Value eval_func(Interpreter* i, const AstFunc* ast) {
-    ConstCharPtrArray captured_names;
-    ValueArray captured_values;
+    ConstCharPtrArray captured_names = array_empty();
+    ValueArray captured_values = array_empty();
     get_ast_func_captures(i, ast, &captured_names, &captured_values);
     ASSERT(captured_names.len == captured_values.len, "these should be equal");
     return value_func_new(
